@@ -27,6 +27,10 @@
 <p>admin\themes\simplebootx\Admin\Nav\add.html</p>
 <p>admin\themes\simplebootx\Admin\Nav\edit.html</p>
 <p>修改过的后台控制器</p>
+<p>application\User\Controller\IndexController.class.php</p>
+<p>application\User\Controller\LoginController.class.php</p>
+<p>application\User\Controller\ProfileController.class.php</p>
+<p>application\User\Controller\RegisterController.class.php</p>
 <p>application\Common\Controller\HomebaseController.class.php</p>
 <p>application\Common\Controller\MemberbaseController.class.php</p>
 <p>application\Admin\Controller\MainController.class.php</p>
