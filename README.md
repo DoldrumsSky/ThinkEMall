@@ -25,6 +25,8 @@
 <p>admin\themes\simplebootx\Admin\Nav\add.html</p>
 <p>admin\themes\simplebootx\Admin\Nav\edit.html</p>
 <p>修改过的后台控制器</p>
+<p>application\Common\Controller\HomebaseController.class.php</p>
+<p>application\Common\Controller\MemberbaseController.class.php</p>
 <p>application\Admin\Controller\MainController.class.php</p>
 <p>修改过的语言文件</p>
 <p>application\Admin\Lang\zh-cn\menu.php</p>
