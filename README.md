@@ -26,6 +26,8 @@
 <p>admin\themes\simplebootx\Admin\ header.html</p>
 <p>admin\themes\simplebootx\Admin\Nav\add.html</p>
 <p>admin\themes\simplebootx\Admin\Nav\edit.html</p>
+<p>修改过的后台样式文件</p>
+<p>public\simpleboot\css\simplebootadmin.css</p>
 <p>修改过的后台控制器</p>
 <p>application\User\Controller\IndexController.class.php</p>
 <p>application\User\Controller\LoginController.class.php</p>
