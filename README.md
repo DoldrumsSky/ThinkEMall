@@ -17,6 +17,8 @@
 <p>打开rewrite</p>
 </blockquote>
 <h4>附上修改过的ThinkCMF文件及对应代码文件的基本目录</h4>
+<p>商城系统应用目录</p>
+<p>application\EMall</p>
 <p>后台模板文件目录</p>
 <p>admin\themes\simplebootx\EMall</p>
 <p>修改过的原后台模板文件</p>
