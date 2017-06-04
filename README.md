@@ -7,6 +7,7 @@
 <h4>使用安装</h4>
 <p>与ThinkCMF的使用安装方法相同，详细请访问 <a href="www.thinkcmf.com">www.thinkcmf.com</a></p>
 <p>商城列表页只有电脑/笔记本类目下有商品数据</p>
+<p>为了方便研究，系统一些consol log的信息未关闭，使用时请自行查找注释掉这些log代码</p>
 <h4>环境推荐</h4>
 <blockquote>
 <p>php5.5+</p>
