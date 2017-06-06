@@ -1,0 +1,64 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="well form-search" method="post" action="{:U('AdminSearcher/index')}">
+			分类： 
+			<select name="term_id" style="width: 120px;">
+				{$filterOption}
+			</select> &nbsp;&nbsp;
+			关键字： 
+			<input type="text" name="keyword" style="width: 200px;" value="{$formget.keyword|default=''}" placeholder="请输入关键字...">
+			<input type="submit" class="btn btn-primary" value="搜索" />
+			<a class="btn btn-danger" href="{:U('AdminSearcher/index')}">清空</a>
+		</form>
+		<form class="js-ajax-form" action="{:U('AdminSearcher/listorders')}" method="post">
+			
+			<table class="table table-hover table-bordered table-list" id="menus-table">
+				<thead>
+					<tr>
+						<th width="80">{:L('SORT')}</th>
+						<th width="50">ID</th>
+						<th>{:L('FILTER_NAME')}</th>
+						<th>{:L('TERM_NAME')}</th>
+						<th width="120">{:L('GOODS_REQUIRED')}</th>
+						<th width="120">{:L('STATUS')}</th>
+						<th width="180">{:L('ACTIONS')}</th>
+					</tr>
+				</thead>
+				<tbody>
+					{$categorys}
+				</tbody>
+				<tfoot>
+					<tr>
+						<th width="80">{:L('SORT')}</th>
+						<th width="50">ID</th>
+						<th>{:L('FILTER_NAME')}</th>
+						<th>{:L('TERM_NAME')}</th>
+						<th width="120">{:L('GOODS_REQUIRED')}</th>
+						<th width="120">{:L('STATUS')}</th>
+						<th width="180">{:L('ACTIONS')}</th>
+					</tr>
+				</tfoot>
+			</table>
+			<div class="table-actions">
+				<button class="btn btn-primary js-ajax-submit" type="submit">{:L('SORT')}</button>
+				<a class="btn btn-danger <if condition="$term_id eq ''">disabled" href="javascript:alert('请先在上方选择一个分类，然后点击搜索，激活按钮后方可添加！')"<else />" href="{:U('AdminSearcher/addFilter',array('term_id'=>$term_id))}"</if>>{:L('ADD_FILTER_TO_CURTERM')}</a>
+				<div class="pagination" style="float:right">{$page}</div>
+			</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script>
+		$(document).ready(function() {
+			Wind.css('treeTable');
+			Wind.use('treeTable', function() {
+				$("#menus-table").treeTable({
+					indent : 20
+				});
+			});
+		});
+
+	</script>
+</body>
+</html>

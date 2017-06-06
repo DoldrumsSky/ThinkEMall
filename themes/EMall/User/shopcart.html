@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+</head>
+<body class="bg-white" id="top">
+  <tc_include file="Public:user_nav" />
+
+	<div class="wrapper tc-main" id="cartList">
+		<div class="cartTab">
+			<ul>
+				<li role="tabItem"><a class="cur" href="javascript:shopCart.cartListFilter({filterType:'all'})">全部商品<em id="totalGoodsNum">0</em><span class="spLine"></span></a></li>
+				<li role="tabItem"><a href="javascript:shopCart.cartListFilter({filterType:'lowStock'})">库存紧张<em id="lowStockGoodsNum">0</em><span class="spLine"></span></a></li>
+				<li role="tabItem" id="accountsTab"><a href="javascript:shopCart.cartListFilter({filterType:'accounts',callFunc:function(){checkLogiSupport()}})">结算商品<em id="accountsGoodsNum">0</em><span class="spLine"></span></a></li>
+			</ul>
+			<div class="activeLine"></div>
+		</div>
+		<table class="table marginBottomNone">
+			<thead>
+				<tr>
+					<td width="10%"><label class="checkbox"><input type="checkbox" class="check-all" data-target="shopList">全选</label></td>
+					<td width="46%">商品信息</td>
+					<td width="14%">单价</td>
+					<td width="8%">数量</td>
+					<td>金额</td>
+					<td>操作</td>
+				</tr>
+			</thead>
+		</table>
+		<div class="cartListContainer">
+
+		</div>
+
+		<div class="bottomOptBar">
+			<div style="float:left;width:400px;height:100%;padding-top:6px">
+				<label class="checkbox"><input type="checkbox" class="check-all" data-target="shopList">全选</label>
+				<a href="javascript:messagesBox({title:'购物车商品删除提示',content:'按确定按钮后，选中的商品将从购物车中移除！',type:'confirm',callFunc:function(){shopCart.removeCartItem({type:'all'})}});" >删除</a>
+				<a href="">移入收藏夹</a>
+				<a href="">分享</a>
+			</div>
+			<a role="button" class="btn btn-red" id="shopAccounts" href="javascript:void(0);">结算</a>
+			<span class="total">合计（不含运费）：<em>¥</em><em id="accountPrice">0.00</em></span>
+			<span class="total">已选择<em id="selCartListItemNum">0</em>件商品</span>
+		</div>
+		<div style="height:125px;clear:both;position:relative">		
+			<div class="payWrap">
+				<div class="payInfo">
+					<div class="totalAccounts"><em id="actualPayment">0.00</em><em class="currency">¥</em><span>实付款：</span></div>
+					<div class="addressInfo" data-selidx="0">
+						<div class="curAddress">
+							<em>寄送至：</em>
+							<span></span>
+						</div>
+						<div class="consignee">
+							<em>收货人：</em><span></span>
+						</div>
+					</div>
+					<div style="clear:both;text-align:right;padding:5px;"><a href="javascript:showAddressOption();" style="color:#dd2727">更换收货地址</a></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<tc_include file="User:addressModal" />
+<div class="tc-main">
+		<tc_include file="Public:footer" />
+
+	</div>
+	<!-- /container -->
+
+	<tc_include file="Public:scripts" />
+<script src="__TMPL__Public/assets/js/addressOption.js"></script>
+</body>
+<script type="text/javascript">
+
+//获取购物车数据的链接
+var getCartDataURL="{:U('User/Order/getShopCartData')}";
+//删除购物车数据的链接
+var removeCartDataURL="{:U('User/Order/removeShopCartData')}";
+//生成商品订单的链接
+var createOrderURL="{:U('User/Order/createOrder')}";
+
+//商品及购物车数据
+var loadShopCartData=true;		//需要在打开页面时直接加载购物商商品详细数据时在页面中增加此变量并设为true;
+var goodsData={'goods_id':1};
+var goods_id="{$goods.goods_id}";
+var goods_ThumbImg='{$smeta[0][thumb]}';
+var goods_stock='{$goods.goods_stock}';
+var goods_price='{$goods.goods_price}';
+var market_price='{$goods.market_price}';
+var goods_discount='{$goods.goods_discount}';
+
+//以'cookie'为参数从服务器上获取到的购物车相关的非构造数据存储变量
+var cookieCartData;
+//服务器中加载到的购物车构造数据（正式应用数据）
+var ShopCartData;
+//当前加载的购物车数据，如果此数据存在，通过判断内容是否改变来提交或者获取数据
+//var curShopCartData;
+var shopBuyNum=0;
+//运费数据
+var fromProvinceId='';
+var fromCityId='';
+var selToAreaId='';
+var curSelProvince;
+var curSelCityBox,curSelCity;
+var servLogisticsData=[];			//用于存在从服务器上获取到的结算商品运费模板数据集
+var tmplLogisticsData='';
+
+//用于存储sku单品项选项信息供选择时调用
+var skuFormData;
+//外观样式单品属性数据，主要用于索引单品外观样式图片
+var SKU_StyleData;
+//生成单品项属性序列索引值存储的二维数组
+var skuGroupIdx;
+//当前选中的SKU单品，用于索引查询对应数据
+var curSelSKUIdx=0;
+//当前选中的规格类属性索引如：尺码
+var curSelSKUSpec=-1;
+//当前选中的样式外观类属性索引如：颜色
+var curSelSKUStyle=-1;
+
+//购物车的总商品数量 
+var cartGoodsNum=0;
+//购物车数据
+var shopCartData;
+//重置购物车数据浏览方式，以详情页面视图展示数据
+GV.cartView=='fullView';
+
+//当前编辑修改的购物商品SKU属性
+var curEidtSelSKU;
+
+//用户地址信息
+var userAddress;
+
+//地址编辑功能模块变量
+var editIdx;
+var addAddressURL="{:U('user/profile/addAddress')}";
+var editAddressURL="{:U('user/profile/editAddress')}";
+var deleteAddressURL="{:U('user/profile/deleteAddress')}";
+var setDefaultURL="{:U('user/profile/setDefaultAddress')}";
+var totalAddrNum;
+
+$(function(){
+
+	$('#cartList').setAllCheckbox({
+		context:'shopAccounts',
+		callFunc:function(){
+			shopCart.cartAccounts();
+		}
+	});
+	
+	$('.cartTab').setTabMenu({
+		tabChangeStyle:1,
+		hasTabContent:false
+	})
+
+	//结算与订单提交
+	$('#shopAccounts').on('click',function(e){
+		e.stopPropagation();
+		var $this=$(this);
+		var cartListItem=$('[role="cartItem"]');
+		var shopGoodsId='';
+
+		//cartListItem是所有的商品数据容器，toOrder为true时表示将开始提交订单，这时检查的是结算商品，而非准备提交到进行结算的商品
+		function getAccountsData(cartListItem,toOrder){
+			var accountsNum=0;
+			var goodsData='';
+			//计算结算商品数量
+			$.each(cartListItem,function(){
+				var selListItem=$(this).find(':checkbox[data-name="shopList"]:checked');
+				var selNum=0;
+				var data_gid=$(this).attr('data-gid');
+				if(toOrder){
+					selNum+=$(this).css('display')!=='none'?selListItem.length:0;
+					//构建商品订单提交数据
+					goodsData+=selListItem.length>0?goodsData==''?'{"'+data_gid+'":{':',"'+data_gid+'":{':'';
+					var goods_img=$(this).find('.cartGoodsImg').attr('src');
+					goodsData+=selListItem.length>0?'"goods_img":"'+goods_img+'"':'';
+					var freInsurance=$(this).closest('.cartList').find(':checkbox[data-name="freInsurance"]');
+					goodsData+=selListItem.length>0?freInsurance.is(':checked')?',"freInsurance":true':',"freInsurance":false':'';
+					var shopBuyNum=parseInt($('#shopBuyNum-'+data_gid).val());
+					goodsData+=selListItem.length>0?',"shopBuyNum":'+shopBuyNum:'';
+					var logistics=$(this).closest('.cartList').find('select[role="logistics"] option:selected').attr('data-wayidx');
+					goodsData+=selListItem.length>0?',"logistics":'+logistics+'}':'';
+				}else{
+					selNum+=selListItem.length;
+				}
+					accountsNum+=selNum;
+					//添加结算标识
+					selListItem.closest('[role="cartItem"]').attr('data-action','accounts');
+					$('#accountsGoodsNum').text(accountsNum);
+			})
+
+			if(toOrder){
+				var addressInfo=$('.payWrap .addressInfo');
+				var address=addressInfo.find('.curAddress span').text();
+				var addressIdx=addressInfo.attr('data-selidx');
+				var consignee=userAddress[addressIdx][1];
+				var telphone=userAddress[addressIdx][2];
+				return {'accountsNum':accountsNum,'goodsData':goodsData+'}',province:curUseProvince,city:curUseCity,consignee:consignee,telphone:telphone,address:address};
+			}
+
+			return {'accountsNum':accountsNum,province:curUseProvince,city:curUseCity};
+
+		}
+
+		//如果是提交订单，直接跳转到订单生成支付页面
+		if($(this).attr('data-action')=='createOrder'){
+			var postData=getAccountsData(cartListItem,true);
+			console.log(postData);
+			//检查可结算的商品
+			if(postData.accountsNum==0){
+				$this.setPopTip({
+					content:'您还没有勾选任何结算的商品！',
+					placement:'top',
+					arrowAlign:'vcenter',
+					arrow:'bottom',
+					showonce:true
+				});
+				return false;
+			}
+			$this.setPopTip('destroy');
+			$this.setLoadingState({container:'body',loadingTxt:'正在生成商品订单，请稍候...'});
+			//开始提交订单数据
+			$.post(createOrderURL,postData,function(data){
+				if(data.status==1){
+					$this.setLoadingState('destroy',function(){
+						location.href="{:U('user/order/index')}";
+					});
+					//刷新本地购物车数据
+					if(GV.cookieEnabled){
+						$.cookie('cartGoodsNum',data.cartGoodsNum);
+					}
+					console.log(data.data);
+				}else{
+					$this.setLoadingState('destroy',function(){
+						alert(data.error);
+						//console.log(data);
+					});
+				}
+			}).error(function(XMLHttpRequest ,textStatus){
+				$this.setLoadingState('destroy',function(){
+					//var msg=!data.msg?'网络错误：无法提交订单数据，请稍候尝试！':data.msg;
+					alert(XMLHttpRequest.responseText);
+					console.log(XMLHttpRequest.responseText);
+				});
+			})
+			return false;
+		}
+
+		//检查是否有商品
+		if(cartListItem.length>0){
+			//判断是否有选中的商品
+			if(getAccountsData(cartListItem).accountsNum==0){
+				$this.setPopTip({
+					content:'请至少选择一个要结算的商品！',
+					placement:'top',
+					arrowAlign:'vcenter',
+					arrow:'bottom',
+					showonce:true
+				});
+
+				//进入页面时包含指定结算的商品，但却未勾选商品时销毁加载等待UI（主要是回退页面时使用）
+				if(GV.accountsGID!==''){
+					$(this).setLoadingState('destroy');
+				}
+
+			//开始结算
+			}else{
+				//如果进入页面时包含结算商品的gid则不再弹出加载时的loading mask
+				if(GV.accountsGID==''){
+					$(this).setLoadingState({container:'body',loadingTxt:'正在生成结算清单，请稍等...'});					
+				}
+				//重新初始化已经参与过结算的商品运费统计数据，使数据归零，方便与新添加结算的同组商品进行累计统计
+				$.each($('.cartList'),function(){
+					var bottomAccount=$(this).find('.bottomAccount');
+					if(bottomAccount.length>0){
+						bottomAccount.find('[role="logistics"] option').val('0.00');
+						bottomAccount.find('.logisticsPrice .logiPrice').text('0.00');
+					}
+				})
+
+				//生成结算商品gid（此变量用于额外获取商品表数据的联合查询）和用于查询运费模板的lid字串,
+				//reqId用于存放请求服务器结算数据的商品ID，用于返回数据时直接索引结算商品
+				var gid=[],lid=[],reqId=[];
+				
+				//console.log(GV.cartGoodsServData);
+
+				//判断当前的购物车数据是否存在变量中，如果否，则从标签属性中提取商品结算数据，否则从变量中提取
+				if(!$.isEmptyObject(GV.cartGoodsServData)){
+					//循环计算结算商品的运费及其它费用(单用户商城按组合并计算商品运费，多用户商城按同商家商品为组单个计算，目前只有单用户商城计算)
+					$.each($('.cartList'),function(index){
+						var $this=$(this);
+						//单用户商城只取列表组中其中一个商品属性即可
+						var curCartItem;
+						var data_gid,sid,curlid,curFreInsurance=0,shopBuyNum=0;
+						//是否存在本地运费模板数据的标识
+						var hasLocalData=false;
+						//先查找本地变量中是否已经包含了商品结算所必须的数据，如果没有再从服务器上获取
+						//判断当前列表组中是否包含至少一个选中的结算商品，如果没有任何需要结算的商品就跳过
+						var singleCartList=$this.find('[role="cartItem"]');
+						if(singleCartList.find(':checkbox[data-name="shopList"]:checked').length==0){
+							return true;
+						}
+						//列表组中存在勾选商品时遍历获取数据
+						$.each(singleCartList,function(){
+							if($(this).attr('data-action')=='accounts' && $(this).find(':checkbox[data-name="shopList"]').is(':checked')){
+								curCartItem=$(this);
+								curlid=$(this).attr('data-lid');
+								data_gid=$(this).attr('data-gid');
+								sid=data_gid.split('-')[0];
+								shopBuyNum+=parseInt($(this).find('#shopBuyNum-'+data_gid).val());
+
+							}
+						})
+
+						goods_weight=singleCartList.attr('data-weight');
+						goods_volume=singleCartList.attr('data-volume');
+
+						//查找是否存在对应的本地运费模板数据，有则直接结算，没有则把商品对应的模板id存入lid中，在后面执行服务器获取数据
+						$.each(servLogisticsData,function(index,Item){
+							if(curlid==Item.logistics_id){
+								//设定计费模式
+								logisticsType=Item.logistics_type;
+								//提取结算需要使用的商品信息
+								$.each(GV.cartGoodsServData.goods_info,function(gIdx,GoodsItem){
+									if(sid==GoodsItem.goods_id){
+										curFreInsurance=GoodsItem.freinsurance;
+										return false;
+									}
+								})
+								//当前选择的收货地址数据
+								//curUseProvince=userAddress[0][3];
+								//curUseCity=userAddress[0][5];
+								//执行当前商品的结算
+								doShopAccounts({
+									'gid':sid,
+									'container':$this,
+									'logisticsData':Item.logistics_param,
+									'freinsurance':curFreInsurance,
+									'shopBuyNum':shopBuyNum
+								},curCartItem);
+								hasLocalData=true;
+								return false;
+							}
+						})
+						//判断当前结算商品的结算数据是否已在本地处理，没有则加入服务器获取列表
+						if(!hasLocalData){
+							//过滤重复ID
+							if($.inArray(curlid,lid)==-1){
+								lid.push(curlid);
+							}	
+							if($.inArray(sid,reqId)==-1){
+								reqId.push(sid);
+							}	
+						}
+					})
+					//console.log(reqId);
+
+				//如果本地没有任何可用数据，则生成gid字串，准备从服务器上获取所有商品信息
+				}else{
+					$.each($('[role="cartItem"]'),function(){
+						if($(this).attr('data-action')=='accounts'){
+							var data_gid=$(this).attr('data-gid');
+							var goods_id=data_gid.split('-')[0];
+							if($.inArray(goods_id,gid)==-1){
+								gid.push(goods_id);
+							}				
+						}
+					})			
+				}
+
+				//判断是否已经获取用户的地址信息，如果有，则使用goods参数只获取商品信息
+				var getType=!$.isEmptyObject(GV.cartGoodsServData)?'logistics':'all';
+				//判断是否需要获取用户定义的收货地址数据
+				var getAddr=userAddress?0:1;
+
+				//商品lid提交到服务器获取运费结算数据
+				if(lid.length>0 || gid.length>0){
+					$.ajax({
+						type: 'GET',
+						url: GV.shopAccountsURL,
+						async:true,
+						dataType: "json",
+						data:{'gid':gid,'lid':lid,'type':getType,'getAddr':getAddr},
+						success: function(data){
+							if(data.status==1){
+								if(!data.user || data.user=='' || data.user=='[]'){
+									alert('您还未添加任何收货地址，无法结算商品！');
+									$this.setLoadingState('destroy');
+									window.location="{:U('User/profile/addressOption')}";
+									return false;
+								}
+								userAddress=$.parseJSON(data.user);
+								totalAddrNum=userAddress.length;
+								//加入默认地址信息
+								$('.payWrap .curAddress span').text(userAddress[0][4]+' '+userAddress[0][6]+' '+userAddress[0][8]+' '+userAddress[0][10]);
+								$('.payWrap .consignee span').text(userAddress[0][1]+' '+userAddress[0][2]);
+								curUseProvince=userAddress[0][3];
+								curUseCity=userAddress[0][5];
+								var curFreInsurance=0;
+								//console.log(curUseProvince);
+								//循环计算结算商品的运费及其它费用
+								$.each($('.cartList'),function(){
+									var $this=$(this);
+									//判断当前列表组中是否包含至少一个选中的结算商品，如果没有任何需要结算的商品就跳过
+									var singleCartList=$this.find('[role="cartItem"] :checkbox[data-name="shopList"]:checked');
+									if(singleCartList.length==0){
+										return true;
+									}
+									var goods_id=$this.attr('data-id');
+									//单用户商城只取列表组中其中一个商品属性即可
+									var curCartItem;
+									var data_gid,sid,curlid,shopBuyNum=0;
+
+									//遍历当前结算列表组中所有的同属性商品（单用户商城以同商品ID为一组，运费合并计算）
+									$.each($this.find('[role="cartItem"][data-action="accounts"]'),function(){
+										if($(this).find(':checkbox[data-name="shopList"]')){
+											curCartItem=$(this);
+											data_gid=$(this).attr('data-gid');
+											sid=data_gid.split('-')[0];
+											curlid=$(this).attr('data-lid');
+											goods_weight=curCartItem.attr('data-weight');
+											goods_volume=curCartItem.attr('data-volume');
+											//对比计算从服务器获取的商品数据
+											$.each(reqId,function(index){
+												if(reqId[index]==sid){
+													//计算列表商品组中所有同属性商品的购买数总和
+													shopBuyNum+=parseInt(curCartItem.find('#shopBuyNum-'+data_gid).val());
+
+													if(getType!=='all'){
+														//提取结算需要使用的商品信息
+														$.each(GV.cartGoodsServData.goods_info,function(index,Item){
+															if(sid==Item.goods_id){
+																curFreInsurance=parseFloat(Item.freinsurance).toFixed(2);
+																return false;
+															}
+														})
+													}else{
+
+													}
+													
+												}
+											
+											})
+								
+										}
+
+									})
+
+									//
+									var logistics_param;
+									//取运费模板数据
+									$.each(data.data,function(index,Item){
+										if(curlid==Item.logistics_id){
+											//设定计费模式
+											logisticsType=Item.logistics_type;
+											//先将数据存储到本地变量中
+											servLogisticsData.push(Item);	
+											logistics_param=Item.logistics_param;
+											return false;
+										}					
+									})
+									//执行当前商品的结算
+									doShopAccounts({
+										'gid':sid,
+										'container':$this,
+										'logisticsData':logistics_param,
+										'freinsurance':curFreInsurance,
+										'shopBuyNum':shopBuyNum
+									},curCartItem);
+								})
+
+
+							}else{
+								alert(data.error);
+							}
+
+							endFunc();
+	
+							console.log(data);
+						},
+						error:function(){
+							alert('无法生成结算数据，请稍候尝试！');
+						}
+					})
+				//不存在需要服务器获取的数据时直接完成	
+				}else{
+					endFunc();
+				}
+
+				//单组商品结算
+				function doShopAccounts(data,curCartItem){
+					var paramData={
+						gid:'',					//商品ID
+						container:null,			//购物车商品列表容器
+						freinsurance:0,			//运费险
+						logisticsData:null,		//商品运费模板数据
+						shopBuyNum:0 			//商品购买的数量
+					}
+
+					var AccountsData =$.extend(true,paramData,data);
+
+					tmplLogisticsData=AccountsData.logisticsData;
+
+					var $this=AccountsData.container;
+					var bottomCode;
+
+					var bottomAccount=$this.find('.bottomAccount');
+					//判断是当前列表组是否已经存在结算的商品，如果不存在，则添加结算数据行
+					if(bottomAccount.length==0){
+						bottomCode=staticLogisticsPrice({
+							buyNum:AccountsData.shopBuyNum,
+							selProvinceId:curUseProvince,
+							selCityId:curUseCity,
+							viewType:'sameGIDAccounts',
+							returnType:'htmlCode'
+						});
+						//console.log(bottomCode);
+						//添加运费统计栏
+						bottomAccount = $(bottomCode).appendTo($this);
+						//运费险选择框
+						var insuranceCheckInput=bottomAccount.find(':checkbox[data-name="freInsurance"]');
+						//运费险选择框文本显示
+						if(AccountsData.freinsurance==0){
+							//运费险
+							insuranceCheckInput.attr('data-price','0.00').prop('disabled',true).prop('checked',true);
+							bottomAccount.find('.insurancePrice').text('商家赠送');
+						}else{
+							//运费险勾选事件
+							insuranceCheckInput.attr('data-price',parseFloat(AccountsData.freinsurance).toFixed(2)).on('click',function(){
+								var $this=$(this);
+								if($(this).is(':checked')){
+									bottomAccount.find('.logisticsPrice .logiPrice').queue(function(next){
+										var totalLogiPrice=parseFloat($(this).text());
+										totalLogiPrice+=parseFloat($this.attr('data-price'));
+										$(this).text(totalLogiPrice.toFixed(2));
+										next();
+									});
+								}else{
+									bottomAccount.find('.logisticsPrice .logiPrice').queue(function(next){
+										var totalLogiPrice=parseFloat($(this).text())-parseFloat($this.attr('data-price'));
+										$(this).text(totalLogiPrice.toFixed(2));
+										next();
+									});									
+								}
+								shopCart.cartAccounts();
+							})
+							bottomAccount.find('.insurancePrice').html(' ¥ <em class="logiPrice">'+AccountsData.freinsurance+'</em>元 购买');
+						}
+						//运费计算事件绑定
+						var logiSelect=bottomAccount.find('[role="logistics"]');				
+							logiSelect.on('change',function(e){
+								//e.stopPropagation();
+								var logiPrice=parseFloat($(this).val());
+								var insurancePrice=0;	
+								//运费险计算					
+								if(insuranceCheckInput.is(':checked')){
+									insurancePrice=parseFloat(insuranceCheckInput.attr('data-price'));
+								}
+
+								if(logiPrice==0 && $this.find(':checkbox[data-name="shopList"]:checked').length>0){
+									$(this).after(' <em class="tag freeLogiTag">包邮</em>');
+									bottomAccount.find('.logisticsPrice .logiPrice').text(Number(insurancePrice).toFixed(2));
+								}else{
+									//console.log(logiPrice+','+insurancePrice);
+									bottomAccount.find('.logisticsPrice .logiPrice').text(Number(logiPrice+insurancePrice).toFixed(2));
+									$(this).closest('span').find('.freeLogiTag').remove();					
+								}
+								shopCart.cartAccounts();
+
+							});
+
+						//当无任何支持的配送方式时禁止勾选购买商品
+						if(logiSelect.find('option:eq(0)').attr('data-wayidx')=='-1'){		
+							logiSelect.prop('disabled',true);
+							//禁止运费险勾选
+							var freInsurance=bottomAccount.find(':checkbox[data-name="freInsurance"]');
+							if(parseFloat(freInsurance.attr('data-price'))>0)
+							freInsurance.prop({'checked':false,'disabled':true});
+							//禁止选择
+							//$this.find(':checkbox[data-name="shopList"]').prop({'checked':false,'disabled':true});
+						}else{
+							logiSelect.trigger('change');
+						}
+						//如果已经存在结算数据行，重新累计添加进来的结算数据
+					}else{
+						//标识进入结算状态
+						curCartFilterType='accounts';
+						//刷新结算运费数据
+						shopCart.logisticsPriceAccounts('refresh',null,$this);
+					}
+
+				}
+
+				//数据加载完成后执行的函数
+				function endFunc(){
+					$('#accountsTab').trigger('mouseenter').trigger('click');
+					shopCart.cartListFilter({filterType:'accounts'});
+					var popContent=checkLogiSupport()?'请点击“提交订单”按钮生成商品订单！':'包含不支持配送地址的商品，请更换收货地址或者分单处理！'
+					$this.attr('data-action','createOrder').text('提交订单');
+
+					$this.setLoadingState('destroy');
+					//将结算汇总信息滚动对齐到浏览器底部
+					var offsetTop=0,targetHeight=0,clientHeight=$(window).height();
+					$('.payWrap').queue(function(next){
+						offsetTop=$(this).offset().top+150;
+						targetHeight=$(this).outerHeight();
+						next();
+					})
+
+					if(offsetTop>clientHeight){
+						$('html,body').animate({scrollTop:(offsetTop-clientHeight+targetHeight)},400);						
+					}
+					$this.setPopTip({
+						width:250,
+						content:popContent,
+						placement:'top',
+						arrow:'bottom',
+						arrowAlign:'vcenter',
+						showonce:true
+					})
+				}
+
+			}
+
+		}else{
+			$this.setPopTip({
+				content:'没有任何需要结算的商品！',
+				placement:'top',
+				arrowAlign:'vcenter',
+				arrow:'bottom',
+				showonce:true
+			});
+		}
+
+	})	
+})
+
+//禁止勾选不被支持配送的商品(单用户商城)
+function checkLogiSupport(){
+	var cartList=$('.cartList');
+	var unCheckNum=0;
+
+	$.each(cartList,function(index){
+		//跳过非结算商品列表组
+		if($(this).css('display')=='none'){
+			return true;
+		}
+		if($(this).find('[role="logistics"]').prop('disabled')){
+			var cartItemList=$(this).find('[role="cartItem"]');
+			//var unCheckNum=0;
+			$.each(cartItemList,function(){
+				var cartItem=$(this);
+				var dataAction=cartItem.attr('data-action');
+				var data_gid=cartItem.attr('data-gid');
+				if(dataAction=='accounts' && cartItem.css('display')!=='none'){
+					cartItem.find(':checkbox[data-name="shopList"]').prop({'checked':false,'disabled':true}).trigger('change');
+					//禁用输入框
+					cartItem.find('#shopBuyNum-'+data_gid).prop({'disabled':true});
+				}
+
+			})
+			unCheckNum++;
+		//重新激活勾选
+		}else{
+			$.each($(this).find('[role="cartItem"]'),function(){
+				var $this=$(this);
+				var dataAction=$(this).attr('data-action');
+				var data_gid=$(this).attr('data-gid');
+				if(dataAction=='accounts' && $this.css('display')!=='none'){
+					$(this).find(':checkbox[data-name="shopList"]').prop({'checked':true,'disabled':false}).trigger('change');
+					//激活输入框
+					$this.find('#shopBuyNum-'+data_gid).prop({'disabled':false});
+				}
+			})	
+			unCheckNum-=unCheckNum==0?0:1;
+		}
+	})
+
+	if(unCheckNum==cartList.length){
+		$(':checkbox[data-target="shopList"]').prop('checked',false);
+	}else if(unCheckNum<=0){
+		$(':checkbox[data-target="shopList"]').prop('checked',true);
+	}
+
+	if(unCheckNum>0){
+		$('#shopAccounts').addClass('disabled');
+		return false;
+	}
+
+	$('#shopAccounts').removeClass('disabled');
+	return true;
+}
+
+//更换收货地址
+function showAddressOption(){
+	var addressListCode='';
+	if(!userAddress){
+		alert('无法正常获取收货地址数据，请稍候再试！');
+		return false;
+	}
+	$('body').css('overflow','hidden');
+	//产生html
+	$.each(userAddress,function(index,Item){
+		//console.log(Item);
+		var defaultCSS=index==0?'default':'border-dark';
+		var defaultTag=index==0?'<em class="default">默认使用地址</em>':'';
+		addressListCode+='<div class="addressItem bg-dark '+defaultCSS+'" data-idx="'+(index+1)+'" data-consignee="'+Item[1]+'" data-tel="'+Item[2]+'" data-province_id="'+Item[3]+'" data-province_name="'+Item[4]+'" data-city_id="'+Item[5]+'" data-city_name="'+Item[6]+'" data-district_id="'+Item[7]+'" data-district_name="'+Item[8]+'" data-zipcode="'+Item[9]+'" data-address="'+Item[10]+'" data-tag="'+Item[0]+'">'
+			+'<dl><dt><em>'+Item[1]+'</em><span>'+Item[0]+'</span></dt><dd>'+Item[2]+'</dd>'
+			+'<dd>'+Item[4]+' '+Item[6]+' '+Item[8]+'</br>'+Item[10]+' ('+Item[9]+')</dd>'+defaultTag+'</dl></div>'		
+	})
+
+
+	var addressInfo=$('<div class="addressWrap" style="opacity:0"><div class="mask"></div><div class="addressList" id="addressList">'
+		+'<div class="closeTxtBtn"><i>关闭</i><i class="icon iconfont icon-shanchu"></i></div>'
+		+'<div class="addressItem bg-dark border-dark" id="addAddress" data-target="#addressModal" data-toggle="modal">'
+		+'<a class="tm-mcPlus" href="javascript:void(0);"><s></s><b></b></a><div>添加新地址</div></div>'
+		+addressListCode
+		+'</div></div>').appendTo($('body'));
+	//淡入
+	addressInfo.animate({'opacity':1},200);
+
+	var addressWrap=$('#addressList');
+	var closeTxtBtn=addressWrap.find('.closeTxtBtn');
+	//关闭事件
+	closeTxtBtn.on('click',function(e,popContent){
+		//IE8加上filter使其可以整体关闭，否则内容区块的透明度无法正确显示（直接空白）
+		addressInfo.animate({'opacity':0,'filter':'Alpha(Opacity=0)'},200,function(){
+			addressInfo.remove();
+			$('body').removeAttr('style');
+			//弹出提示
+			if(popContent){
+				$('#shopAccounts').setPopTip({
+								width:250,
+								content:popContent,
+								placement:'top',
+								arrow:'bottom',
+								arrowAlign:'vcenter',
+								showonce:true
+							})
+			}
+		})
+	})
+
+	addressWrap.find('.addressItem:gt(0)').on('click',function(){
+		var dataIdx=parseInt($(this).attr('data-idx'))-1;
+		var addressInfo=$('.payWrap .addressInfo');
+			//加入默认地址信息
+			addressInfo.find('.curAddress span').text(userAddress[dataIdx][4]+' '+userAddress[dataIdx][6]+' '+userAddress[dataIdx][8]+' '+userAddress[dataIdx][10]);
+			addressInfo.find('.consignee span').text(userAddress[dataIdx][1]+' '+userAddress[dataIdx][2]);
+			addressInfo.attr('data-selidx',dataIdx);
+		//记录选中的地域ID号
+		curUseProvince=userAddress[dataIdx][3];
+		curUseCity=userAddress[dataIdx][5];
+		//重计运费数据
+		$.each($('.cartList'),function(){
+			shopCart.logisticsPriceAccounts('refresh',null,$(this));
+		})
+		var popContent=checkLogiSupport()?'请点击“提交订单”按钮生成商品订单！':'包含不支持配送地址的商品，请更换收货地址或者分单处理！';
+		//shopCart.cartAccounts();
+		closeTxtBtn.trigger('click',popContent);
+
+	})
+	//定位
+	var marginTop=0-addressWrap.outerHeight()/2;
+	addressWrap.css('margin-top',marginTop)
+
+	//地址设置功能初始化
+	addressOption.init({
+		setDftCallFunc:function(data){
+			//刷新地址数据
+			userAddress=$.parseJSON(data);		
+		},
+		modifyCallFunc:function(data){
+			//刷新地址数据
+			userAddress=$.parseJSON(data);		
+		},
+		deleteCallFunc:function(data){
+			//刷新地址数据
+			userAddress=$.parseJSON(data);	
+			//定位
+			var marginTop=0-addressWrap.outerHeight()/2;
+			addressWrap.animate({'margin-top':marginTop},200);
+		},
+		submitCallFunc:function(data){
+			//刷新地址数据
+			userAddress=$.parseJSON(data);
+			//定位
+			var marginTop=0-addressWrap.outerHeight()/2;
+			addressWrap.animate({'margin-top':marginTop},200);
+		}
+	});
+	hasInit=true;
+}
+
+
+</script>
+
+</html>

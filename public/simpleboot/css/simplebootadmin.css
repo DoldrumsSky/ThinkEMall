@@ -1,0 +1,412 @@
+@CHARSET "UTF-8";
+
+.input-order{width:30px;}
+.wrap {
+padding: 20px 20px 70px;
+}
+.table td {font-size:12px;}
+
+.sprite {
+    background-image: url(../../images/loading.png);
+    background-repeat: no-repeat;
+    display: block;
+    margin:0 auto 10px auto;    
+}
+
+.sprite-loadingIcon0 {
+    width: 28px;
+    height: 28px;
+    background-position: -5px -5px;
+}
+
+.sprite-loadingIcon1 {
+    width: 28px;
+    height: 28px;
+    background-position: -43px -5px;
+}
+
+.sprite-loadingIcon2 {
+    width: 28px;
+    height: 28px;
+    background-position: -81px -5px;
+}
+
+.sprite-loadingIcon3 {
+    width: 28px;
+    height: 28px;
+    background-position: -5px -43px;
+}
+
+.sprite-loadingIcon4 {
+    width: 28px;
+    height: 28px;
+    background-position: -43px -43px;
+}
+
+.sprite-loadingIcon5 {
+    width: 28px;
+    height: 28px;
+    background-position: -81px -43px;
+}
+
+.sprite-loadingIcon6 {
+    width: 28px;
+    height: 28px;
+    background-position: -5px -81px;
+}
+
+.sprite-loadingIcon7 {
+    width: 28px;
+    height: 28px;
+    background-position: -43px -81px;
+}
+
+.sprite-loadingIcon8 {
+    width: 28px;
+    height: 28px;
+    background-position: -81px -81px;
+}
+
+.sprite-loadingIcon9 {
+    width: 28px;
+    height: 28px;
+    background-position: -119px -5px;
+}
+
+.EMallLoading .mask{
+    opacity:.85;
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=85);
+    background: #000;
+    width: 100%;
+    height:100%;
+    position: absolute;
+    z-index: -1;
+    top:0px;
+    left:0px;
+}
+
+.EMallLoading .closeBtn{
+	cursor: pointer;
+	position: absolute;
+	right:0;
+	top:0;
+	width:80px;
+	height:34px;
+	background: #dd2727;
+	color:#FFF;
+	line-height: 34px;
+}
+
+.brandManage{
+	width:800px;
+	margin:50px auto 0 auto;
+	overflow: hidden;
+}
+
+.sl-b-letter {
+    display: none;
+    float: left;
+    overflow: hidden;
+    zoom: 1;
+    padding-top: 6px;
+    padding-left:0;
+    margin-bottom: 10px;
+}
+
+.sl-b-letter li {
+    float: left;
+    width:12px;
+    list-style:none;
+    height: 20px;
+    line-height: 20px;
+    border: 1px solid #ff7316;
+    padding: 0 3px;
+    cursor: default;
+    text-align: center;
+    color: #FFF;
+    margin:0 5px;
+    background: #ff6600;
+    border-radius: 2px; 
+}
+
+.sl-b-letter li.curr, .sl-b-letter li:hover {
+    border-color: #ff7316;
+    background: #ff5500;
+    color: #FFF;
+    cursor: pointer;
+}
+
+.brandSearcher{
+	margin:0 auto;
+	padding:30px 0;
+	text-align: center;
+	width:510px;
+	overflow: hidden;
+	clear:both;
+}
+
+.brandSearcher input{
+	border-width: 1px;
+	border-color: #FF6600;
+	padding:5px;
+	width:400px;
+	float:left;
+	height:28px;
+	border-right:none;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.brandSearcher input.brandSearchTxt{
+	-webkit-box-shadow:inset 1px -1px 6px #ccc;  
+    -moz-box-shadow:inset 1px -1px 6px #ccc;  
+  	box-shadow:inset 1px -1px 6px #ccc;  
+}
+
+.brandSearcher input:focus{
+	border-color: #FF6600;
+}
+
+.brandSearcher button{
+	float:left;
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	height:40px;
+	background: #ff6600;
+	color:#FFF;
+}
+
+.brandSearcher button:hover,.brandSearcher button:focus{
+	background: #ff5500;
+}
+
+.brandSearcher input,.brandSearcher button{
+	outline:none;
+}
+
+.termBrand,.searchBrand{
+	width:1156px;
+	margin:0 auto;	
+	position: relative;
+}
+
+.termBrand.expanded{
+	width:1170px;
+}
+
+.addBrandToTerm{
+	padding:10px 0 20px 0;
+}
+
+.addBrandToTerm a.btn{
+	border:1px #ff6600 solid;
+	background: none;
+	color:#ff6600;
+}
+
+.sl-v-logos{
+    padding:0;
+    clear:both;
+}
+
+.sl-v-logos li a {
+    display: block;
+    height: 46px;
+    width: 114px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #005aa0;
+    line-height: 48px;
+}
+
+.sl-v-logos li a:hover,.sl-v-logos li.selected a {
+    text-decoration: none;
+    color: #e4393c;
+    position: absolute;
+    left:-1px;
+    top:-1px;
+    height: 44px;
+    width: 112px;
+    z-index: 12111;
+}
+
+.sl-v-logos li:hover a ,.sl-v-logos li.selected a,.sl-v-logos li.selected a:hover{
+    border:solid 2px #e4393c;
+}
+
+.sl-v-logos ul {
+	padding:0;
+    padding-top: 10px;
+    margin-bottom: 10px;
+    overflow: hidden;
+    height: 50px;
+    position: relative;
+}
+
+.sl-v-logos .v-fixed {
+    height: 104px;
+}
+
+.sl-v-logos.expanded .v-fixed {
+	height: 312px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sl-v-logos li {
+    float: left;
+    _display: inline;
+    width: 114px;
+    height: 46px;
+    padding: 0;
+    border: 1px solid #DDD;
+    margin: -1px -1px 0 0;
+    background: #FFF;
+    text-align: center;
+}
+
+.sl-v-logos li a {
+    display: block;
+    border: 1px solid #FFF;
+    height: 44px;
+    width: 112px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    zoom: 1;
+    color: #005aa0;
+    line-height: 48px;
+}
+
+.sl-v-logos li a img {
+    padding: 4px 5px;
+    vertical-align: top;
+    border:0;
+    width:102px;
+    height: 36px;
+}
+
+.sl-v-logos li a:hover img {
+    display: none;
+}
+
+ .sl-v-logos li:hover li>a>img{
+	margin-left:-100px;
+ }
+
+ .sl-v-logos li.selected, .sl-v-logos li:hover {
+    position: relative;
+    box-shadow: 0px 2px 3px rgba(0,0,0,.12);
+}
+
+.sl-v-logos li.selected i {
+    display: block;
+    position: absolute;
+    right: -2px;
+    bottom: -1px;
+    width: 10px;
+    height: 10px;
+    background: url(../../Emall/images/search.ele.png) no-repeat -2px -183px;
+}
+
+.sl-btns {
+    display: none;
+    text-align: center;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.bg-orange{
+	background: #ff6600;
+}
+
+.brandControlBar{
+	padding:30px 0;
+	border-top:1px #555 dotted;
+}
+
+.brandControlBar a.btn{
+	margin-right:20px;
+}
+
+.brandControlBar a.btn:focus,.brandControlBar a.btn:hover{
+	background: #ff4400;
+}
+
+.brandControlBar a.btn.disabled,.brandControlBar a.btn.disabled:focus,.brandControlBar a.btn.disabled:hover{
+	background: #bfc6cb;
+	opacity: 1;
+}
+
+.brandControlBar input{
+	border-width: 1px;
+	border-color: #FFF;
+	padding:5px;
+	width:100px;
+	height:22px;
+	border-right:none;
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+	display: inline-block;
+	vertical-align: middle;
+	margin-bottom: 0;
+}
+
+.brandControlBar input:focus{
+	border-color: #11a6ec;
+}
+
+.brandControlBar button.valueRank{
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	margin-right:20px;
+}
+
+.brandControlBar button:focus.valueRank,.brandControlBar button:hover.valueRank{
+	background: #ff4400;
+}
+
+.preBrandPage{
+	cursor: pointer;
+	position: absolute;
+	width:47px;
+	height:80px;
+	/*border:1px #333 solid;*/
+	left:-80px;
+	top:17px;
+}
+
+.preBrandPage:hover{
+	background-position: 0 -80px;
+}
+
+.preBrandPage,.preBrandPage.disabled:hover{
+	background: url("../../Emall/images/bg_direction_nav.png") no-repeat scroll 0px 0 transparent;
+}
+
+.nextBrandPage{
+	cursor: pointer;
+	position: absolute;
+	width:47px;
+	height:80px;
+	/*border:1px #333 solid;*/
+	right:-80px;
+	top:17px;
+}
+
+.nextBrandPage:hover{
+	background-position: -47px -80px;
+}
+
+.nextBrandPage,.nextBrandPage.disabled:hover{
+	background: url("../../Emall/images/bg_direction_nav.png") no-repeat scroll -47px 0 transparent;
+}
+
+.bg-blue,a:focus.bg-blue{
+    background: #11a6ec;
+}
+
+a:hover.bg-blue{
+	background: #1193ec;
+}

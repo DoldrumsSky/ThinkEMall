@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+	<html lang="zh-cn">
+	<head>
+		<title>{$post_title} {$site_name} </title>
+		<meta name="keywords" content="{$post_keywords}" />
+		<meta name="description" content="{$post_excerpt}">
+		<tc_include file="Public:head" />
+		<style>
+			#article_content img{height:auto !important}
+			#article_content {word-wrap: break-word;}
+		</style>
+	</head>
+<body class="body-white" id="top">
+<tc_include file="Public:nav" />
+
+
+<div class="content">
+	<div class="container">
+	    <div class="mainBanner" id="mainBanner" data-num="6">
+			<div class="slider" data-role="sliderItem"><a data-action="ad_link" href=""><img border="0" data-role="ad_image" src="" /></a>
+			</div>
+			<div class="sliderNav"></div>
+	    </div>
+	</div>
+</div>
+
+<div class="container" id="body">
+		<div class="termsAD" id="beauty" data-role="floorNavItem" data-title="美丽人生">
+			<a data-role="ad_cover" href="" class="mainTermsAD" data-action="ad_link" style="display:none">
+			<div data-role="ad_image"></div>
+			<div></div>
+			<div class="title-con bg-pink">
+				<div class="title" data-role="ad_title"></div>
+				<div data-role="sub_title" class="sub-title"></div>
+			</div>
+			</a>
+			<div class="middle-column-con" data-role="termsAdItem" data-num="6">
+				<a class="grid one-grid" href="" data-role="AdItemForm" data-action="ad_link" style="display:none">
+					<div class="title" data-role="ad_title"></div>
+					<div class="sub-title color-pink" data-role="sub_title"></div>
+					<img data-role="ad_image" src="">
+				</a>
+			</div>
+			<div class="right-column-con" data-role="termsAdItem" data-num="3">
+				<a class="grid second-grid" href="" data-role="AdItemForm" data-action="ad_link" style="display:none">
+					<div class="title" data-role="ad_title"></div>
+					<div class="sub-title color-pink" data-role="sub_title"></div>
+					<img data-role="ad_image" src="">
+				</a>
+			</div>
+		</div>
+		<div class="homeBanner" id="homeBanner" data-role="normalAdItem" data-title="ppp">
+			<a href="" data-action="ad_link" style="display:block;margin-top: 10px;"><img src="" data-role="ad_image"></a>
+		</div>
+		<div class="termsAD" id="electronics" data-role="floorNavItem" data-title="电脑数码">
+			<a data-role="ad_cover" href="" class="mainTermsAD" data-action="ad_link" style="display:none">
+			<div data-role="ad_image"></div>
+			<div></div>
+			<div class="title-con bg-blue">
+				<div class="title" data-role="ad_title"></div>
+				<div data-role="sub_title" class="sub-title"></div>
+			</div>
+			</a>
+			<div class="middle-column-con" data-role="termsAdItem" data-num="5" data-format="1,two-grid">
+				<a class="grid one-grid" href="" data-role="AdItemForm" data-action="ad_link" style="display:none">
+					<div class="title" data-role="ad_title"></div>
+					<div class="sub-title color-blue" data-role="sub_title"></div>
+					<img data-role="ad_image" src="">
+				</a>
+			</div>
+			<div class="right-column-con" data-role="termsAdItem" data-num="2">
+				<a class="grid one-grid" href="" data-role="AdItemForm" data-action="ad_link" style="display:none">
+					<div class="title" data-role="ad_title"></div>
+					<div class="sub-title color-blue" data-role="sub_title"></div>
+					<img data-role="ad_image" src="">
+				</a>
+			</div>
+		</div>
+</div>
+<div class="J_f J_lift lift" id="lift" data-tpl="elevator_tpl" data-forcerender="true" data-inlazyqueue="true" style="">
+</div>
+<tc_include file="Public:footer" />
+<tc_include file="Public:scripts"/>
+<script type="text/javascript">
+var adList='{$adData}';
+var curServerTime='{$curServerTime}';
+
+$(function(){
+	loadAdvertisementData(adList,curServerTime);
+	//首页幻灯
+	$('.mainBanner').DoSlider();
+
+	//浮动顶部菜单对象，初始为null
+	var fixedTopMenu=null;
+	var menuHiding=false;
+	var floorNavHiding=false;
+	//绑定滚动条事件生成浮动顶部菜单
+	$('#body').setFixedTopMenu({
+		//设定回调函数
+		cbFunc:function(offsetTop,scrollTop){
+			if(menuHiding==true){
+				return false;
+			}
+			//添加顶部菜单
+			if(scrollTop>offsetTop){
+				if(!fixedTopMenu){
+					fixedTopMenu=$('<div class="fixedTopMenu"><div class="container">'
+						+'<div class="fixedToplogo"></div>'
+						+'<div class="fixedTopSearchBar"><input type="text" name="keywords" class="searchTxt"><button type="submit" class"btn btn-red">搜索商品</button></div>'
+						+'</div><div class="fixedTopBarBg"></div></div>').appendTo($('body'));
+					fixedTopMenu.css('top','-50px').animate({'top':0},150);
+				}else{
+					//如果已经添加过，重新显示
+					fixedTopMenu.show().animate({'top':0},150);
+				}
+			}else{
+				//隐藏浮动顶部菜单
+				if((fixedTopMenu && fixedTopMenu.css('display')!=='none')){
+					fixedTopMenu.stop(true).animate({'top':-50},250,function(){
+						$(this).hide();
+						menuHiding=false;
+					})
+					menuHiding=true;
+				}
+			}
+			
+		}
+	});
+
+
+	var floorNav=$('#lift');
+	var floorOffsetTop=[];
+	var curFloor=0;
+	//侧栏楼层滚动导航
+	$('#beauty').setFixedTopMenu({
+		offsetLeft:10,
+		load:function(){
+			//获取楼层信息并添加进楼层导航容器
+			var floorNavItem=$('[data-role="floorNavItem"]');
+			var floorNavHtml='<ul class="lift_list">';
+			var floorBtnState='';
+			$.each(floorNavItem,function(index){
+				floorBtnState=index==0?'J_lift_item lift_item lift_item_first lift_item_on':'J_lift_item lift_item';
+				floorNavHtml+='<li class="'+floorBtnState+'"><a href="javascript:;" class="lift_btn"><span class="lift_btn_txt">'+$(this).attr('data-title')+'</span></a></li>';
+				floorOffsetTop.push($(this).offset().top-100);
+			})
+			floorNavHtml+='<li class="J_lift_item J_lift_item_top lift_item lift_item_top"><a href="javascript:;" class="lift_btn"><span class="lift_btn_txt">顶部<i class="lift_btn_arrow"><!--&#xe606;--></i></span></a></li></ul>';
+			floorNav.html(floorNavHtml);
+
+			//绑定事件
+			floorNav.find('li').on('click',function(){
+				if($(this).hasClass('lift_item_top')){
+					$('html,body').animate({scrollTop: '0px'},800);
+				}else{
+					$('html,body').animate({scrollTop: floorOffsetTop[$(this).index()]+1},800);
+				}
+			})
+		},
+		//设定回调函数
+		cbFunc:function(offsetTop,scrollTop,offsetLeft){
+			
+			floorNav.css('left',offsetLeft);
+			if(floorNavHiding==true){
+				return false;
+			}
+			//添加顶部菜单
+			if(scrollTop>offsetTop){
+				floorNav.show().animate({'opacity':1},150);
+				$.each(floorOffsetTop,function(index){
+					var nextFloor=floorOffsetTop[index+1];
+					if(!nextFloor){
+						return false;
+					}
+
+					if(scrollTop>nextFloor && (index+1)>curFloor){
+						floorNav.find('li:eq('+(index+1)+')').attr('class','J_lift_item lift_item lift_item_first lift_item_on');
+						floorNav.find('li:eq('+index+')').attr('class','J_lift_item lift_item');
+						curFloor=index+1;
+						return false;
+					}else if(scrollTop<floorOffsetTop[curFloor]){
+						floorNav.find('li:eq('+(curFloor-1)+')').attr('class','J_lift_item lift_item lift_item_first lift_item_on');
+						floorNav.find('li:eq('+curFloor+')').attr('class','J_lift_item lift_item');	
+						curFloor=curFloor-1;					
+					}
+				})
+			}else{
+				//隐藏浮动顶部菜单
+				if((floorNav.css('display')!=='none')){
+					floorNav.stop(true).animate({'opacity':0},250,function(){
+						$(this).hide();
+						floorNavHiding=false;
+					})
+					floorNavHiding=true;
+				}
+			}
+			
+		}
+	});
+})
+</script>
+</body>
+
+</html>

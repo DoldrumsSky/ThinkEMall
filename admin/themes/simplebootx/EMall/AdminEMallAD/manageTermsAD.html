@@ -1,0 +1,128 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap">
+		<form method="post" class="js-ajax-form" action="{:U('AdminEMallAD/adItemOrders',array('id'=>$adData['id']))}">
+			<div class="table-actions">
+				<button type="submit" class="btn btn-primary js-ajax-submit">{:L('SORT')}</button>
+				<a class="btn btn-danger" href="javascript:deleteTermsAD();">{:L('DELETE')}</a>
+				<a class="btn btn-primary" href="{:U('AdminEMallAD/termsAD')}">{:L('BACK_AD_HOME')}</a>
+				<a class="btn btn-primary" href="{:U('AdminEMallAD/addTermsAdItem',array('id'=>$adData['id'],'ad_name'=>$ad_name))}">{:L('ADD_AD')}</a>
+			</div>
+			<table class="table table-hover table-bordered table-list">
+				<thead>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="check-all" data-target="ids"></label></th>
+						<th width="50">{:L('SORT')}</th>
+						<th width="50">ID</th>
+						<th>{:L('AD_TITLE')}</th>
+						<th>{:L('SECOND_TITLE')}</th>
+						<th>{:L('SUB_TITLE')}</th>
+						<th>{:L('AD_DURATION')}</th>
+						<th>{:L('AD_NAME')}</th>
+						<th>{:L('STATUS')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</thead>
+				<tbody id="adList">
+				</tbody>
+				<tfoot>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="check-all" data-target="ids"></label></th>
+						<th width="50">{:L('SORT')}</th>
+						<th width="50">ID</th>
+						<th>{:L('AD_TITLE')}</th>
+						<th>{:L('SECOND_TITLE')}</th>
+						<th>{:L('SUB_TITLE')}</th>
+						<th>{:L('AD_DURATION')}</th>
+						<th>{:L('AD_NAME')}</th>
+						<th>{:L('STATUS')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</tfoot>
+			</table>
+			<div class="table-actions">
+				<button type="submit" class="btn btn-primary js-ajax-submit">{:L('SORT')}</button>
+				<a class="btn btn-danger" href="javascript:deleteTermsAD();">{:L('DELETE')}</a>
+				<a class="btn btn-primary" href="{:U('AdminEMallAD/termsAD')}">{:L('BACK_AD_HOME')}</a>
+				<a class="btn btn-primary" href="{:U('AdminEMallAD/addTermsAdItem',array('id'=>$adData['id'],'ad_name'=>$ad_name))}">{:L('ADD_AD')}</a>
+			</div>
+			<div class="pagination">{$page}</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/js/custom/Emall.js"></script>
+	<script type="text/javascript">
+	var deleteAdURL="{:U('AdminEMallAD/deleteTermsAdItem')}";
+	var editAdURL="{:U('AdminEMallAD/editTermsAdItem',array('id'=>$adData['id'],'ad_name'=>$ad_name))}";
+	var imgPath='{:sp_get_image_preview_url()}';
+	var adData='{$adData.ad_data}';
+	var id='{$adData.id}';
+	var ad_name='{$ad_name}';
+
+	//删除广告项
+	function deleteTermsAD(adKey){
+		//未传递adKey参数时表示批量删除
+		if(adKey==undefined){
+			var checkItem=$('table :checkbox:checked');
+			if(checkItem.length==0){
+				alert('请至少选择一个需要操作的对象！');
+				return false;
+			}
+
+			var adKey='';
+			$.each(checkItem,function(){
+				adKey+=adKey==''?$(this).val():','+$(this).val();
+			})
+		}
+
+		$.post(deleteAdURL,{id:id,adKey:adKey},function(data){
+			if(data.status==1){	
+				//console.log(data.data)
+				window.location.reload();
+			}else{
+				alert(data.error);
+			}
+		}).error(function(){
+			alert('链接服务器出错，无法保存广告项数据，请稍候尝试！')
+		})
+	}
+
+
+	$(function(){
+		if(adData!==''){
+			adData=$.parseJSON(adData);
+			var adListWrapper=$('#adList');
+			var status='';
+			var preIndex=0;
+			var preInsertADList=null;
+			var sortKey='listorder';
+			insertSort(adData.AdItem,'listorder',true);
+
+			$.each(adData.AdItem,function(index,Item){
+				var adListHtml='';
+				status=Item.ad_status==0?'禁用':'投放中';
+				//排序后的原key值需要保留，没有oldKey表示用的是原key，直接使用index
+				oldKey=Item.oldKey!==undefined?Item.oldKey:index;
+				start_time=Item.start_time==''?'不限起始时间':Item.start_time;
+				end_time=Item.end_time==''?'不限结束时间':Item.end_time;
+
+				adListHtml+='<tr data-id="'+oldKey+'">'
+							+'<td><input type="checkbox" class="js-check" data-name="ids" name="ids[]" value="'+oldKey+'" title="ID:'+oldKey+'"></td>'
+							+'<td><input name="listorders['+oldKey+']" type="text" size="3" value="'+Item.listorder+'" class="input input-order valid" aria-invalid="false"></td>'
+							+'<td>'+oldKey+'</td><td><img src="'+imgPath+Item.ad_image+'" width="50" style="margin-right:10px">'+Item.ad_title+'</td><td>'+Item.second_title+'</td><td>'+Item.sub_title+'</td><td>'
+							+start_time+' 至 '+end_time+'</td><td>'+ad_name+'</td><td>'+status+'</td><td>'
+							+'<a href="'+editAdURL+'&adKey='+oldKey+'">编辑</a>'
+							+' | <a href="javascript:deleteTermsAD('+oldKey+')">删除</td><tr>';
+
+					adListWrapper.append(adListHtml);
+
+			})
+			//绑定全选
+			$('table').setAllCheckbox();
+		}
+	})
+
+	</script>
+</body>
+</html>

@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+<style>
+.control-label{
+    font-weight: bold;
+    float: left;
+    width: 70px;
+}
+
+.messageWrap{
+  width:1170px;
+  margin:20px auto;
+  padding:0 15px;
+  overflow: hidden;
+}
+
+.messageControlBar{
+  float:left;
+  width:10%;
+}
+
+.messageType{
+  float:left;
+  width:24%;
+  background: #e0f0fd;
+  height:100%;
+}
+
+.messageContent{
+  float:right;
+  width:66%;
+  background: #FFF;
+  font-family: 'Microsoft Yahei';
+  color:#666;
+}
+
+.messageHead{
+  width:100%;
+  height:42px;
+  line-height:42px;
+  border:1px solid #f8ecca;
+  border-left:none;
+  border-right:none;
+  background:#fffcf2; 
+  text-align: center;
+}
+
+.messageList span{
+  display: block;
+}
+
+.messageList ul,.messageType ul{
+  margin:0;
+  padding:0;
+}
+
+.messageType ul li{
+  display: block;
+  width: 99.5%;
+  height:80px;
+  padding:15px;
+  cursor: pointer;
+}
+
+.messageType ul li.cur{
+  border-left:3px #dd2727 solid;  
+  background: #fafafa;
+}
+
+.messageType ul li:hover{
+  background: #fafafa;  
+}
+
+.messageList ul li{
+  display: block;
+  margin-bottom: 20px;
+}
+
+.messageList span.msgSendTime{
+  width:150px;
+  margin:10px auto;
+  padding:5px 10px;
+  background: #f6f6f6;
+  text-align: center;
+    font-size: 12px;
+}
+
+.messageList .listContent{
+  width:90%;  
+  background: #f3f3f3;
+  margin:0 auto;
+  padding:6px 10px;
+  position: relative;
+}
+
+.messageList ul li:hover .listContent{
+  border:1px #ccc solid;
+  padding:5px 9px;
+}
+
+.messageList .message_title{
+  border-bottom: 1px solid #ddd;
+  padding:8px 5px;
+  font-weight: 700;
+}
+
+.messageList .message_content{
+  padding:10px 5px;
+}
+
+
+.listContent .deleteMsg {
+    position:absolute;
+    display: block;
+    cursor: pointer;
+    width:15px;
+    height:15px;
+    right:10px;
+    top:15px;
+    background-image: url(__TMPL__Public/assets/images/message.png);
+    background-position: -68px -122px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    -webkit-border-radius:2px;
+}
+
+.messageList ul li:hover .deleteMsg {
+    right:9px;
+    top:14px;
+}
+
+.messageType .sysMsgIcon {
+    background-position: -70px -306px;
+}
+
+.messageType .whatimg {
+    background-position: -136px -369px;
+}
+
+.messageType ul li .icon{
+    display: inline-block;
+    width: 51px;
+    height: 51px;
+    border-radius: 25.5px;
+    float: left;
+    background-image: url(__TMPL__Public/assets/images/message.png);
+    position: relative;
+    vertical-align: middle;
+}
+
+.messageType .title,.messageType .unreadMsgNum{
+  display: inline-block;
+  margin-left:15px;
+  width:150px;
+}
+
+.messageType .title{
+  font-weight: 700;
+}
+
+.messageType .unreadMsgNum{
+  color:#999;
+}
+
+</style>
+</head>
+<body class="bg-white" id="top">
+<tc_include file="Public:user_nav" />
+<php>$message_type=$_GET['message_type'];</php>
+<div class="messageWrap">
+    <div class="favorTitleBar">
+      <h4>我的收藏夹</h4><span>共收藏商品</span><em>{$favorGoods['favorGoodsNum']}</em>件
+      <a href="javascript:;" id="doMultiBatch" class="border-blue paddingLR-8 marginLR-10">批量管理</a>
+      <span class="multiBatch"><a href="javascript:;" class="checkAllFavor" id="checkAllFavor"><i></i>全选</a><a href="javascript:multiCancelFavorGoods();" class="deleteSelFavor"><i></i>删除选中</a></span>
+    </div>
+    <div class="favorContent" id="favorGoods">
+      <div class="favorList">
+        <ul>
+        <if condition="$favorGoods['favorGoodsNum'] eq 0">
+          <li class="emptyData">您还没有收藏任何商品，赶紧去逛逛吧！</li>
+        </if>
+        <volist name="favorGoods['favorData']" key="key" id="vo">
+        <php>$goods_img=json_decode($favorGoods['content'][$vo]['goods_img'],true);</php>
+          <li data-gid="{$key}">
+              <a href="javascript:cancelFavorGoods({$key});" class="cancelFavor" title="取消收藏"></a>
+            <empty name="favorGoods['content'][$vo]['goods_id']">
+              <a href="javascript:jumpGoodsURL({$key})" class="goodsImg"><img src="__TMPL__Public/assets/images/expiredPic.jpg" width="100%"></a><div class="selState"><i></i></div>
+                <a href="javascript:jumpGoodsURL({$key})"><div class="goodsTitle">收藏商品已失效，请移除！</div></a>
+            <else />
+              <div class="favorRelation"><a href="">找相似</a><a href="">找搭配</a></div>
+                <a href="javascript:jumpGoodsURL({$key})" class="goodsImg"><img src="{$goods_img[0].m_thumb}" width="100%"></a><div class="selState"><i></i></div>
+                <a href="javascript:jumpGoodsURL({$key})"><div class="goodsTitle">{$favorGoods['content'][$vo].goods_title}</div>
+                <div class="price">¥{$favorGoods['content'][$vo].goods_price}</div></a>    
+            </empty>
+          </li>
+        </volist>
+        </ul>      
+      </div>
+      <div class="pagination" style="float:right;margin-right:30px">{$favorGoods['page']}</div>
+    </div>
+</div>
+<tc_include file="Public:footer" />
+<tc_include file="Public:scripts" />
+<script type="text/javascript">
+var cancelFavorGoodsURL="{:U('User/center/cancelFavorGoods')}";
+
+
+//全选
+$.fn.checkAllFavor=function(){
+  $(this).on('click',function(){
+     if($(this).hasClass('checkAll')){
+      $('.favorList li').removeClass('selected');
+      $(this).removeClass('checkAll');
+    }else{
+      $('.favorList li').addClass('selected');
+      $(this).addClass('checkAll');
+    } 
+  })  
+}
+
+$(function(){
+  //收藏夹批量管理事件绑定
+  $.fn.doMultiBatch=function(){
+    $(this).on('click',function(){
+      var multiBatch=$('.multiBatch');
+      if($(this).hasClass('inMultiBatch')){
+        $(this).text('批量管理');
+        $(this).removeClass('inMultiBatch');
+        $('#favorGoods').removeClass('inMultiBatch');
+        multiBatch.hide();
+      }else{
+        $(this).text('取消管理');
+        $(this).addClass('inMultiBatch');
+        $('#favorGoods').addClass('inMultiBatch');
+        multiBatch.show();
+        $('.favorList li .selState').on('click',function(){
+          var liItem=$(this).closest('li');
+          if(liItem.hasClass('selected')){
+            liItem.removeClass('selected');
+            $('#checkAllFavor').removeClass('checkAll');
+          }else{
+            liItem.addClass('selected');
+          }
+        })
+      }
+    })
+  }
+
+  $('#doMultiBatch').doMultiBatch();
+
+  $('#checkAllFavor').checkAllFavor();
+
+
+})
+</script>
+</body>
+</html>

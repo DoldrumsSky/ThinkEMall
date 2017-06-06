@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+</head>
+<body class="bg-white" id="top">
+  <tc_include file="Public:user_nav" />
+
+	<div class="wrapper tc-main" id="cartList">
+		<div class="cartTab">
+			<ul>
+				<li role="tabItem"><a class="cur" href="javascript:shopCart.cartListFilter({filterType:'all'})">全部商品<em id="totalGoodsNum">0</em><span class="spLine"></span></a></li>
+				<li role="tabItem"><a href="javascript:shopCart.cartListFilter({filterType:'lowStock'})">库存紧张<em id="lowStockGoodsNum">0</em><span class="spLine"></span></a></li>
+			</ul>
+			<div class="activeLine"></div>
+		</div>
+		<table class="table marginBottomNone">
+			<thead>
+				<tr>
+					<td width="10%"><label class="checkbox"><input type="checkbox" class="check-all" data-name="shopList">全选</label></td>
+					<td width="46%">商品信息</td>
+					<td width="14%">单价</td>
+					<td width="8%">数量</td>
+					<td>金额</td>
+					<td>操作</td>
+				</tr>
+			</thead>
+		</table>
+		<div class="cartListContainer">
+
+		</div>
+		<div class="bottomOptBar">
+			<div style="float:left;width:400px;height:100%;padding-top:6px">
+				<label class="checkbox"><input type="checkbox" class="check-all" data-name="shopList">全选</label>
+				<a href="javascript:messagesBox({title:'购物车商品删除提示',content:'按确定按钮后，选中的商品将从购物车中移除！',type:'confirm',callFunc:function(){shopCart.removeCartItem({type:'all'})}});" >删除</a>
+				<a href="">移入收藏夹</a>
+				<a href="">分享</a>
+			</div>
+			<a role="button" class="btn btn-red">结算</a>
+			<span>合计（不含运费）：<em>¥</em><em id="accountPrice">0.00</em></span>
+			<span>已选择<em id="selCartListItemNum">0</em>件商品</span>
+		</div>
+	</div>
+
+<div class="tc-main">
+		<tc_include file="Public:footer" />
+
+	</div>
+	<!-- /container -->
+
+	<tc_include file="Public:scripts" />
+</body>
+<script type="text/javascript">
+//获取购物车数据的链接
+var getCartDataURL="{:U('User/Order/getShopCartData')}";
+//删除购物车数据的链接
+var removeCartDataURL="{:U('User/Order/removeShopCartData')}";
+
+//商品及购物车数据
+var goodsData={'goods_id':1};
+var goods_id="{$goods.goods_id}";
+var goods_ThumbImg='{$smeta[0][thumb]}';
+var goods_stock='{$goods.goods_stock}';
+var goods_price='{$goods.goods_price}';
+var goods_discount='{$goods.goods_discount}';
+
+//以'cookie'为参数从服务器上获取到的购物车相关的非构造数据存储变量
+var cookieCartData;
+//服务器中加载到的购物车构造数据（正式应用数据）
+var ShopCartData;
+//当前加载的购物车数据，如果此数据存在，通过判断内容是否改变来提交或者获取数据
+//var curShopCartData;
+var shopBuyNum=0;
+//运费数据
+var fromProvinceId='{$goods.province_send}';
+var fromCityId='{$goods.city_send}';
+var selToAreaId=$('#selToArea .mui_addr_tri_1').attr('data-id');
+var curSelProvince;
+var curSelCityBox,curSelCity;
+var tmplLogisticsData='{$goods.logistics_param}';
+
+//用于存储sku单品项选项信息供选择时调用
+var skuFormData;
+//外观样式单品属性数据，主要用于索引单品外观样式图片
+var SKU_StyleData;
+//生成单品项属性序列索引值存储的二维数组
+var skuGroupIdx;
+//当前选中的SKU单品，用于索引查询对应数据
+var curSelSKUIdx=0;
+//当前选中的规格类属性索引如：尺码
+var curSelSKUSpec=-1;
+//当前选中的样式外观类属性索引如：颜色
+var curSelSKUStyle=-1;
+
+//购物车的总商品数量 
+var cartGoodsNum=0;
+//购物车数据
+var shopCartData;
+//重置购物车数据浏览方式
+GV.cartView=='fullView';
+
+//当前编辑修改的购物商品SKU属性
+var curEidtSelSKU;
+
+$('#cartList').setAllCheckbox({
+	callFunc:function(){
+		shopCart.cartAccounts();
+	}
+});
+$('.cartTab').setTabMenu({
+	tabChangeStyle:1,
+	hasTabContent:false
+})
+
+
+</script>
+</html>

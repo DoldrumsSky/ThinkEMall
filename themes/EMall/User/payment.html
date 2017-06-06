@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+<style type="text/css">
+.paymentInfo{
+  width:100%;
+  background-color: #fffdee;
+  border:1px solid #ddd;
+  font-size: 15px;
+  padding:20px;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.paymentInfo div{
+  float:left;
+  margin-right:30px;
+}
+
+.paymentInfo .totalPrice{
+  border-right:1px dotted #666;
+  padding:0 40px 0 20px;
+}
+
+.paymentInfo .totalPrice em{
+  color:#dd2727;
+  font-size: 24px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-top:-2px;
+}
+
+.paymentInfo .infoText em{
+  color:#dd2727;
+  font-size: 18px;
+  margin-right:30px;
+}
+
+.paymentInfo .infoText .btn{
+  color:#FFF;
+}
+
+.paymentSelect ul{
+  padding:20px;
+}
+
+.paymentSelect ul li{
+  display: inline-block;
+  width:190px;
+  height:70px;
+  margin:0 20px;
+  background: url('__TMPL__Public/assets/images/payment.png') no-repeat top center;
+  border:1px solid #ddd;
+  position: relative;
+  cursor: pointer;
+}
+
+.paymentSelect ul li.weixinPay{
+  background-position: 0 -72px;
+}
+
+.paymentSelect ul li.alipay{
+  background-position: 0 0;
+}
+
+.paymentSelect ul li.balancePay{
+  background-position: -2px -166px;
+}
+
+.paymentSelect ul li.selected.alipay{
+  background-position: -1px -2px;
+}
+
+.paymentSelect ul li.selected.weixinPay{
+  background-position: -2px -74px;
+}
+
+.paymentSelect ul li.selected.balancePay{
+  background-position: -4px -168px;
+}
+
+.paymentSelect ul li span{
+  display: none;
+  position: absolute;
+  bottom: 0;
+  right:0;
+  display: block;
+  width:20px;
+  height:20px;
+}
+
+.paymentSelect ul li.selected{
+  border:2px solid #dd2727;
+  width:189px;
+  height:69px;
+}
+
+.paymentSelect ul li.selected span{
+  display: block;
+  background:  url('__TMPL__Public/assets/images/payment.png') no-repeat 0 -144px;
+}
+
+/*积分抵扣功能需要的话自行处理*/
+.pointsDeduction{
+  margin-left:20px;
+  display: none;
+}
+
+.pointsDeduction input[type="text"]{
+  width:80px;
+  padding-left:2px;
+}
+
+</style>
+</head>
+<body class="bg-white" id="top">
+<tc_include file="Public:user_nav" />
+
+<div class="wrapper tc-main">
+<div class="paymentInfo">
+  <div class="totalPrice">
+    <p style="font-size:15px;">实付总金额</p><em>¥ {$amountData.total_price}</em>
+  </div>
+  <div class="infoText">
+    <p>您现在正准备为以下订单（{$amountData.order_serial}）中的商品进行支付，请确认需要支付的商品与金额！</p>
+    您当前选择的支付方式为：<em class="payment">支付宝</em><a href="{:U('User/Payment/doPayment',array('payment'=>'alipay','order_gid'=>$amountData['order_gid'],'order_type'=>$order_type,'deposit_fee'=>$deposit_fee,'service_id'=>$service_id))}" id="doPayment" class="btn bg-red">点击进入支付页面</a>
+    <span class="pointsDeduction"><label><input type="checkbox" checked="true" name="usePoints" value="1">积分抵扣：</label><input type="text" name="deduction_points" value="{$userPoints}"></span>
+  </div>    
+</div>
+<div class="paymentSelect">
+  <ul>
+    <li class="alipay selected" data-payment="alipay" data-aria="支付宝"><span></span></li>
+    <li class="weixinPay" data-payment="weixinPay" data-aria="微信"><span></span></li>
+    <if condition="$order_type eq 0">
+      <li class="balancePay" data-payment="balancePay" data-aria="余额支付"><span></span></li>
+    </if>
+  </ul>
+</div>
+ <div class="orderContent">
+</div> 
+</div>
+
+
+    <tc_include file="Public:footer" />
+	</div>
+
+	<!-- /container -->
+
+	<tc_include file="Public:scripts" />
+  <script type="text/javascript">
+var goods_data='{$amountData.goods_data}';
+
+function changeToLogistaticsStr($idx){
+    $wayStr='';
+        switch($idx){
+            case '0':
+                $wayStr='快递';
+                break;
+            case '1':
+                $wayStr='物流';
+                break;
+            case '2':
+                $wayStr='EMS';
+                break;
+            case '3':
+                $wayStr='平邮';
+                break;
+        }
+    return $wayStr;
+}
+
+
+  //解析订单商品数据到订单内容容器中,ExtralData是查看订单中其它具体商品数据（非快照数据）
+  function parseOrderGoodsData(){
+    if(goods_data==''){
+      return false;
+    }
+    goods_data=$.parseJSON(goods_data);
+    $.each(goods_data,function(index,Item){
+      var orderGoodsHTML='';
+
+      var specTotalPriceHTML='';
+
+        //按长度要求截取标题字符
+        var sliceLength=Item.goods_title.length<32?Item.goods_title.length:32;
+        var goods_title=Item.goods_title.substr(0,sliceLength);
+        goods_title+=Item.goods_title.length>32?'...':'';
+        //无库存标签
+        var outOfStockTxt=Item.goods_stock<=0?'<em class="outOfStock">已售罄</em>':'';
+        //不支持配送标签
+        var noLogiSupport=!Item.logiSupport?'<em class="noLogiSupport">不支持配送</em>':'';
+        //生成html
+        orderGoodsHTML+='<li><div class="itemImg fixImgPadding">'
+                          +outOfStockTxt+noLogiSupport+'<a href="javascript:;"><img src="'+Item.goods_img+'" width="80" class="cartGoodsImg" alt=""></a></div>'
+                          +'<div class="listInfo"><p><a href="{:U(\'EMall/GoodsDetails/index\')}'+'&id='+Item.goods_id+'" target="_blank" title="'+Item.goods_title+'">'+goods_title+'</a></p>'
+                          +'<p>'+Item.sku_style+' '+Item.sku_spec+'</p>'
+                          +'<p><em>¥</em> <em>'+Number(Item.price).toFixed(2)+'</em> X '+Item.shopBuyNum
+                          +'&nbsp;&nbsp;&nbsp;&nbsp;运费：<em>¥</em> <em>'+Number(Item.logistics_price).toFixed(2)+'</em>&nbsp;&nbsp;&nbsp;&nbsp;配送方式：<em>'+changeToLogistaticsStr(Item.logistics)+'</em></p></div></li>';
+
+      $('.orderContent').append('<ul>'+orderGoodsHTML+'</ul>');
+    })
+      
+      //console.log(goodsData);
+  }
+
+$(function(){
+  var user_points='{$userPoints}';
+  //选择支付事件
+  var selPayment=$('.paymentSelect ul li:first');
+  $('.paymentSelect ul li').on('click',function(){
+    if($(this)!==selPayment){
+      $(this).addClass('selected');
+      selPayment.removeClass('selected');
+      selPayment=$(this);
+      payment=$(this).attr('data-payment');
+      paymentText=$(this).attr('data-aria');
+      $('#doPayment').attr("href","{:U('User/Payment/doPayment',array('order_gid'=>$amountData['order_gid'],'order_type'=>$order_type,'deposit_fee'=>$deposit_fee,'service_id'=>$service_id))}&payment="+payment);
+      $('.infoText .payment').text(paymentText);
+    }
+  })
+
+  /*/勾选积分抵扣事件
+  if(parseInt(user_points)>0){
+    $(':input[name="usePoints"]').on('click',function(){
+      if($(this).is(':checked')){
+        $(':input[name="deduction_points"]').removeAttr('disabled').val(user_points);
+      }else{
+        $(':input[name="deduction_points"]').attr('disabled',true);
+      }
+    })
+  }*/
+
+  parseOrderGoodsData();
+})
+  </script>
+</body>
+</html>

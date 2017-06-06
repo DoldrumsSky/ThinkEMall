@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+<style type="text/css">
+.tab-content{overflow: visible;}
+
+.uploaded_avatar_area{
+	margin-top: 20px;
+}
+.uploaded_avatar_btns{
+	margin-top: 20px;
+}
+.uploaded_avatar_area .uploaded_avatar_btns{display: none;}
+h1{
+	padding:0 30px;
+	font-size:30px;
+	display: inline-block;
+}
+
+.cWrap{
+	transition: height .5s;
+}
+
+#addressList{
+    height: 100%;
+}
+
+</style>
+</head>
+<body class="body-white" id="top">
+  <tc_include file="Public:user_nav" />
+  <php>$totalAddrNum=count($addressList);</php>
+  <div class="wrapper tc-main" style="overflow:hidden">
+      <tc_include file="Public:user_left_nav"/>
+      <div class="centerContent">
+      <div class="cWrap">
+		<h1>收货地址设置</h1><span style="color:#ff3300">最多可以设置8个地址</span>
+
+       <div class="tab-pane active" id="one">
+	       	<div id="addressList">
+				<div class="addressItem" id="addAddress" data-target="#addressModal" data-toggle="modal">
+					<a class="tm-mcPlus" href="javascript:void(0);"><s></s><b></b></a>
+					<div>添加新地址</div>
+				</div>
+				<volist name="addressList" key="idx" id="vo">
+					<php>
+						$tel=substr_replace($vo[2],'****',3,4);
+						$defaultCSS='';
+						$defaultTag='';
+						if($idx==1){
+							$defaultCSS='default';
+							$defaultTag='<em class="default">默认使用地址</em>';
+						};
+					</php>
+					<div class="addressItem {$defaultCSS}" data-idx="{$idx}" data-consignee="{$vo[1]}" data-tel="{$tel}" data-province_id="{$vo[3]}" data-province_name="{$vo[4]}" data-city_id="{$vo[5]}" data-city_name="{$vo[6]}" data-district_id="{$vo[7]}" data-district_name="{$vo[8]}" data-zipcode="{$vo[9]}" data-address="{$vo[10]}" data-tag="{$vo[0]}">
+						<dl>
+						<dt><em>{$vo[1]}</em><span>{$vo[0]}</span></dt>
+						<dd>{$tel}</dd>
+						<dd>{$vo[4]} {$vo[6]} {$vo[8]}</br>
+						{$vo[10]} ({$vo[9]})
+						</dd>
+						{$defaultTag}
+						</dl>
+					</div>
+				</volist>
+	       	</div>
+       </div>
+    </div>
+	</div>
+</div>
+	<tc_include file="User:addressModal" />
+	<tc_include file="Public:footer" />
+
+
+	<!-- /container -->
+
+	<tc_include file="Public:scripts" />
+<script src="__TMPL__Public/assets/js/addressOption.js"></script>
+<script type="text/javascript">
+var editIdx;
+var addAddressURL="{:U('user/profile/addAddress')}";
+var editAddressURL="{:U('user/profile/editAddress')}";
+var deleteAddressURL="{:U('user/profile/deleteAddress')}";
+var setDefaultURL="{:U('user/profile/setDefaultAddress')}";
+var totalAddrNum={$totalAddrNum};
+
+$(function(){
+	addressOption.init();
+})
+</script>
+</body>
+</html>

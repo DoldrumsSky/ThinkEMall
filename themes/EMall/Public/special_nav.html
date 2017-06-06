@@ -1,0 +1,69 @@
+<nav class="navWrap">
+
+  <div class="stNavWrap">
+
+      <div class="container">
+      <div class="welcomeLang">欢迎访问ThinkEMall官网! <a href="">请登录</a><a href="">免费注册</a></div>
+      <div class="topRMenu">
+          <ul>
+              <li>
+                <a href="{:U('user/order/index')}" class="zy-menuItem">我的订单</a>
+              </li>
+              <li>
+                <a href="{:U('user/center/myFavorGoods')}"><b class="fa fa-star"></b>我的收藏</a>
+              </li>
+              <li>
+                <a href="{:U('User/Order/viewAllOfCartGoods')}"><b class="fa fa-shopping-cart"></b>购物车</a>
+              </li>
+              <li>
+                <a href=""><b class="fa fa-mobile-phone"></b>手机版</a>
+              </li>
+              <li>
+                <a href="">客户服务</a>
+              </li>
+              <li>
+                <a href="">站点导航</a>
+              </li>
+          </ul>
+      </div>
+      </div>
+   </div>
+</nav>
+<tc_include file="Public:login_modal" />
+<div class="header">
+  <div class="container">
+      <div class="floatRefixToL" style="padding:20px 0">
+        <a href="{:U('EMall/index/index')}"><img src="__TMPL__Public/assets/images/logo.png"/></a>
+      </div>
+      <div id="categorys-mini" data-load="1" class="">
+              <div class="cw-icon">
+                  <h2><a href="//www.jd.com/allSort.aspx" clstag="shangpin|keycount|topitemnormal|d02">全部分类<i class="ci-right"><s>◇</s></i></a></h2>
+                <div id="categorys-mini-main" class="hover"><div class="dd-inner"></div></div>
+              </div>
+      </div>
+      <div class=" searchBar floatRefixToL">
+        <div class="input-group">
+          <input type="text" class="form-control input-lg border-blue">
+          <span class="input-group-btn">
+              <button class="btn btn-blue input-lg" type="button">开始搜索</button>
+          </span>
+        </div>
+        <div id="hotwords"><a target="_blank" data-id="3950" href="//list.jd.com/list.html?cat=1318,12099,12100">板鞋</a><a target="_blank" data-id="3951" href="//list.jd.com/list.html?cat=1318,1463,12859">踏步机</a><a target="_blank" data-id="3952" href="//list.jd.com/list.html?cat=1318,12115,12118">电动车</a><a target="_blank" data-id="3953" href="//list.jd.com/list.html?cat=1318,1466,1698">篮球</a><a target="_blank" data-id="3954" href="//list.jd.com/list.html?cat=1318,2628,12128">抓绒衣裤</a><a target="_blank" data-id="3955" href="//list.jd.com/list.html?cat=1318,1462,2631">户外手表</a><a target="_blank" data-id="3956" href="//list.jd.com/list.html?cat=1318,12147,12148">鱼竿鱼线</a><a target="_blank" data-id="3949" href="//list.jd.com/list.html?cat=1318,12102,9767">运动套装</a></div>
+      </div>
+      <div class="appDownload"><img src="__TMPL__Public/assets/images/mobile-380-160.png" width="180"></div>
+  </div>
+</div>
+<div class="mainMenu subMenuStyle border-blue">
+  <div class="container">
+    <div class="cat_menu bg-blue">
+      <h2 class="catMenuTitle"><b class="fa fa-reorder"></b>商品分类</h2>
+        <div class="wrapMenu bg-deepBlue" id="catItem">
+             <?php 
+          echo(cp_GetMenuInMallType(2,false,1));
+          ?>
+        </div>
+    </div>
+
+  </div>
+</div>
+

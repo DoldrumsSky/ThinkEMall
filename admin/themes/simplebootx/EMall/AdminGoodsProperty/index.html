@@ -1,0 +1,156 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="well form-search" method="post" action="{:U('AdminGoodsProperty/index')}">			
+			&nbsp; &nbsp;
+			关键字： 
+			<input type="text" name="keyword" style="width: 200px;" value="{$formget.keyword|default=''}" placeholder="请输入关键字...">
+			<input type="submit" class="btn btn-primary" value="搜索" />
+			<a class="btn btn-danger" href="{:U('AdminGoodsProperty/index')}">清空</a>
+		</form>
+		<div class="table-actions"><a class="btn btn-danger" href="{:U('AdminGoodsProperty/add')}"><span class="fa fa-plus">&nbsp;</span>{:L('EMALL_ADMINGOODS_ADD_PROPERTY')}</a></div>
+		<form method="post" class="js-ajax-form" action="{:U('AdminGoodsProperty')}">
+			<table class="table table-hover table-bordered table-list">
+				<thead>
+					<tr>
+						<th width="50">ID</th>
+						<th width="120">{:L('EMALL_ADMINGOODS_PROPERTY_NAME')}</th>
+						<th>{:L('EMALL_ADMINGOODS_DESCRIPTION')}</th>
+						<th width="120">{:L('EMALL_ADMINGOODS_PROPERTY_ENABLED')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</thead>
+				<tbody>
+					<foreach name="taxonomys" item="vo">
+						<tr>
+						<td>{$vo.cat_id}</td>
+						<td><a href="{$vo.editURL}">{$vo.cat_name}</a></td>
+	    				<td></td>
+	    				<td width="50"><if condition="$vo.enabled eq 1">正常使用<else />已禁用</if></td>
+						<td>{$vo.str_manage}</td>
+						</tr>
+					</foreach>
+				</tbody>
+				<tfoot>
+					<tr>
+						<th width="50">ID</th>
+						<th width="120">{:L('EMALL_ADMINGOODS_PROPERTY_NAME')}</th>
+						<th>{:L('EMALL_ADMINGOODS_DESCRIPTION')}</th>
+						<th width="120">{:L('EMALL_ADMINGOODS_PROPERTY_ENABLED')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</tfoot>
+			</table>
+
+		</form>
+		<div class="table-actions"><a class="btn btn-danger" href="{:U('AdminGoodsProperty/add')}"><span class="fa fa-plus">&nbsp;</span>{:L('EMALL_ADMINGOODS_ADD_PROPERTY')}</a></div>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script src="__PUBLIC__/js/custom/Emall.js"></script>
+
+	<script type="text/javascript">
+	//添加商品属性分类
+	function addPropertyCategory(catId,pname){
+		messagesBox({
+			title:'添加商品属性分类',
+			content:'<div style="text-align:center"><div><label>商品属性：<input type="text" value="'+pname+'" disabled></label><label>分类名称：<input type="text" id="category_name"></label></div></div>',
+			callFunc:function(){
+				var loadingContainer=$(window.parent.document).find('body');
+				loadingContainer.setLoadingState({container:'body',loadingTxt:'正在提交商品属性分类，请稍等...'});
+				var category_name=loadingContainer.find('#category_name').val();
+				if(category_name==''){
+					alert('必须输入分类名称！');
+					return false;
+				}
+
+				$.post("{:U('AdminGoodsProperty/postPropertyCategory')}",{catId:catId,pname:pname,category_name:category_name},function(data){
+					if(data.status==1){
+						alert('添加商品属性分类成功！');
+					}else{
+						alert(data.error);
+					}
+					loadingContainer.setLoadingState('destroy');
+				}).error(function(){
+					alert('无法提交添加的商品属性分类，请稍候尝试！');
+					loadingContainer.setLoadingState('destroy');
+				})
+			}
+		})
+	}
+
+	//编辑商品属性分类
+	function editPropertyCategory(catId,pname){
+		var loadingContainer=$(window.parent.document).find('body');
+		loadingContainer.setLoadingState({container:'body',loadingTxt:'正在提交商品属性分类，请稍等...'});
+		$.get("{:U('AdminGoodsProperty/editPropertyCategory')}",{catId:catId,pname:pname},function(data){
+					if(data.status==1){
+						if(!data.data){
+							alert('还没有任何属性分类，请先添加！');
+							loadingContainer.setLoadingState('destroy');
+							return false;
+						}
+						var contentHTML='';
+						$.each(data.data,function(index,Item){
+							contentHTML+='<label>分类名称'+index+'：<input type="text" class="categoryData" data-name="'+Item+'" value="'+Item+'"></label>';
+						})
+						messagesBox({
+							title:'编辑商品属性分类',
+							content:'<div style="text-align:center"><div><label>商品属性：<input type="text" value="'+pname+'" disabled></label>'+contentHTML+'</div></div>',
+							callFunc:function(){
+								loadingContainer.setLoadingState({container:'body',loadingTxt:'正在提交商品属性分类，请稍等...'});
+								var categoryInput=loadingContainer.find('#myModal .categoryData');
+								var categoryData='';
+								var allDown=true;
+								//验证并构造编辑的分类数据
+								$.each(categoryInput,function(index){
+									//判断是否存在重复数据
+									for(var i=index+1;i<categoryInput.length-1;i++){
+										if($(this).val()==categoryInput[i].value){
+											allDown=false
+											return false;
+										}
+									}
+									var newCategoryName=$(this).val();
+									var oldCategoryName=$(this).attr('data-name');
+									if($(this).val()==''){
+										allDown=false;
+										return false;
+									}else{
+										//构造更新数据
+										categoryData+=categoryData==''?'"'+oldCategoryName+'":"'+newCategoryName+'"':',"'+oldCategoryName+'":"'+newCategoryName+'"'
+									}
+								})
+
+								if(allDown==false){
+									alert('必须输入所有分类名称，并且分类名称不能有重复！！');
+									loadingContainer.setLoadingState('destroy');
+									return false;
+								}
+
+								$.post("{:U('AdminGoodsProperty/postEditPropertyCategory')}",{catId:catId,pname:pname,categoryData:String('{'+categoryData+'}')},function(data){
+									if(data.status==1){
+										//console.log(data);
+										alert('编辑商品属性分类成功！');
+									}else{
+										alert(data.error);
+									}
+									loadingContainer.setLoadingState('destroy');
+								}).error(function(){
+									alert('无法提交编辑的商品属性分类，请稍候尝试！');
+									loadingContainer.setLoadingState('destroy');
+								})
+							}
+						})
+					}else{
+						alert(data.error);
+					}
+					loadingContainer.setLoadingState('destroy');
+				}).error(function(){
+					alert('无法获取商品属性分类数据，请稍候尝试！');
+					loadingContainer.setLoadingState('destroy');
+				})
+	}
+	</script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+<style>
+.control-label{
+    font-weight: bold;
+    float: left;
+    width: 70px;
+}
+
+.messageWrap{
+  width:1170px;
+  margin:20px auto;
+  padding:0 15px;
+  overflow: hidden;
+}
+
+.messageControlBar{
+  float:left;
+  width:10%;
+}
+
+.messageType{
+  float:left;
+  width:24%;
+  background: #e0f0fd;
+  height:100%;
+}
+
+.messageContent{
+  float:right;
+  width:66%;
+  background: #FFF;
+  font-family: 'Microsoft Yahei';
+  color:#666;
+}
+
+.messageHead{
+  width:100%;
+  height:42px;
+  line-height:42px;
+  border:1px solid #f8ecca;
+  border-left:none;
+  border-right:none;
+  background:#fffcf2; 
+  text-align: center;
+}
+
+.messageList span{
+  display: block;
+}
+
+.messageList ul,.messageType ul{
+  margin:0;
+  padding:0;
+}
+
+.messageType ul li{
+  display: block;
+  width: 99.5%;
+  height:80px;
+  padding:15px;
+  cursor: pointer;
+}
+
+.messageType ul li.cur{
+  border-left:3px #dd2727 solid;  
+  background: #fafafa;
+}
+
+.messageType ul li:hover{
+  background: #fafafa;  
+}
+
+.messageList ul li{
+  display: block;
+  margin-bottom: 20px;
+}
+
+.messageList span.msgSendTime{
+  width:150px;
+  margin:10px auto;
+  padding:5px 10px;
+  background: #f6f6f6;
+  text-align: center;
+    font-size: 12px;
+}
+
+.messageList .listContent{
+  width:90%;  
+  background: #f3f3f3;
+  margin:0 auto;
+  padding:6px 10px;
+  position: relative;
+}
+
+.messageList ul li:hover .listContent{
+  border:1px #ccc solid;
+  padding:5px 9px;
+}
+
+.messageList .message_title{
+  border-bottom: 1px solid #ddd;
+  padding:8px 5px;
+  font-weight: 700;
+}
+
+.messageList .message_content{
+  padding:10px 5px;
+}
+
+
+.listContent .deleteMsg {
+    position:absolute;
+    display: block;
+    cursor: pointer;
+    width:15px;
+    height:15px;
+    right:10px;
+    top:15px;
+    background-image: url(__TMPL__Public/assets/images/message.png);
+    background-position: -68px -122px;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    -webkit-border-radius:2px;
+}
+
+.messageList ul li:hover .deleteMsg {
+    right:9px;
+    top:14px;
+}
+
+.messageType .sysMsgIcon {
+    background-position: -70px -306px;
+}
+
+.messageType .whatimg {
+    background-position: -136px -369px;
+}
+
+.messageType ul li .icon{
+    display: inline-block;
+    width: 51px;
+    height: 51px;
+    border-radius: 25.5px;
+    float: left;
+    background-image: url(__TMPL__Public/assets/images/message.png);
+    position: relative;
+    vertical-align: middle;
+}
+
+.messageType .title,.messageType .unreadMsgNum{
+  display: inline-block;
+  margin-left:15px;
+  width:150px;
+}
+
+.messageType .title{
+  font-weight: 700;
+}
+
+.messageType .unreadMsgNum{
+  color:#999;
+}
+
+</style>
+</head>
+<body class="body-white" id="top">
+<tc_include file="Public:user_nav" />
+<php>$message_type=$_GET['message_type'];</php>
+<div class="messageWrap">
+    <div class="messageControlBar" id="msgCtrlBar" data-num="2">
+      <div data-role="normalAdItem" style="margin-bottom:20px"><a data-action="ad_link"><img src="" data-role="ad_image"></a></div>      
+    </div>
+    <div class="messageType" id="messageType">
+      <ul>
+        <li data-type="1" onclick="queryMsgType(1);">
+          <span class="icon sysMsgIcon"></span>
+          <span class="title">系统消息</span>
+          <span class="unreadMsgNum">
+          <php>
+            if(empty($messageData['unreadData']['message_type_1']['total'])){
+              echo '无未读消息';
+            }else{
+              echo $messageData['unreadData']['message_type_1']['total'].'条消息未读';
+            }
+          </php>
+          </span>
+        </li>
+        <li data-type="2" onclick="queryMsgType(2);">
+          <span class="icon whatimg"></span>
+          <span class="title">VIP消息</span>
+          <span class="unreadMsgNum">
+          <php>
+            if(empty($messageData['unreadData']['message_type_2']['total'])){
+              echo '无未读消息';
+            }else{
+              echo $messageData['unreadData']['message_type_2']['total'].'条消息未读';
+            }
+          </php>
+          </span>
+        </li>
+      </ul>
+    </div>
+    <div class="messageContent">
+      <div class="messageHead">
+          系统消息
+      </div>
+      <div class="messageList">
+        <ul>
+        <empty name="messageData['content']">
+          <div style="text-align:center;padding:30px">没有任何可阅读的消息内容！</div>
+        <else />
+          <foreach name="messageData['content']" item="vo">
+            <li data-id="{$vo.message_id}" data-type="{$vo.message_type}">
+              <span class="msgSendTime">{$vo.send_time}</span>
+              <div class="listContent">
+                  <span class="message_title">{$vo.message_title}</span>
+                  <span class="message_content">{$vo.message_content}</span>
+                  <!--<s class="deleteMsg"></s>-->
+              </div>
+            </li>
+            </foreach>
+        </empty>
+        </ul>
+      </div>
+      <div class="pagination" style="float:right;margin-right:30px">{$messageData['page']}</div>
+    </div>
+</div>
+<tc_include file="Public:footer" />
+<tc_include file="Public:scripts" />
+<script type="text/javascript">
+var messageState='{$user.message_handle}';
+var messageType='{$message_type}';
+
+function queryMsgType(type){
+  window.location="{:U('User/center/viewMessage')}&message_type="+type;
+}
+
+$(function(){
+    //加载广告数据
+  getAdListData('14'); 
+  //消息控制栏尺寸，百分百高
+  $('#messageType').css('height',$('.messageWrap').innerHeight()).find('li[data-type="'+messageType+'"]').addClass('cur');
+  //当前浏览消息类型文本设置
+  var messageHead=$('#messageType').find('li[data-type="'+messageType+'"] .title').text();
+  $('.messageHead').text(messageHead);
+
+})
+</script>
+</body>
+</html>

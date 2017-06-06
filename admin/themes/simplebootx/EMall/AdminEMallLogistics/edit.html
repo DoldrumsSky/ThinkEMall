@@ -1,0 +1,192 @@
+<admintpl file="header" />
+<style>
+.tab-content{
+	overflow: visible;
+}
+
+.table td,.table th{
+	text-align: center;
+}
+table input[type="text"]{
+	width:40px;
+	height:10px;
+}
+
+table thead tr th.area{
+	min-width:290px;
+	max-width: 290px;
+	text-align: left;
+}
+
+td.area-td{
+	text-align: left;
+	min-width:290px;
+	max-width: 290px;	
+}
+
+.optWrap{
+	width:750px;
+	position: relative;
+}
+
+.selAreaBox{
+	position: absolute;
+	top:37px;
+	left:0;
+	width:566px;
+	border:1px #ccc solid;
+	background: #FFF;
+	display: none;
+	padding:10px;
+	z-index: 100;
+}
+
+.selAreaBox ul{
+	padding:0;
+	margin:0;
+}
+
+.selAreaBox ul li{
+	display: inline-block;
+	padding:6px;
+	text-align: left;
+}
+
+.selAreaBox ul li.position{
+	width:80px;
+}
+
+.selAreaBox button{
+	margin:0 20px;
+}
+
+/*按钮颜色样式*/
+.btn-blue{
+	background-color: #11a6ec;
+	color:#FFF;
+	border-color:#119bdb;
+}
+.btn-blue:hover,.btn-blue:focus{
+	background-color: #15b0f9;
+	color:#FFF;
+}
+
+
+.btn-orange{
+	background-color: #ff7a18;
+	color:#FFF;
+	border-color:#f66a04;
+}
+.btn-orange:hover,.btn-orange:focus{
+	background-color: #ff8d3a;
+	color:#FFF;
+}
+
+.btn-gray{
+	background-color: #dddddd;
+	color:#000;
+	border-color:#ccc;
+}
+.btn-gray:hover,.btn-gray:focus{
+	background-color: #d6d6d6;
+	color:#000;
+}
+
+#logistics_way .checkbox{
+	width:60px;
+}
+
+</style>
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form id="logisticsForm" class="form-horizontal js-ajax-form" action="" method="post">
+			<div class="tabbable">
+		        <div class="tab-content">
+		          <div class="tab-pane active" id="A">
+						<fieldset>							
+							<div class="control-group">
+								<label class="control-label">{:L('LOGISTICS_TPLNAME')}</label>
+								<div class="controls">
+									<input type="text" name="post[tmpl_name]" value="{$logistics.tmpl_name}" form-required><span class="form-required">*</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('LOGISTICS_FROM_AREA')}</label>
+								<div class="controls form-inline">
+									<select id="province_send" name="post[province_send]" value="" form-required>
+									<option>请选择省份</option>
+									</select>
+									<select id="city_send" name="post[city_send]" value="" form-required>
+									<option>请选择城市</option>
+									</select>
+									<span class="form-required">*</span>
+								</div>
+							</div>
+							<php>
+							$type_0=$type_1=$type_2='';
+							switch($logistics['logistics_type']){
+								case 0:
+								$type_0='checked="true"';
+								break;
+								case 1:
+								$type_1='checked="true"';
+								break;
+								case 2:
+								$type_2='checked="true"';
+								break;
+							}
+							</php>
+							<div class="control-group" style="width:280px;">
+								<label class="control-label">{:L('LOGISTICS_TYPE')}</label>
+								<div class="controls">
+								<label class="radio"><input type="radio" name="post[logistics_type]" value="0" {$type_0}>按件数计费</label>
+								<label class="radio"><input type="radio" name="post[logistics_type]" value="1" {$type_1}>按重量计费</label>
+								<label class="radio"><input type="radio" name="post[logistics_type]" value="2" {$type_2}>按体积计费</label>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('LOGISTICS_WAY')}</label>
+								<div class="controls" id="logistics_way">
+									<div class="alert alert-info" style="width:20%" role="alert">提示：选择支持的商品配送方式，并且配置好对应支持的配送区域及价格</div>
+									<label class="checkbox"><input type="checkbox" role="transway" value="0">快递</label>
+									<label class="checkbox"><input type="checkbox" role="transway" value="1">物流</label>
+									<label class="checkbox"><input type="checkbox" role="transway" value="2">EMS</label>
+									<label class="checkbox"><input type="checkbox" role="transway" value="3">平邮</label>
+								</div>
+							</div>
+						</fieldset>
+		          </div>
+
+		        </div>
+		    </div>
+		    <div class="form-actions">
+		     	<button class="btn btn-primary" type="button" id="submit">{:L('SAVE')}</button>
+		      	<a class="btn" href="javascript:history.back(-1);">{:L('BACK')}</a>
+		    </div>
+		    <input type="hidden" id="logisticsData" name="logistics_param">
+		</form>
+	</div>
+	<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/js/json2.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/js/custom/Emall.js"></script>
+	<script type="text/javascript">
+	var jsonURLRoot='__PUBLIC__/Emall/';
+	var submitURL='{:U("AdminEMallLogistics/edit_post")}&id={$logistics.logistics_id}';
+	//省数据，单独用于运费模板中选择配送区域
+	var provinceData;
+	//存储选择的配送地区数据	
+	var wayData={'0':[],'1':[],'2':[],'3':[]};
+    // 添加全局站点信息
+    $(function(){
+    	$('#logistics_way').setLogisticsWay();
+    	$('#submit').upLogisticsData();
+    	//加载运费模板数据
+    	parseLogistics('{$logistics.logistics_param}');
+    	var selProvinceId=parseInt('{$logistics.province_send}');
+    	var selCityId=parseInt('{$logistics.city_send}');
+		getAreaData({'provinceId':selProvinceId,'cityId':selCityId},'#province_send','#city_send');
+    });
+    </script>
+</body>
+</html>

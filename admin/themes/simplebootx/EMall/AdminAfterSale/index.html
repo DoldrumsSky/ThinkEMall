@@ -1,0 +1,463 @@
+<admintpl file="header" />
+<style>
+	em{
+		font-style:normal;
+		color:#dd2727;
+	}
+
+	i{
+		font-style:normal;
+		padding-left:4px;
+	}
+
+	td{
+		position: relative;
+	}
+
+	td .orderDetail{
+		position: absolute;
+		display: none;
+		background: #fff;
+		z-index: 1;
+		width:550px;
+		top:0;
+		left:100%;
+		border:1px #ccc solid;
+		box-shadow: 0 0 2px #ccc;
+		
+	}
+
+	.orderDetail span.arrow,.orderDetail span.down{
+    height: 24px;
+    width: 12px;
+    color:#FFF;
+    position: absolute;
+    top:0;
+    left:-6px;
+    font-family: 'simsun';
+    font-size: 24px;
+    overflow: hidden;
+    z-index: 10;
+	}
+
+	.orderDetail span.down{
+	text-shadow: 0 0 2px #ccc;
+	color:#ccc;
+	left:-7px;
+	z-index: 9;
+	padding:0;
+	
+	text-align: left;
+	}
+
+	.arrowWrap{
+    height:12px ;
+    width:6px ;
+    position: absolute;
+    top:8px;
+    left:-6px;
+	}
+
+</style>
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="well form-search" method="post" action="{:U('AdminAfterSale/index')}">
+			售后申请状态： 
+			<select name="status" style="width: 120px;">
+				<option value='10000'>全部</option>
+				<option value="0">未处理</option>
+				<option value="1">已联系</option>
+				<option value="2">技术支持</option>
+				<option value="4">返修处理</option>
+				<option value="5">换货处理</option>
+			</select> &nbsp;&nbsp;
+			申请时间：
+			<input type="text" name="start_time" class="js-datetime" value="{$formget.start_time|default=''}" style="width: 120px;" autocomplete="off">-
+			<input type="text" class="js-datetime" name="end_time" value="{$formget.end_time|default=''}" style="width: 120px;" autocomplete="off"> &nbsp; &nbsp;
+			订单号： 
+			<input type="text" name="keyword" style="width: 200px;" value="{$formget.keyword|default=''}" placeholder="请输入申请售后的订单号...">
+			<input type="submit" class="btn btn-primary" value="搜索" />
+			<a class="btn btn-danger" href="{:U('AdminAfterSale/index')}">清空</a>
+		</form>
+		<form class="js-ajax-form" action="" method="post">
+			<table class="table table-hover table-bordered table-list">
+				<thead>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<notempty name="term">
+						<th width="50">{:L('SORT')}</th>
+						</notempty>
+						<th width="50">ID</th>
+						<th>{:L('GOODS_INFO')}</th>
+						<th width="100">{:L('ORDER_SERIAL')}</th>
+						<th width="80">{:L('CONTACT')}</th>
+						<th width="140">{:L('TELPHONE')}</th>
+						<th width="130">{:L('APPLY_TIME')}</th>
+						<th width="60">{:L('STATUS')}</th>
+						<th width="100">{:L('ACTIONS')}</th>
+					</tr>
+				</thead>
+				<script type="text/javascript">
+					var waybill_no={};	
+				</script>
+				<foreach name="afterSaleData" item="vo">
+				<tr data-id="{$vo.order_id}" data-asid="{$vo.as_id}">
+					<td><input type="checkbox" class="js-check" data-yid="js-check-y" data-xid="js-check-x" name="ids[]" value="{$vo.as_id}" title="ID:{$vo.as_id}"></td>
+                    <td><b>{$vo.as_id}</b></td>
+                    <php>
+                    	//解析商品数据
+						$goods_data=json_decode($vo['goods_data'],true);
+
+		                  switch($vo['status']){
+		                    case 0:
+		                    $statuTxt='待处理';
+		                    break;
+		                    case 1:
+		                    $statuTxt='已联系';
+		                    break;
+		                    case 2:
+		                    $statuTxt='处理中';
+		                    break;
+		                    case 3:
+		                    if($vo['service_type']>1){
+		                    	if($vo['repaire_step']==2 || $vo['exchange_step']==2){
+		                    		$statuTxt='待支付服务费';
+		                    	}else{
+		                    		$statuTxt='返修换货';
+		                    	}
+		                    }else{
+								$statuTxt='已技术沟通';
+		                    }
+		                    break;
+		                    case 4:
+		                    $statuTxt='已完成';
+		                    break;
+		                  }
+					</php>
+					<td width="400"><div class="itemImg fixImgPadding"><a href=""><img src="{$goods_data.goods_img}" width="70" class="cartGoodsImg" alt=""></a></div><div class="listInfo"><p><a href="" target="_blank">{$goods_data.goods_title}</a></p><p>{$goods_data.sku_style} {$goods_data.sku_spec}</p>
+						<div class="orderDetail" data-serial="{$vo.order_serial}" data-id="{$vo.as_id}" data-statu="{$vo.status}">
+						<div class="arrowWrap" style="top: 153.5px;"><span class="arrow">◆</span><span class="down">◆</span></div>
+							<dl>
+								<dt><em class="orderStatu-normal">{$statuTxt}</em>根据实际情况选择售后方式及价格</dt>
+								<dd class="afterSaleDetail">
+									<p>联系人：<em>{$vo.contact}</em>联系电话：<em>{$vo.telnum}</em></p>
+									<p class="waybill_no">
+										换修运单号：<em>{$vo.waybill_no}</em>
+										<if condition="($vo.waybill_no NEQ '') and ($vo.status LT 3)">
+											<a class="orderBtn bg-blue" role="confirmReceivedBtn" href="javascript:confirmReceivedGoods({$vo.as_id},{$vo.service_type})">确认收货</a>
+										<elseif condition="($vo.status EQ 3) and ($vo.return_goods eq 1)"/>
+											<em>官方已确认接收换修商品</em>
+										<elseif condition="$vo.return_goods eq 1"/>
+											<em>等待寄回换修商品</em>
+										<else />
+											<em>无需寄回商品</em>
+										</if>
+									</p>
+									<p class="apply_detail">申请售后详情：{$vo.apply_detail}</p>
+									<if condition="(($vo.repaire_step gt 2) or ($vo.exchange_step gt 2))">
+										<p class="return_waybill_form"><input type="text" name="return_waybill_no" class="returnWayBillNo" value="{$vo.return_waybill_no}"><a class="orderBtn bg-red" role="postWayBillBtn" href="javascript:postReturnWayBill({$vo.as_id},{$vo.service_type})">提交寄回运单号</a></p>
+
+									</if>
+										<if condition="($vo.return_waybill_no NEQ '') and (($vo.repaire_step gt 2) or ($vo.exchange_step gt 2))">
+										<p class="return_waybill_no">当前完成换修商品的寄回运单号为：<em>{$vo.return_waybill_no}</em></p>
+										</if>
+									<div class="refundBottomBar">
+										<p style="margin-bottom:10px">
+											<label>服务方式：
+												<select name="serviceType">
+													<option value="0">选择售后服务</option>
+													<option value="1" <php>if ($vo['service_type']==1){echo selected;}</php>>技术支持</option>
+													<option value="2" <php>if ($vo['service_type']==2){echo selected;}</php>>返修</option>
+													<option value="3" <php>if ($vo['service_type']==3){echo selected;}</php>>换货</option>
+												</select>
+											</label>
+											<label>服务价格：<input name="servicePrice" type="text" class="price" placeholder="请输入售后服务价格" value="{$vo.service_price}"></label>
+											<label>
+											<input name="returnGoods" type="checkbox" value="1" 
+											<php>
+												if ($vo['return_goods']==1){
+													echo 'checked="true"';
+												}
+												if($vo['service_type']<=1){
+													echo ' disabled="true"';
+												}
+											</php>
+											>需寄回商品</label>
+										</p>
+										<textarea name="serviceDetail" placeholder="请输入售后处理信息/当地售后服务联系方式/其它说明等">{$vo.reply_detail}</textarea>
+										<if condition="($vo.service_type gt 1) and (($vo.repaire_step gt 0) or ($vo.exchange_step gt 0)) and ($vo.return_goods eq 1)">
+											<p class="checkGoodsInfoTitle">换修商品检测详情：</p>
+											<textarea name="checkGoodsInfo" placeholder="请输入换修商品的检测结果详情">{$vo.check_info}</textarea>
+										<elseif condition="($vo.service_type eq 1) and ($vo.status gt 0)"/>
+											<p class="techSupportInfoTitle">技术支持处理详情：</p>
+											<textarea name="techSupportInfo" placeholder="请输入技术支持处理详情">{$vo.tech_support}</textarea>			
+										</if>
+
+									</div>
+								</dd>
+							</dl>
+							<div class="bottomBar">
+								<if condition="$vo.status LT 4">									
+									<a class="orderBtn bg-red postAfterSaleBtn" href="javascript:postDisposeDetail({$vo.as_id},{$vo.status})">提交处理</a>
+								</if>
+								<a class="orderBtn bg-gray" href="javascript:closeAfterSaleDetail()">取消退出</a>
+							</div>
+						</div>
+					</td>
+					<td>{$vo.order_serial}</td>
+					<td>{$vo.contact}</td>
+					<td>{$vo.telnum}</td>
+					<td>{:date('Y年m月d日 H:i',strtotime($vo['apply_time']))}</td>
+					<td class="as-status"><em>{$statuTxt}</em></td>
+					<td>
+						<a href="javascript:showApplyDetail({$vo.as_id});" class="editOrderInfoBtn">{:L('DISPOSE')}</a>
+					</td>
+				</tr>
+				<script type="text/javascript">
+					waybill_no['{$vo.as_id}']='{$vo.waybill_no}';
+				</script>
+				</foreach>
+
+			</table>
+			<div class="pagination">{$page}</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script src="__PUBLIC__/js/custom/Emall.js"></script>
+	<script>
+	//当前显示的查看订单商品内容
+	var curShowAfterSaleDetail=null;
+	//设置配货状态链接
+	var postPrepareURL="{:U('AdminOrder/postPrepare')}";
+	//设置出库状态链接
+	var postDeliveryURL="{:U('AdminOrder/postDelivery')}";
+	//编辑保存运单号链接 
+	var postEditSerialURL="{:U('AdminOrder/postEditSerial')}";
+	//处理申请售后商品
+	var disposeAfterSaleURL="{:U('AdminAfterSale/disposeAfterSale')}";
+	//确认收到换修商品链接
+	var confirmReceivedGoodsURL="{:U('AdminAfterSale/confirmReceivedGoods')}"
+	//提交换个完成的寄回商品运单
+	var postReturnWayBillURL="{:U('AdminAfterSale/postReturnWayBill')}";
+
+	//隐藏申请售后商品信息
+      function closeAfterSaleDetail(){
+      	curShowAfterSaleDetail.hide();
+      	curShowAfterSaleDetail=null;
+      }
+
+     //展开售后信息
+	function showApplyDetail(as_id){
+		var applyInfoWrap=$('.orderDetail[data-id="'+as_id+'"]');
+		if(curShowAfterSaleDetail){
+			if(as_id==curShowAfterSaleDetail.attr('data-id')){
+				return false;
+			}
+			curShowAfterSaleDetail.hide();
+		}
+		applyInfoWrap.show();
+		curShowAfterSaleDetail=applyInfoWrap;
+
+			//定位订单信息容器
+	      	var offsetTop=curShowAfterSaleDetail.closest('tr').offset().top;
+			$(window).scroll(function(){
+				offsetTop=offsetTop-$(this).scrollTop();
+				//console.log($(this).scrollTop());
+			})
+
+	      	var bodyHeight=$('body').height();
+	      	var offsetHeight=curShowAfterSaleDetail.outerHeight();
+
+	      	if(offsetTop>bodyHeight/2){
+	      		if(offsetHeight>offsetTop || offsetHeight>bodyHeight/2){
+		      		curShowAfterSaleDetail.css({'top':44-offsetHeight/2,'left':'100%'});
+		      		applyInfoWrap.find('.arrowWrap').css({'top':offsetHeight/2-10});
+	      		}else if(offsetHeight/2<offsetTop){
+		      		curShowAfterSaleDetail.css({'top':88-offsetHeight,'left':'100%'});
+		      		applyInfoWrap.find('.arrowWrap').css({'top':offsetHeight-54});
+	      		}
+	      	}else{
+	      		if(bodyHeight-offsetTop<offsetHeight || bodyHeight<offsetHeight){
+		      		curShowAfterSaleDetail.css({'top':0-offsetTop,'left':'100%'});
+		      		applyInfoWrap.find('.arrowWrap').css({'top':8+offsetTop});		      			
+	      		}else if(offsetHeight/2>offsetTop ){
+		      		curShowAfterSaleDetail.css({'top':44-offsetHeight/2,'left':'100%'});
+		      		applyInfoWrap.find('.arrowWrap').css({'top':offsetHeight/2-10});
+	      		}
+	      	}
+	}
+
+	//提交商品售后处理详情说明
+	function postDisposeDetail(as_id,curStatus){
+		var applyInfoWrap=$('.orderDetail[data-id="'+as_id+'"]');
+		var disposeDetail=applyInfoWrap.find('.refundBottomBar');
+		var serviceType=disposeDetail.find('[name="serviceType"]').val();
+		var servicePrice=disposeDetail.find('[name="servicePrice"]').val();
+		var serviceDetail=disposeDetail.find('[name="serviceDetail"]').val();
+		var returnGoods=disposeDetail.find(':checkbox[name="returnGoods"]').is(':checked')?1:0;
+		var checkGoodsInfo=disposeDetail.find('[name="checkGoodsInfo"]').val();
+		var tech_support=disposeDetail.find('[name="techSupportInfo"]').val();
+
+		if(serviceType==0 || serviceDetail==''){
+			alert('请填写完整的售后处理信息！');
+			return false;
+		}
+		//console.log(serviceType+'|'+servicePrice+'|'+serviceDetail+'|'+as_id);
+		$('body').setLoadingState({container:'body',loadingTxt:'正在提交售后处理数据，请稍候...'})
+		$.post(disposeAfterSaleURL,{
+			as_id:as_id,
+			curStatus:curStatus,
+			serviceType:serviceType,
+			servicePrice:servicePrice,
+			serviceDetail:serviceDetail,
+			returnGoods:returnGoods,
+			checkGoodsInfo:checkGoodsInfo,
+			tech_support:tech_support,
+			waybill_no:waybill_no[as_id]
+		},function(data){
+			if(data.status==1){
+				//未处理状态
+				if(curStatus==0){
+					//售后技术支持
+					if(serviceType==1){
+						//插入技术支持详情文本域表单
+						applyInfoWrap.find('.refundBottomBar').append('<p class="techSupportInfoTitle">技术支持处理详情：</p><textarea name="techSupportInfo" placeholder="请输入技术支持处理详情" class="valid" aria-invalid="false"></textarea>');
+					}else if(serviceType>1){
+
+					}
+					//更新提交处理的链接
+					applyInfoWrap.find('.bottomBar .postAfterSaleBtn').attr('href','javascript:postDisposeDetail('+as_id+',1)');
+					//更新状态标识
+					applyInfoWrap.find('.orderStatu-normal').text('已联系');
+					$('tr[data-asid="'+as_id+'"] .as-status em').text('已联系');
+				//已联系状态更新
+				}else if(curStatus==1){
+					if(serviceType>1){
+						//删除技术支持的文本域及标题文本
+						applyInfoWrap.find('.refundBottomBar .techSupportInfoTitle').remove();
+						applyInfoWrap.find('.refundBottomBar textarea[name="techSupportInfo"]').remove();
+					}else{
+						//删除商品检测的文本域及标题文本
+						applyInfoWrap.find('.refundBottomBar .checkGoodsInfoTitle').remove();
+						applyInfoWrap.find('.refundBottomBar textarea[name="checkGoodsInfo"]').remove();
+						//插入技术支持详情文本域表单
+						if(applyInfoWrap.find('textarea[name="techSupportInfo"]').length==0){
+							applyInfoWrap.find('.refundBottomBar').append('<p class="techSupportInfoTitle">技术支持处理详情：</p><textarea name="techSupportInfo" placeholder="请输入技术支持处理详情" class="valid" aria-invalid="false"></textarea>');
+						}
+					}
+					//更新提交处理的链接
+					applyInfoWrap.find('.bottomBar .postAfterSaleBtn').attr('href','javascript:postDisposeDetail('+as_id+','+data.data.status+')');
+				}else if(curStatus==3){
+					//寄回换修商品检测完成时的UI更新
+					if(data.data.exchange_step==3 || data.data.repaire_step==3){
+						//不存在寄回完成换修商品运单号的表单时插入
+						var return_waybill_form=applyInfoWrap.find('.return_waybill_form');
+						if(return_waybill_form.length==0){
+							applyInfoWrap.find('.refundBottomBar').before('<p class="return_waybill_form"><input type="text" name="return_waybill_no" class="returnWayBillNo"><a class="orderBtn bg-red" role="postWayBillBtn" href="javascript:postReturnWayBill('+as_id+','+serviceType+')">提交寄回运单号</a></p>');
+						}
+					//回退到未检测状态时删除提交寄回运单号的表单
+					}else if(data.data.exchange_step<3 || data.data.repaire_step<3){
+						applyInfoWrap.find('.return_waybill_form').remove();
+					}
+				}
+			}else{
+				alert(data.error);
+			}
+			$('body').setLoadingState('destroy');
+		}).error(function(){
+			alert('链接服务器出错，无法提交售后处理数据，请稍候尝试！');
+			$('body').setLoadingState('destroy');
+		})
+	}
+
+	function confirmReceivedGoods(as_id,serviceType){
+		messagesBox({
+			title:'确认收到换修商品',
+			content:'正在执行确认收到换修商品的操作，确实收到了换修商品吗？',
+			callFunc:function(){
+				$('body').setLoadingState({container:'body',loadingTxt:'正在提交确认收到换修商品操作，请稍候...'})
+				$.post(confirmReceivedGoodsURL,{as_id:as_id,serviceType:serviceType},function(data){
+					if(data.status==1){
+						var applyInfoWrap=$('.orderDetail[data-id="'+as_id+'"]');
+						//移除确认收货按钮
+						applyInfoWrap.find('[role="confirmReceivedBtn"]').remove();
+						//改变售后处理状态
+						applyInfoWrap.find('dt .orderStatu-normal').text('返修换货');
+						//加入已收货的标识
+						applyInfoWrap.find('.afterSaleDetail .waybill_no').append('<em>官方已确认接收换修商品</em>');
+						//更新提交处理的链接
+						applyInfoWrap.find('.bottomBar .postAfterSaleBtn').attr('href','javascript:postDisposeDetail('+as_id+',3)');
+						//插入技术支持详情文本域表单
+						applyInfoWrap.find('.refundBottomBar').append('<p>换修商品检测详情：</p><textarea name="checkGoodsInfo" placeholder="请输入换修商品的检测结果详情" class="valid" aria-invalid="false"></textarea>');	
+					}else{
+						alert(data.error);
+					}
+					$('body').setLoadingState('destroy');
+				}).error(function(){
+					alert('无法提交确认收货请求，请稍候尝试！');
+					$('body').setLoadingState('destroy');
+				})
+			}
+		})
+	}
+
+	function postReturnWayBill(as_id,serviceType){
+		var applyInfoWrap=$('.orderDetail[data-id="'+as_id+'"]');
+		var returnWayBillNo=applyInfoWrap.find('input[name="return_waybill_no"]').val();
+		/*if(returnWayBillNo==''){
+			alert('请先填写寄回运单号！');
+			return false;
+		}*/
+
+		messagesBox({
+			title:'提交完成换修寄回商品的运单号',
+			content:'正在执行提交寄回商品运单号的操作，确认提交输入的运单号吗？',
+			callFunc:function(){
+				$('body').setLoadingState({container:'body',loadingTxt:'正在提交寄回商品运单号，请稍候...'});
+				$.post(postReturnWayBillURL,{as_id:as_id,serviceType:serviceType,return_waybill_no:returnWayBillNo},function(data){
+					if(data.status==1){						
+						//改变售后处理状态
+						applyInfoWrap.find('dt .orderStatu-normal').text('寄回完成的换修商品');
+						//刷新原来提交的寄回运单号
+						var return_waybill_info=applyInfoWrap.find('.return_waybill_no');
+						//如果没有寄回运单文字详情则插入
+						if(return_waybill_info.length>0 && returnWayBillNo!==''){
+							return_waybill_info.find('em').text(returnWayBillNo);
+
+						}else if(returnWayBillNo!==''){
+							applyInfoWrap.find('.refundBottomBar').before('<p class="return_waybill_no">当前完成换修商品的寄回运单号为：<em>'+returnWayBillNo+'</em></p>');
+						//如果重置寄回运单号为空，则清除原有的运单信息文本，并刷新回状态3：等待换修完成
+						}else{
+							return_waybill_info.remove();
+						}
+						
+						//刷新提交链接
+						applyInfoWrap.find('[role="postWayBillBtn"]').attr('javascript:postReturnWayBill('+as_id+','+serviceType+')');
+
+					}else{
+						alert(data.error);
+					}
+					//console.log(data);
+					$('body').setLoadingState('destroy');
+				}).error(function(){
+					alert('无法提交确认收货请求，请稍候尝试！');
+					$('body').setLoadingState('destroy');
+				})
+			}
+		})		
+	}
+
+	$(function(){
+		$('.orderDetail select[name="serviceType"]').on('change',function(){
+			if($(this).val()>2){
+				$(this).closest('.refundBottomBar').find(':checkbox[name="returnGoods"]').prop('disabled',false);
+			}else{
+				$(this).closest('.refundBottomBar').find(':checkbox[name="returnGoods"]').prop({'disabled':true,'checked':true});
+			}
+		})
+
+	})
+	</script>
+</body>
+</html>

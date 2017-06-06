@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkEMall">
+<tc_include file="Public:head" />
+<style>
+body{
+	margin:0;
+	font-family: 'Microsoft Yahei';
+}
+
+.loginWrap{
+	width:990px;
+	margin:0 auto;
+	overflow: hidden;
+}
+
+.logo{
+	width:220px;
+	height:60px;
+	float:left;
+	margin:10px 0;
+	background: url(__TMPL__Public/assets/images/logo-login-blue.png) no-repeat center top;
+}
+
+h1{
+	float:left;
+	font-size: 26px;
+	padding:0 20px;
+	color:#777;
+}
+
+.loginContent{
+	width:990px;
+	height:475px;
+	margin:0 auto;
+	background: url(__TMPL__Public/assets/images/login-banner.jpg) no-repeat center top;
+	padding:50px 0;
+}
+
+.loginForm{
+	float:right;
+	background: #FFF;
+	width:350px;
+	height:100%;
+}
+
+.loginForm ul li{
+	display: inline-block;
+}
+
+.login-footer{
+	padding:10px 0;
+	font-family: 'simsun';
+	color:#666;
+	margin-top:10px;
+	font-size:12px;
+}
+
+.login-footer a{
+	padding:0 10px;
+	font-family: 'simsun';
+	color:#666;
+	font-size:12px;
+}
+
+.loginWrap p{
+	text-align: center;
+	font-size:12px;
+	color:#333;
+}
+
+h2{
+	font-size: 22px;
+	padding:14px;
+	border-bottom: 1px solid #f3f3f3;
+	display: block;
+	margin:0;
+	color:#666;
+}
+
+.control-group{
+	position: relative;
+    margin: 20px auto;
+}
+
+.login-input{
+	border: 1px solid #bdbdbd;
+    width: 304px;
+}
+
+
+.loginForm input{
+	line-height: 18px;
+    border: 0;
+    padding: 10px 0 10px 50px;
+    width: 100%;
+    float: none;
+    overflow: hidden;
+    font-size: 14px;
+    font-family: '\5b8b\4f53';
+    height:100%;
+    outline: none;
+    -webkit-outline:none;
+
+    background-color: #FFF;
+}
+
+.control-group label{
+	position: absolute;
+    z-index: 3;
+    top: 0;
+    left: 0;
+    width: 38px;
+    height:100%;
+    border-right: 1px solid #bdbdbd;
+    background: url(__TMPL__Public/assets/images/pwd-icons-new.png) no-repeat;
+    background-color:#f3f3f3;
+}
+
+label.pwd-label {
+    background-position: -48px 0px;
+}
+
+.loginForm input.verifyCode{
+    border: 1px solid #bdbdbd;
+    width:100px;
+    height:34px;
+    margin-left:23px;
+    padding-left:10px;
+    vertical-align: middle;
+}
+
+.loginBtn{
+	display: block;
+	width:304px;
+	text-align: center;
+	clear:both;
+	height:38px;
+	background-color: #dd2727;
+	border:none;
+	color:#FFF;
+	margin:0 auto;
+	outline: none;
+    -webkit-outline:none;
+    font-size:16px;
+    letter-spacing: 0.2em;
+}
+
+.loginForm .control-group ul{
+	padding:0 20px;
+}
+
+.loginForm .control-group ul li{
+	margin:0 10px;
+}
+
+</style>
+</head>
+
+<body class="bg-white">
+<div class="loginWrap">
+	<div class="logo"></div>
+	<h1>欢迎登录</h1>
+</div>
+
+	<div style="background-color:#be1355;">
+		<div class="loginContent">
+			<div class="loginForm">
+				<h2 class="text-center">用户登录</h2>
+				<form class="form-horizontal js-ajax-form" action="{:U('user/login/dologin')}" method="post">
+					<div class="control-group login-input">
+					<label class="username"></label>
+						<input type="text" id="input_username" name="username" placeholder="手机号/邮箱/用户名" required>
+					</div>
+
+					<div class="control-group login-input">
+						<label class="pwd-label"></label>
+						<input type="password" id="input_password" name="password" placeholder="密码" style="background-color:#FFF" required>
+					</div>
+
+					<div class="control-group">
+							<input type="text" id="input_verify" name="verify"  placeholder="验证码" class="verifyCode" required>
+							{:sp_verifycode_img('length=4&font_size=16&width=110&height=34&use_noise=1&use_curve=0')}			
+							<a href="javascript:;" id="logRefreshVerifyImg" style="margin-left:14px">看不清楚</a>
+					</div>
+
+						<button class="loginBtn js-ajax-submit span4" type="submit">确定登录</button>
+
+					<div class="control-group" style="text-align: center;">
+						<ul class="inline">
+							<li><a href="{:U('user/register/index')}">现在注册</a></li>
+							<li><a href="{:U('user/login/forgot_password')}">忘记密码</a></li>
+						</ul>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<div>
+		<div class="loginWrap">
+			<p class="login-footer">
+				<a href="">关于我们</a> | <a href="">联系我们</a> | <a href="">人才招聘</a> | <a href="">商家入驻</a> | <a href="">广告服务</a> | <a href="">手机京东</a> | <a href="">友情链接</a> | <a href="">销售联盟</a> | <a href="">京东社区</a> | <a href="">京东公益</a> | <a href="">English Site</a>
+			</p>
+			<p>Copyright © 2017-2020  思亿电子商城 版权所有</p>
+		</div>
+	</div>
+	<!-- /container -->
+</body>
+   <script src="__PUBLIC__/js/jquery.js"></script>
+   <script src="__TMPL__Public/assets/simpleboot/bootstrap/js/bootstrap.min.js"></script>
+   <script src="__TMPL__Public/assets/js/custom.js"></script>
+<script type="text/javascript">
+$(function(){
+	//登录验证码刷新
+	$('#logRefreshVerifyImg').click(function(e){
+		$(this).prev().attr('src','/index.php?g=api&m=checkcode&a=index&length=4&font_size=14&width=110&height=34&use_noise=1&use_curve=0&time='+Math.random());
+	});
+})
+</script>
+</html>

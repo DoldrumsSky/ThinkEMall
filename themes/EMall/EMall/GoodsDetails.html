@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+	<html>
+	<head>
+		<title>{$post_title} {$site_name} </title>
+		<meta name="keywords" content="{$post_keywords}" />
+		<meta name="description" content="{$post_excerpt}">
+		<tc_include file="Public:head_details" />
+		<style>
+			#article_content img{height:auto !important}
+			#article_content {word-wrap: break-word;}
+		</style>
+	</head>
+<body>
+<tc_include file="Public:details_nav" />
+<php>
+	$smeta=json_decode($goods['goods_img'], true);
+</php>
+<div class="wrapper">
+		<div class="wrap picWrapper">
+			<div id="previewPic" class="bigPic">
+				<img src="{$smeta[0][m_thumb]}" class="listMainImg" width="100%" data-nature="{$smeta[0][goods_img]}">
+				<i></i>
+			</div>
+			<div id="goodsPicSlider">
+				<div class="picShow">
+					<ul>
+					<volist  name="smeta" id="images">
+						<li><div><img src="{$images['thumb']}" width="60" data-skuimg="{$images['m_thumb']}" data-nature="{$images['goods_img']}"></div></li>
+						</volist>
+					</ul>
+				</div>
+			</div>
+			<div class="short-share"><a href=""><i class="icon iconfont"></i>分享</a><a href="javascript:;" id="setToFavor"><i class="icon iconfont"></i>收藏此商品</a><a href="" class="floatRefixToR">举报</a></div>
+		</div>
+		<div class="wrap goodsInfo">
+			<h1 class="goodsTitle">{$goods['goods_title']}</h1>
+			<div class="pricePanel">
+				<div class="coupon">
+					<img src="__TMPL__Public/assets/images/coupon.png" height="16"> 全商城实物商品通用
+					<a id="J_guaGuaKaPc" target="_blank">去刮券</a>
+				</div>
+				<dl class="tm-price-panel" id="J_StrPriceModBox">
+			        <dt class="tb-metatit">价格</dt>
+			        <dd><em class="tm-yen">¥</em> <span class="tm-price">{$goods.market_price}</span></dd>
+				</dl>
+				<dl class="tm-promo-panel tm-promo-cur" id="J_PromoPrice" data-label="促销价">
+					<dt class="tb-metatit">促销价</dt>
+					<dd>
+						<div class="tm-promo-price">
+							<em class="tm-yen">¥</em> 
+							<span class="tm-price">
+								<php>echo $goods['goods_price'];</php>
+							</span>
+							<em class="tm-promo-type "><s></s>限时促销</em>
+						</div>
+					</dd>
+				</dl>
+				<if condition="$goods.mobshop_price gt 0">
+					<div class="wraper"><span class="phoneprice">想￥{$goods.mobshop_price}拿下？</span><span class="qrtrigger">手机商城购买更便宜<img class="qrpic" src="//gcodex.alicdn.com/qrcode.do?biz_code=tmallpc&amp;content=http%3A%2F%2Fm.laiwang.com%2Fmarket%2Flaiwang%2Ftmall%2Fapp-download.php%3Ftype%3Ddetail%26iframe%3D1%26key%3D541968309041%26src%3Dpcdetail%26mmstat%3Ddetail_pcfocus%26biz%3Dtmall&amp;size=175&amp;margin=0&amp;logo_url=http%3A%2F%2Fimg.alicdn.com%2Ftps%2FTB1DwX.OFXXXXaUXFXXXXXXXXXX-198-198.png&amp;channel_id=2" style="display: none;"></span></div>
+				</if>
+			</div>
+			<div class="tb-meta">
+	 	        <dl class="tm-delivery-panel" id="J_RSPostageCont">
+	 	        	<dt class="tb-metatit">运费</dt>
+	 	        	<dd>
+		            	<div class="tb-postAge">
+			            	<span class="tb-deliveryAdd" id="fromArea">上海</span>至
+			                <span id="selToArea" class="mui_addr_tri">
+			                	<span role="button" tabindex="0" aria-haspopup="true" data-id="110000" class="mui_addr_tri_1">北京<i class="menu-drop-arrow"></i></span>
+			                	<div class="areaItem">
+
+			                	</div>
+			                </span>
+			                <div id="J_PostageToggleCont" class="tb-postAge-info"><span>快递: 0.00 </span></div>
+						</div>
+	                </dd>
+	            </dl>    	 
+			</div>
+			<ul class="tm-ind-panel">
+                <li class="tm-ind-item tm-ind-sellCount " data-label="月销量">
+                	<div class="tm-indcon"><span class="tm-label">月销量</span><span class="tm-count">{$goods.permonth_sales}</span></div>
+                </li>
+	            <li class="tm-ind-item tm-ind-reviewCount canClick tm-line3" id="J_ItemRates">
+	            	<div class="tm-indcon"><span class="tm-label">累计评价</span><span class="tm-count">{$goods.appraise_num}</span></div>
+	            </li>
+    	
+				<li class="tm-ind-item tm-ind-emPointCount" data-spm="1000988">
+					<div class="tm-indcon"><a href="//vip.tmall.com/vip/index.htm" target="_blank"><span class="tm-label">送商城积分</span><span class="tm-count">{$goods.goods_points}</span></a></div>
+				</li>
+			</ul>
+			<div id="skuInfo" class="tem-sku">
+			    
+
+				<dl>
+					<dt class="tb-metatit ">数量</dt>
+					<dd id="J_Amount">
+						<span class="tb-amount-widget mui-amount-wrap">
+								<span class="wrap-input choose-amount">
+                                    <input class="text buy-num" onkeyup="setAmount.modify('#buy-num',0,'SKU');" id="buy-num" value="1" data-stock="{$goods.goods_stock}">
+                                    <a class="btn-reduce disabled" onclick="setAmount.reduce('#buy-num',0);" href="#none" data-disabled="1">-</a>
+                                    <a class="btn-add" onclick="setAmount.plus('#buy-num',0,'SKU')" href="#none" data-disabled="1">+</a>
+                                </span>
+							<span class="mui-amount-unit">件</span>
+						</span>
+						<em id="J_EmStock" class="tb-hidden" style="display: inline;">库存{$goods.goods_stock}件</em>
+						<span id="J_StockTips"></span>
+					</dd>
+				</dl>
+        		<div class="tem-action tm-clear">
+	        		<div class="tb-btn-buy tb-btn-sku">
+	                    <a id="J_LinkBuy" href="www" title="点击此按钮，到下一步确认购买信息。" role="button">立即购买</a>
+	                </div>
+	                <div class="tb-btn-add tb-btn-sku tb-hidden">
+	                	<a href="javascript:"  id="J_LinkAdd" role="button"><i class="icon iconfont"></i>加入购物车</a>
+	                </div>
+
+        		</div>
+            </div>
+
+		</div>
+		<div class="wrap rightFavorView">
+			<div class="s-ListTitle">
+				<s></s>
+				<span>看了又看</span>
+			</div>
+			<div id="favorViewSlider">
+				<div class="sliderShow">
+					<ul>
+					</ul>
+				</div>
+			</div>
+		</div>
+</div>
+<div class="wrapper">
+	<div class="wrap leftHotList">
+	<div class="hTitle">热销推荐</div>
+		<ul id="recomandGoods" data-num="10">
+			<li data-role="normalAdItem" style="display:none">
+				<a href="" data-action="ad_link"><img data-role="ad_image" src="" width="160" /></a>
+				<a data-action="ad_link" data-role="ad_title" href="" class="titleText">
+					<em data-role="goods_price"></em>
+				</a>
+			</li>
+		</ul>		
+	</div>
+	<div id="descCate" class="wrap descCateAnchor" role="tabExtraContent-0">
+		<ul>
+			<li><a href="">产品介绍</a></li>
+			<li><a href="">图文细节</a></li>
+			<li><a href="">售后服务</a></li>
+		</ul>
+	</div>
+	<div class="wrap goodsDescription">
+		<div id="descTab" class="tab" role="tab">
+			<ul class="titleTab" role="tabMenu">
+				<li class="curSel" role="tabItem"><a href="javascript:void(0)">商品详情</a><i></i></li>
+				<li role="tabItem" id="moreParamTab" style="display:none"><a href="javascript:void(0)">商品参数</a><i></i></li>
+				<li role="tabItem"><a href="javascript:void(0)">累计评价<em>{$goods.appraise_num}</em></a><i></i></li>
+			</ul>
+			<div role="tabContent">
+				<div class="descContent" id="descContent">
+					<div style="clear:both"></div>
+				</div>
+				<div class="bodyContent" style="overflow:hidden;">
+				{$goods.goods_description}
+				</div>
+			</div>
+			<div class="moreGoodsParam" role="tabContent" id="moreGoodsParam" style="display:none"></div>
+			<div class="commentContent" role="tabContent" style="display:none">
+				<div class="appraiseTag">
+					<div class="appraiseScore" id="appraiseScore">
+						<h4>总体好评度</h4>
+						<strong>100%</strong>
+						<p></p>
+					</div>
+					<div class="scoreTag" id="scoreTag">
+						<div style="width:415px;margin-bottom:8px">
+							<div class="scrollPoint">
+								<div class="point">5</div>
+							</div>
+						</div>
+						<div class="scrollBar"></div>
+						<div class="scoreTxt"><span>非常不满</span><span>不满意</span><span>一般</span><span>满意</span><span>非常满意</span></div>
+					</div>
+				</div>
+				<div class="checkBar">
+					<span>
+						<label><input type="radio" checked="true" name="getAppraiseType" value="1">全部</label>
+						<label><input type="radio" name="getAppraiseType" value="2">追评</label>
+						<label><input type="radio" name="getAppraiseType" value="3">图片</label>
+					</span>
+
+				</div>
+				<div class="appriaseList" id="appraiseList">
+					<ul>
+						
+					</ul>
+				</div>
+				<div style="clear:both"></div>
+			</div>
+		</div>
+	</div>
+</div>
+<tc_include file="Public:footer" />
+<tc_include file="Public:emallshop_bar"/>
+<tc_include file="Public:scripts"/>
+<script type="text/javascript">
+var jsonURLRoot='__PUBLIC__/Emall/';
+//评价回复链接
+var postAppraiseReplyURL="{:U('EMall/GoodsDetails/postAppraiseReply')}";
+//收藏商品链接
+var setToFavorGoodsURL="{:U('User/center/setToFavorGoods')}";
+var getFavorGoodsURL="{:U('User/center/getFavorGoods')}";
+var cancelFavorGoodsURL="{:U('User/center/cancelFavorGoods')}";
+var favorData=null;
+var favorGoodsData=null;
+//获取相似商品链接
+var getSimilarGoodsURL="{:U('EMall/GoodsDetails/getSimilarGoods')}";
+//商品详细参数数据
+var filterData='{$termFilterData}';
+var filter_id='{$goods.filter_id}';
+var smeta='{$goods.smeta}';
+var term_id='{$goods.term_id}';
+
+//商品及购物车数据
+var goodsData={'goods_id':1};
+var goods_id="{$goods.goods_id}";
+var goods_ThumbImg='{$smeta[0][thumb]}';
+var goods_stock='{$goods.goods_stock}';
+var goods_price='{$goods.goods_price}';
+var goods_discount='{$goods.goods_discount}';
+var market_price='{$goods.market_price}';
+
+//服务器中加载到的购物车构造数据（正式应用数据）
+var ShopCartData;
+//当前加载的购物车数据，如果此数据存在，通过判断内容是否改变来提交或者获取数据
+//var curShopCartData;
+var cartGoodsNum=0;
+var shopBuyNum=0;
+//运费数据
+var fromProvinceId='{$goods.province_send}';
+var fromCityId='{$goods.city_send}';
+var selToAreaId=$('#selToArea .mui_addr_tri_1').attr('data-id');
+var tmplLogisticsData='{$goods.logistics_param}';
+logisticsType='{$goods.logistics_type}';
+goods_weight='{$goods.goods_weight}';
+goods_volume='{$goods.goods_volume}';
+
+//用于存储sku单品项选项信息供选择时调用
+var skuFormData;
+//样式外观类SKU数据如：颜色
+var SKU_StyleData;
+//生成单品项属性序列索引值存储的二维数组
+var skuGroupIdx;
+//当前选中的SKU单品，用于索引查询对应数据
+var curSelSKUIdx=0;
+//当前选中的规格类属性索引如：尺码
+var curSelSKUSpec=-1;
+//当前选中的样式外观类属性索引如：颜色
+var curSelSKUStyle=-1;
+var goods_SKUData='{$goods.goods_sku}';
+
+function formatAppraiseScore(){
+	var scorePoint=parseFloat('{$goods.goods_score}');
+	$('#scoreTag .point').text(scorePoint);
+	scorePoint=parseInt(scorePoint/5*100)+'%';
+	$('#appraiseScore strong').text(scorePoint);
+	$('#scoreTag .scrollPoint').css('width',scorePoint);
+}
+
+//获取评价数据
+$.fn.getAppraiseData=function(){
+	var $this=$(this);
+	//绑定筛选事件
+	$('input[name="getAppraiseType"]').on('click',function(){
+		getAppraiseData($(this).val());
+	})
+
+	function getAppraiseData(filterType){
+		$.post(GV.getAppraiseDataURL,{gid:goods_id,filterType:filterType},function(data){
+			if(data.status==1){
+				var listHtml='';
+				$.each(data.data.content,function(index,Item){
+					var sku_spec,sku_style;
+					var additionalHtml='';
+					var appraiseContent='';
+					//获取sku单品属性名
+					if(parseInt(Item.sku_idx)<0){
+						sku_spec=sku_style='';
+					}else{
+						sku_style=skuFormData[Item.sku_idx].sku_style;
+						sku_spec=skuFormData[Item.sku_idx].sku_spec;
+					}
+
+					//获取追评数据
+					if(Item.appraise_additional && Item.appraise_additional!=='' && filterType!==3){
+							additionalHtml+='<p><span class="color-gray">'+Item.appraise_addt_time+'</span><span class="color-orange"> 追评：</span>'+Item.appraise_additional+'</p>';	
+					}
+
+					//显示全部或者包含图片的评价时包含所有评价数据，选择追评筛选时只显示追评数据
+					var replyContent=Item.appraise_reply?'<p class="replyContent color-orange">'+Item.admin_name+'回复：'+Item.appraise_reply+'</p>':'';
+					if(filterType==1 || filterType==3){
+						appraiseContent=Item.appraise_content?Item.appraise_content:'此用户很懒，没有对此商品提交评论内容...';
+						appraiseContent='<p>'+appraiseContent+'</p><p class="color-gray">评价时间：'+Item.appraise_time+'</span></p>';
+					}else if(filterType==2){
+						appraiseContent='';
+					}
+
+					//管理员操作评价的代码
+					var adminAppraiseHtml='';
+					if(data.data.admin==1){
+
+						var replyHref=Item.appraise_reply?'javascript:void(0)':'javascript:showAppraiseReply('+Item.appraise_id+',1)';
+						var replyEnable=Item.appraise_reply?'color-gray':'';	
+						var editReplyHref=Item.appraise_reply?'javascript:showAppraiseReply('+Item.appraise_id+',2)':'javascript:void(0)';
+						var editReplyEnable=!Item.appraise_reply?'color-gray':'';
+
+						adminAppraiseHtml='<p class="appraiseAdmin"><a class="editReplyBtn '+editReplyEnable+'" href="'+editReplyHref+'">修改回复</a>'
+										+'<a class="replyBtn '+replyEnable+'" href="'+replyHref+'">回复评价</a></p>';
+					}
+
+					//显示用户评价星级
+					var appraiseScore=parseInt(Item.appraise_score)*12;
+					var scoreStyle='style="width:'+appraiseScore+'px"';
+					listHtml+='<li data-appraiseid="'+Item.appraise_id+'"><div class="appraiseContent">'+appraiseContent
+							+additionalHtml+replyContent+'</div>'
+							+'<div class="skuInfo color-gray"><p>外观：'+sku_style+'</p><p>规格：'+sku_spec+'</p></div>'
+							+'<div class="appraiseUser"><p><span class="color-orange">'+Item.shopper_name+'</span></p><p><span class="star"'+scoreStyle+'></span></p></div>'+adminAppraiseHtml;
+							+'</li>';
+					
+				})
+				$this.html(listHtml);
+				//加入翻页数据
+				$this.append(data.data.page);
+
+			}else{
+				$('#appraiseList ul').html('<li style="text-align:center">'+data.error+'</li>');
+			}
+			//console.log(data);
+		}).error(function(){
+			$('#appraiseList ul').html('<li style="text-align:center">链接服务器出错，无法获取评价数据,请稍候尝试！</li>');
+		})
+	}
+	getAppraiseData(1);
+}
+
+//展开评价回复界面（toggle形式展开关闭）
+function showAppraiseReply(appraise_id,postType){
+	var apparaiseItem=$('li[data-appraiseid="'+appraise_id+'"]');
+	var replyUI=apparaiseItem.find('.replyUI');
+	//添加回复UI代码
+	if(replyUI.length==0){
+		var postBtnHtml='<a class="postReplyBtn" href="javascript:postAppraiseReply('+appraise_id+','+postType+')">提交回复</a>';
+		apparaiseItem.append('<div class="replyUI"><textarea placeholder="请填写回复评价的内容"></textarea>'+postBtnHtml+'</div>');
+	}else{
+		replyUI.remove();
+	}
+}
+
+//提交评价回复
+function postAppraiseReply(appraise_id,postType){
+	var appraiseItem=$('li[data-appraiseid="'+appraise_id+'"]');
+	var replyUI=appraiseItem.find('.replyUI');
+	var replyContent=replyUI.find('textarea').val();
+	if(replyContent==''){
+		alert('请先填写回复评价的内容！');
+		return false;
+	}
+
+	$('body').setLoadingState({container:'body',loadingTxt:'正在提交评价回复数据，请稍候...'});
+
+	$.post(postAppraiseReplyURL,{appraise_id:appraise_id,replyContent:replyContent,postType:postType},function(data){
+		if(data.status==1){
+			replyUI.remove();
+			//将提交成功的内容写入页面
+			var replyContentWrap=appraiseItem.find('.replyContent');
+			if(replyContentWrap.length==0){
+				var replyContentHtml='<p class="replyContent color-orange">'+data.data+'回复：'+replyContent+'</p>';
+				appraiseItem.find('.appraiseContent').append(replyContentHtml);
+			}else{
+				replyContentWrap.empty().text(data.data+'回复：'+replyContent);
+			}
+			//改变两个提交链接的状态
+			appraiseItem.find('.editReplyBtn').removeClass('color-gray').attr('href','javascript:showAppraiseReply('+appraise_id+',2)');
+			appraiseItem.find('.replyBtn').addClass('color-gray').attr('href','javascript:void(0);');
+		}else{
+			alert(data.error);
+		}
+		$('body').setLoadingState('destroy');
+	}).error(function(){
+		alert('链接服务器出错，无法提交评价回复数据,请稍候尝试！')
+		$('body').setLoadingState('destroy');
+	})
+}
+
+//获取相似商品（看了又看）
+function getSimilarGoods(){
+	if(filter_id=='' && goods_price==''){
+		return false;
+	}
+	$.post(getSimilarGoodsURL,{goods_id:goods_id,term_id:term_id,filter_id:filter_id,goods_price:goods_price},function(data){
+		if(data.status==1){
+			var goodsDataHtml='';
+			//console.log(data.data);
+			if(data.data && data.data!==''){
+				$.each(data.data,function(index,Item){
+					var imageData=$.parseJSON('{"goods_img":'+Item.goods_img+'}');					
+					goodsDataHtml+='<li><a href="{:U(\'EMall/GoodsDetails/index\')}&id='+Item.goods_id+'"><img src="'+imageData.goods_img[0].m_thumb+'" width="150px" /><em>¥'+Item.goods_price+'</em></a></li>';
+				})
+			}
+			$('#favorViewSlider ul').append(goodsDataHtml);
+			//看了又看幻灯脚本绑定
+			$('#favorViewSlider').setGoodsSlider({
+				direction:'vertical',
+				sliderCount:3,
+				thumbWrapper:'.sliderShow',
+				naturePic:null,
+				hoverStyle:null,
+				pageStyle:1,
+				height:490
+			});			
+		}else{
+
+		}
+	}).error(function(){
+
+	})
+}
+
+$(function(){
+	var webRoot='{:sp_get_asset_upload_path('')}';
+	//输出商品评分
+	formatAppraiseScore();
+	//获取评价数据
+	$('#appraiseList ul').getAppraiseData();
+	//加载广告数据
+	getAdListData('10,13');	
+	//获取相似商品(看了又看)
+	getSimilarGoods(filter_id,goods_price);
+
+	//解析商品参数
+	if(filterData!=='' && filter_id!==''){
+		var filterInfo=filter_id.split(' ');
+		var parseFilter=$.parseJSON(filterData);
+		
+		//输出的商品参数html
+		var filterHTML='';
+
+		$.each(parseFilter,function(fid,Options){
+			$.each(filterInfo,function(index,Item){
+				if(Options.child[Item]){
+					filterHTML+='<li>'+Options.filter_name+'：'+Options.child[Item].filter_name+'</li>';
+					delete filterInfo[index];
+				}
+			})
+		})
+
+		$('#descContent').prepend('<ul>'+filterHTML+'</ul>');
+	}
+
+	//解析更多商品详细参数
+	if(smeta!=='' && smeta!=='null'){
+		$('#moreParamTab').show();
+		var moreGoodsParam=$.parseJSON(smeta);
+		var paramHTML='';
+		$.each(moreGoodsParam,function(category,Options){
+			var categoryHtml='';
+			categoryHtml+='<div class="paramList"><h3>'+category+'</h3><dl>'
+			var optionItem='';
+			$.each(Options,function(index,Item){
+				if(Item.value!==''){
+					optionItem+='<dt>'+Item.paramname+'：</dt><dd>'+Item.value+'</dd>';
+				}
+			})
+			//如果某个属性类不存在任何填写的属性参数则不输出
+			if(optionItem!==''){
+				paramHTML+=categoryHtml+optionItem+'</dl></div>';
+			}
+		})
+		$('#moreGoodsParam').prepend(paramHTML);
+	}
+
+	//顶部分类导航监听
+	$('#categorys-mini').getTopShowNav({
+		postURL:GV.getAllTopShowNavURL
+	});
+
+	//展示图绑定幻灯脚本
+	$('#goodsPicSlider').setGoodsSlider({
+		thumbWrapper:'.picShow',
+		naturePic:'.picWrapper',
+		hoverStyle:'picShow-hover'
+	});
+
+
+	//添加放大镜预览
+	$('#previewPic').setPicZoomPreview();
+
+	//绑定tab菜单事件
+	$('#descTab').setTabMenu({hasExtra:true,extraContentPrefix:'tabExtraContent-'});
+
+	//浮动顶部菜单对象，初始为null
+	var fixedTopMenu=null;	
+	//绑定滚动条事件生成浮动顶部菜单
+	$('.goodsDescription').setFixedTopMenu({
+		//设定回调函数
+		cbFunc:function(offsetTop,scrollTop){
+			//添加顶部菜单
+			if(scrollTop>offsetTop){
+				if(!fixedTopMenu){
+					fixedTopMenu=$('<div class="fixedTopMenu"><div class="wrapper">'
+						+'<div class="fixedToplogo"></div>'
+						+'<div class="fixedTopCart"><a href="javascript:shopCart.addToCart(\''+GV.addToCartURL+'\');"><i class="icon iconfont"></i>加入购物车</a></div>'
+						+'<div class="descFixedTopMenu"><ul class="titleTab" role="scrollTabMenu">'
+						+'<li class="curSel" role="scrollTabItem"><a href="javascript:void(0)">商品详情</a></li>'
+						+'<li role="scrollTabItem"><a href="javascript:void(0)">累计评价<em>{$goods.appraise_num}</em></a></li>'
+						+'</ul></div></div></div>').appendTo($('body'));
+					//为浮动菜单绑定tab菜单事件
+					$('.fixedTopMenu').setScrollTabMenu({bindTab:'#descTab'});
+				}else{
+					//如果已经添加过，重新显示
+					fixedTopMenu.show();
+				}
+			}else{
+				//隐藏浮动顶部菜单
+				if(fixedTopMenu){
+					fixedTopMenu.hide();
+				}
+			}
+		}
+	});
+
+	//左侧浮动购物信息导航栏
+	$('#EMallShopBar').setEMallShopBar();
+
+
+	//商品详情浮动导航滚动事件绑定
+	$('#descCate').setFixedScrollMenu({linkElement:'.goodsDescription',offsetMargin:22});
+
+
+	//sku解析绑定
+	$('#skuInfo').skuParse(goods_SKUData);		
+
+	//console.log(skuFormData);
+
+	//判断获取发货地数据是否成功
+	if(fromProvinceId!=='' && fromCityId!==''){
+		//获取显示前端运费模板及计算结果
+		displayAreaData({'provinceId':fromProvinceId,'cityId':fromCityId});		
+	}else{
+		alert('未正常获取到运费模板数据，无法解析商品数据！');
+	}
+
+	//弹出配送区选择框
+	$('#selToArea span[role="button"]').click(function(){
+		$(this).next().show();
+	})
+	//绑定侧栏购物车的checkbox选择事件
+	$('#EMallShopBar').setAllCheckbox({
+		callFunc:function(){
+			shopCart.cartAccounts();
+		}
+	});
+	//测侧栏购物车列表
+	setCartList('#EMallShopBar .cartList');
+
+	//绑定收藏商品事件
+	$('#setToFavor').setToFavorGoods();
+});
+</script>
+</body>
+</html>

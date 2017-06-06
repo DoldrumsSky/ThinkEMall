@@ -1,0 +1,43 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="form-horizontal js-ajax-form" action="{:U('AdminGoodsProperty/add_post')}" method="post">
+			<div class="tabbable">
+		        <div class="tab-content">
+		          <div class="tab-pane active" id="A">
+						<fieldset>
+							
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_ADMINGOODS_PROPERTY_NAME')}</label>
+								<div class="controls">
+									<input type="text" name="cat_name" value=""><span class="form-required">*</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_ADMINGOODS_PROPERTY_ENABLED')}</label>
+								<div class="controls">
+								<label class="radio"><input type="radio" name="enabled" value="1" checked="true">使用</label>
+								<label class="radio"><input type="radio" name="enabled" value="0">禁用</label>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_ADMINGOODS_DESCRIPTION')}</label>
+								<div class="controls">
+									<textarea name="description" rows="5" cols="57"></textarea>
+								</div>
+							</div>
+						</fieldset>
+		          </div>
+
+		        </div>
+		    </div>
+		    <div class="form-actions">
+		     	<button class="btn btn-primary js-ajax-submit"type="submit">{:L('ADD')}</button>
+		      	<a class="btn" href="javascript:history.back(-1);">{:L('BACK')}</a>
+		    </div>
+		</form>
+	</div>
+	<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+</body>
+</html>

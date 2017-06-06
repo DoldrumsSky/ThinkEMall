@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+<style type="text/css">
+.paymentInfo{
+  width:100%;
+  background-color: #fffdee;
+  border:1px solid #ddd;
+  font-size: 15px;
+  padding:20px;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.paymentInfo div{
+  float:left;
+  margin-right:30px;
+}
+
+.paymentInfo .totalPrice{
+  border-right:1px dotted #666;
+  padding:0 40px 0 20px;
+}
+
+.paymentInfo .totalPrice em{
+  color:#dd2727;
+  font-size: 24px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-top:-2px;
+}
+
+.paymentInfo .infoText em{
+  color:#dd2727;
+  font-size: 18px;
+  margin-right:30px;
+}
+
+.paymentInfo .infoText .btn{
+  color:#FFF;
+}
+
+.paymentSelect ul{
+  padding:20px;
+}
+
+.paymentSelect ul li{
+  display: inline-block;
+  width:190px;
+  height:70px;
+  margin:0 20px;
+  background: url('__TMPL__Public/assets/images/payment.png') no-repeat top center;
+  border:1px solid #ddd;
+  position: relative;
+  cursor: pointer;
+}
+
+.paymentSelect ul li.weixinPay{
+  background-position: 0 -72px;
+}
+
+.paymentSelect ul li.alipay{
+  background-position: 0 0;
+}
+
+.paymentSelect ul li.selected.alipay{
+  background-position: -1px -2px;
+}
+
+.paymentSelect ul li.selected.weixinPay{
+  background-position: -2px -74px;
+}
+
+
+.paymentSelect ul li span{
+  display: none;
+  position: absolute;
+  bottom: 0;
+  right:0;
+  display: block;
+  width:20px;
+  height:20px;
+}
+
+.paymentSelect ul li.selected{
+  border:2px solid #dd2727;
+  width:189px;
+  height:69px;
+}
+
+.paymentSelect ul li.selected span{
+  display: block;
+  background:  url('__TMPL__Public/assets/images/payment.png') no-repeat 0 -144px;
+}
+</style>
+</head>
+<body class="bg-white" id="top">
+<tc_include file="Public:user_nav" />
+
+<div class="wrapper tc-main">
+<div class="paymentInfo">
+  <div class="totalPrice">
+    <p style="font-size:15px;">实付总金额</p><em>¥ {$total_price}</em>
+  </div>
+  <div class="infoText">
+    <p>您现在正准备为以下订单（{$order_serial}）中的商品进行支付，请确认需要支付的商品与金额！</p>
+    您当前选择的支付方式为：<em class="payment">{$payment}</em>
+  </div>    
+</div>
+<div style="margin:20px auto;width:300px;color:#556B2F;font-size:16px;font-weight: bolder;">
+  <img alt="扫描二维码支付" src="/index.php?g=User&m=Payment&a=payqrcode&data={$code_url}" style="width:220px;height:220px;"/>
+  <img src="__TMPL__Public/assets/images/weixinPayInfo.png" style="width:220px;margin-top:10px"/>
+  </div>
+</div>
+
+
+    <tc_include file="Public:footer" />
+	</div>
+
+	<!-- /container -->
+
+	<tc_include file="Public:scripts" />
+  <script type="text/javascript">
+
+  </script>
+</body>
+</html>

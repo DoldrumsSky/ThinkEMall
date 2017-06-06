@@ -1,0 +1,110 @@
+<admintpl file="header" />
+<link rel="stylesheet" type="text/css" href="__PUBLIC__/js/webuploader/webuploader.css">
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="form-horizontal js-ajax-form" action="{:U('AdminEMallAD/postTermsAD',array('id'=>$id,'adKey'=>$adKey,'postType'=>'edit'))}" method="post">
+			<div class="tabbable">
+		        <div class="tab-content">
+		          <div class="tab-pane active" id="A">
+						<fieldset>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_TITLE')}</label>
+								<div class="controls">
+									<input type="text" name="ad_title" value="" required><span class="form-required"> *</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SECOND_TITLE')}</label>
+								<div class="controls">
+									<input type="text" name="second_title" value="">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SUB_TITLE')}</label>
+								<div class="controls">
+									<input type="text" name="sub_title" value="">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_LINK')}</label>
+								<div class="controls">
+									<input type="text" name="ad_link" value="" style="width:400px" required><span class="form-required"> *</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_IMAGE')}</label>
+								<div class="controls">
+									<div id="uploader" style="width:200px;overflow:hidden">
+									    <div id="fileList" class="uploader-list">
+									    <div id="WU_FILE_0" class="file-item thumbnail upload-state-done"><img class="img-responsive" src=""></div>
+									    <input type="hidden" name="UpFilePathInfo" value="">
+									    </div>
+									    <div id="cfilePicker">选择图片</div>
+									</div>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_DURATION')}</label>
+								<div class="controls">
+								<input type="text" name="start_time" class="js-datetime" value="{$formget.start_time|default=''}" style="width: 120px;" autocomplete="off">-
+								<input type="text" class="js-datetime" name="end_time" value="{$formget.end_time|default=''}" style="width: 120px;" autocomplete="off">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('STATUS')}</label>
+								<div class="controls">
+									<select name="ad_status">
+										<option value="1">投放</option>
+										<option value="0">禁用</option>
+									</select>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SORT')}</label>
+								<div class="controls">
+									<input type="text" name="listorder" value="0"><span class="form-required">*</span>
+								</div>
+							</div>
+						</fieldset>
+		          </div>
+
+		        </div>
+		    </div>
+		    <div class="form-actions">
+		     	<button class="btn btn-primary js-ajax-submit" type="submit">{:L('SAVE')}</button>
+		      	<a class="btn" href="{:U('AdminEMallAD/manageTermsAD',array('id'=>$id,'ad_name'=>$ad_name))}">{:L('BACK')}</a>
+		    </div>
+		</form>
+	</div>
+<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/js/webuploader/webuploader.js"></script>
+<script type="text/javascript" src="__PUBLIC__/js/webuploader/getting-started.js"></script>
+<script type="text/javascript">
+// 添加全局站点信息
+var BASE_URL = '__PUBLIC__/js/webuploader/';
+var UPLOAD_SERVER='{:U("AdminEMallUpload/uploadSinglePic")}';
+var imgPath='{:sp_get_image_preview_url()}';
+var adData='{$adData.ad_data}';
+var id='{$id}';
+var adKey='{$adKey}'
+$(function() {
+	$("#uploader").setUploader(null,{uploadImgType:'normal',thumb:{height:102}});
+
+	if(adData!==''){
+		adData=$.parseJSON(adData);
+		$(':input[name="ad_title"]').val(adData.AdItem[adKey].ad_title);
+		$(':input[name="second_title"]').val(adData.AdItem[adKey].second_title);
+		$(':input[name="sub_title"]').val(adData.AdItem[adKey].sub_title);
+		$(':input[name="ad_link"]').val(adData.AdItem[adKey].ad_link);
+		$(':input[name="start_time"]').val(adData.AdItem[adKey].start_time);
+		$(':input[name="end_time"]').val(adData.AdItem[adKey].end_time);		
+		$('select[name="ad_status"]').val(adData.AdItem[adKey].ad_status);
+		$(':input[name="listorder"]').val(adData.AdItem[adKey].listorder);
+		$(':input[name="UpFilePathInfo"]').val(adData.AdItem[adKey].ad_image);
+		$('#uploader img').attr('src',imgPath+adData.AdItem[adKey].ad_image)
+	}
+});
+</script>
+</body>
+</html>

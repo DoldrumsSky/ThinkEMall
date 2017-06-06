@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+<style>
+.control-label{
+	font-weight: bold;
+	float: left;
+	width: 70px;
+}
+.wrapper{
+  overflow: hidden;
+}
+
+.userPoints,.pointsInfo{
+  float:left;
+  border-right:1px dotted #999;
+  padding:10px 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.userPoints a ,.pointsInfo a,.pointsInfo a:hover,.pointsInfo button,.pointsInfo button:hover{
+  color:#FFF;
+}
+
+.pointsInfo{
+  border:none;
+}
+
+
+.pointsInfo input{
+  padding:2px 5px;
+  width:100px;
+}
+
+.userPoints p{
+  font-size:18px;
+}
+
+.userPoints em{
+  font-size: 22px;
+  color:#288c29;
+}
+
+.points_deduction,.points_plus{
+  display: inline-block;
+  padding:0 10px;
+  font-weight: 700;
+  font-size:14px;
+}
+
+.points_deduction em{
+  font-size: 16px;
+  color:#dd2727;
+}
+
+.points_plus em{
+  font-size: 16px;
+  color:#288c29;
+}
+
+.orderStatus,a:hover.orderStatus{
+  color:#FFF;
+  padding:2px 12px;
+}
+
+a:hover.orderStatus{
+  background: #dd0303;
+}
+</style>
+</head>
+<body class="body-white" id="top">
+	<tc_include file="Public:user_nav" />
+  <div class="wrapper tc-main">
+      <tc_include file="Public:user_left_nav"/>
+      <div class="centerContent">
+      <div class="cWrap">
+        <div class="userPoints">
+          <p>可用商城余额</p>
+          <em>￥{$user.balance}</em>
+        </div>
+        <div class="pointsInfo">
+          <form method="post" action="{:U('User/Payment/deposit',array('order_type'=>1))}">
+            <p>充值金额：<input type="text" name="deposit_fee" placeholder="请输入金额" required="true"></p>
+            <button type=submit class="btn bg-red">点击进入充值支付页面</button>
+          </form>
+        </div>
+      </div>
+      <div class="cWrap marginTop-8">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>充值订单号</th>
+              <th style="text-align:center;">充值金额</th>
+              <th>充值日期</th>
+              <th style="text-align:center;">状态</th>
+              <th style="text-align:center;">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+          <volist name="depositData" key="key" id="vo">
+            <tr>
+              <th scope="row">{$key}</th>
+              <td class="text-success">{$vo.order_serial}</td>
+              <td style="text-align:center;">￥{$vo.total_price}</td>
+              <td>{$vo.order_time}</td>
+              <td style="text-align:center;"><if condition="$vo.status eq 0">未支付<else />充值成功</if></td>
+              <td style="text-align:center;"><if condition="$vo.status eq 0"><a href="{:U('User/Payment/deposit',array('order_type'=>1,'service_id'=>$vo['service_id']))}" class="btn bg-red orderStatus">去支付</a><else />无操作项</if></td>
+            </tr>           
+          </volist>
+          </tbody>
+        </table>
+        <div style="float:right"><ul  class="pagination">{$page}</ul></div>
+      </div>    
+  </div>
+</div>
+
+<tc_include file="Public:footer" />
+	<!-- /container -->
+<tc_include file="Public:scripts" />
+<script type="text/javascript">
+var totalPrice='{$totalPrice}';
+$('#expenditure').text('￥'+Number(totalPrice).toFixed(2));
+</script>
+</body>
+</html>

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+</head>
+<body class="bg-white" id="top">
+  <tc_include file="Public:user_nav" />
+
+  <div class="wrapper tc-main">
+  <h1 style="font-weight:normal;font-size:31px;display:inline;margin-right:10px;">商品退货详情</h1><span>请谨防钓鱼链接和诈骗电话</span>
+      <div class="orderViewTitle">
+          <h4>订单号：</h4><em class="orderSerial">{$refundData.order_serial}</em><em id="orderGoodsNum"></em><a href="{:U('User/Order/orderView')}&id={$refundData.order_id}">返回订单详情</a>
+      </div>
+      <div class="orderProcess">
+          <div class="processTitle">
+              <em>申请退货</em>
+              <em>商家同意</em>
+              <em>提供退货运单</em>
+              <em>商家收货</em>
+              <em>退还货款</em>
+          </div>
+          <div class="processBar">
+            <div style="width:100%;position:absolute;top:-6px;left:0">
+              <span class="processPoint"><em class="down"></em></span>
+              <span class="processPoint"><em></em></span>
+              <span class="processPoint"><em></em></span>
+              <span class="processPoint"><em></em></span>
+              <span class="processPoint"><em></em></span>
+            </div>
+              <div class="process"></div>
+          </div>
+          <div class="processTimerTxt">
+              <em id="applyTime"></em>
+              <em id="confirmTime">等待商家确认退货</em>
+              <em id="refundGoodsTime">等待提供退货运单</em>
+              <em id="receivedGoodsTime">等待商家收货</em>
+              <em id="refundPriceTime">确认退还货款</em>
+          </div>
+      </div>
+      <div class="refundDetail" data-id="{$refundData.order_id}">
+
+      </div>
+</div>
+
+    <tc_include file="Public:footer" />
+	</div>
+  <tc_include file="User:refundModal" />
+	<!-- /container -->
+
+	<tc_include file="Public:scripts" />
+  <script type="text/javascript">
+  var refund_info='{$refundData.refund_info}';
+  //默认的标题栏代码
+  var orderStatuCode='<em class="orderStatu-normal">退货申请中</em>请等待商家确认退货';
+  //查看运单信息的链接 
+  var waybillDetailURL='http://api.logistics.com/';
+  //提交退货申请的链接 
+  var postApplyRefundURL="{:U('User/Order/postApplyRefund')}";
+  //提交退货运单的链接 
+  var postRefundWayBillNoURL="{:U('User/Order/postRefundWayBillNo')}";
+  //退货商品的信息
+  var goodsData='{$refundData.goods_data}';
+  //退货商品的gid
+  var refund_goodsId="{$refundData.goods_id}";
+  //订单ID
+  var order_id='{$refundData.order_gid}';
+  //退货商品的运单号
+  var refundWayBillNo='';
+  //当前退货进程状态码
+  var refundStatus=0;
+
+  //提交退货运单（postType为0时表示提交，为1时表示修改）
+  function postRefundWayBillNo(postType){
+    var postRefundWayBill_No=$('#refundWayBillNo').val();
+    if(postType==0 && postRefundWayBill_No==''){
+      alert('请在左上角填写退货的快递运单号！');
+      return false;
+    //修改时需要添加文本框
+    }else if(postType==1){
+       $('.refundDetail dl:eq(0) dt').append(' <input type="text" id="refundWayBillNo" placeholder="请填写退货运单号">');
+       $('#postRefundWayBillBtn').attr('href','javascript:postRefundWayBillNo(0)').text('提交退货运单');
+       return false;
+    }
+    //如果运单一样，则直接退出编辑状态
+    if(refundWayBillNo==postRefundWayBill_No || postRefundWayBill_No==''){
+       $('#refundWayBillNo').remove();
+       $('#postRefundWayBillBtn').attr('href','javascript:postRefundWayBillNo(1)').text('修改退货运单');
+      return false;
+    }
+
+    $('body').setLoadingState({container:'body',loadingTxt:'正在提交退货运单数据，请稍候'});
+    $.post(postRefundWayBillNoURL,{
+        order_id:order_id,
+        gid:refund_goodsId,
+        refundWayBillNo:postRefundWayBill_No
+      },function(data){
+        if(data.status==1){
+          if(data.data){
+            updateRefundProcess(data.data,3);
+          }
+            refundWayBillNo=postRefundWayBill_No;
+        }else{
+          alert(data.error);
+        }
+        $('body').setLoadingState('destroy');
+    }).error(function(){
+        alert('链接服务器出错，无法提交数据,请稍候尝试！');
+        $('body').setLoadingState('destroy');
+    })
+  }
+
+  //更新退货进度并处理对应按钮及元素属性
+  function updateRefundProcess(Item,refund_status){
+        if(refund_status==-1){
+          $('.processBar .process').css('width','20%');
+            $('#confirmTime').text('商家拒绝退货');
+        }else if(refund_status==1){
+            $('.processBar .process').css('width','20%');
+        //商家同意退货后改变退货进度
+        }else if(refund_status==2){
+            $('.processBar .process').css('width','40%');
+            $('.processBar .processPoint:eq(1) em').addClass('down');
+            $('#confirmTime').text(Item.disposeTime);
+            //改变退货状态标识
+            $('.refundDetail  dl:eq(0)').attr('data-statu','agreeRefund').find('dt').html('<em class="orderStatu-normal">已同意退货</em><input type="text" id="refundWayBillNo" placeholder="请填写退货运单号">请点击提交退货运单按钮输入退货的运单号');
+            //为提交退货运单按钮添加事件
+            $('#postRefundWayBillBtn').attr('href','javascript:postRefundWayBillNo(0)');
+        //提交退货运单后改变退货进度
+        }else if(refund_status==3){
+            $('.processBar .process').css('width','60%');
+            $('.processBar .processPoint:gt(0):lt(2) em').addClass('down');
+            $('#confirmTime').text(Item.disposeTime);
+            //改变退货状态标识
+            $('.refundDetail dl:eq(0)').attr('data-statu','waitReceiveRefundGoods').find('dt').html('<em class="orderStatu-normal">等待商家收货</em>退货运单号：'+Item.refundWayBillNo+' &nbsp;您可以点击修改退货运单按钮修改运单号');
+            $('#refundGoodsTime').text(Item.refund_waybill_sendtime);
+        }else if(refund_status==4){
+            $('.processBar .process').css('width','80%');
+            $('.processBar .processPoint:gt(0):lt(3) em').addClass('down');
+            $('#confirmTime').text(Item.disposeTime);
+            $('#receivedGoodsTime').text(Item.receivedGoodsTime);
+            //改变退货状态标识
+            $('.refundDetail dl:eq(0)').attr('data-statu','waitReceiveRefundGoods').find('dt').html('<em class="orderStatu-normal">商家已收货</em>退货运单号：'+Item.refundWayBillNo+' &nbsp;请等待商家确认退款（24小时内）');
+            $('#refundGoodsTime').text(Item.refund_waybill_sendtime);
+        }else if(refund_status==5){
+            $('.processBar .process').css('width','100%');
+            $('.processBar .processPoint:gt(0):lt(4) em').addClass('down');
+            $('#confirmTime').text(Item.disposeTime);
+            $('#receivedGoodsTime').text(Item.receivedGoodsTime);
+            $('#refundGoodsTime').text(Item.refund_waybill_sendtime);
+            //改变退货状态标识
+            $('.refundDetail dl:eq(0)').attr('data-statu','waitReceiveRefundGoods').find('dt').html('<em class="orderStatu-normal bg-green">商家已退款</em>退货运单号：'+Item.refundWayBillNo+' &nbsp;商家已经确认退款，请注意查收，如有疑问请联系客服');
+            $('#refundPriceTime').text(Item.refundPriceTime);
+        }
+
+        //显示退货处理信息
+        if(refund_status>1){
+          if($('dl[role="disposeDetail"]').length==0){
+              //当进入退货流程后显示退货说明
+              $('.refundDetail').append('<dl class="disposeDetail" role="disposeDetail"><dt><em class="orderStatu-normal">退货处理详情</em>请根据下方说明信息确认需要退货后三天内提交退货运单号，拒签请填写原运单号</dt><dd>退货处理说明：<em>'+Item.disposeDetail+'</em></dd></dl>');
+          }
+        //拒绝退货时显示的退货处理信息
+        }else if(refund_status==-1){
+              $('.refundDetail').append('<dl class="disposeDetail" role="disposeDetail"><dt><em class="orderStatu-normal">退货处理详情</em>如果还有其它问题请联系客服</dt><dd>退货处理说明：<em>'+Item.disposeDetail+'</em></dd></dl>');
+              //更新状态标识
+               $('.refundDetail  dl:eq(0) dt').html('<em class="orderStatu-normal bg-red">商家拒绝退货</em>请在下方查看退货处理详情说明');
+        }
+        //提交退货运单号后，更新提交按钮为修改运单号
+        if(refund_status>2 && refund_status<4){
+            refundWayBillNo = Item.refundWayBillNo;       
+            $('#postRefundWayBillBtn').attr('href','javascript:postRefundWayBillNo(1)').text('修改退货运单');
+        }
+
+        refundStatus=refund_status;
+  }
+
+  $(function(){
+    goodsData=$.parseJSON(goodsData);
+    console.log(goodsData);
+    $.each(goodsData,function(gid,Item){
+      if(refund_goodsId==gid){
+    //按长度要求截取标题字符
+        var sliceLength=Item.goods_title.length<32?Item.goods_title.length:32;
+        var goods_title=Item.goods_title.substr(0,sliceLength);
+        goods_title+=Item.goods_title.length>32?'...':'';
+
+        //生成html
+        var orderGoodsHTML='<dd data-gid="'+gid+'"><div class="itemImg fixImgPadding">'
+                          +'<a href=""><img src="'+Item.goods_img+'" width="80" class="cartGoodsImg" alt=""></a></div>'
+                          +'<div class="listInfo"><p><a href="{:U(\'EMall/GoodsDetails/index\')}'+'&id='+Item.goods_id+'" target="_blank">'+goods_title+'</a></p>'
+                          +'<p>'+Item.sku_style+' '+Item.sku_spec+'</p>'
+                          +'<p><em>¥</em> <em>'+Number(Item.price).toFixed(2)+'</em> X '+Item.shopBuyNum
+                          +'&nbsp;&nbsp;&nbsp;&nbsp;运费：<em>¥</em> <em>'+Number(Item.logistics_price).toFixed(2)+'</em>&nbsp;&nbsp;&nbsp;&nbsp;配送方式：<em>'+changeToLogistaticsStr(Item.logistics)+'</em></p></div>'
+                          +'<div role="refundContact" class="refundContact"></div>'
+                          +'<div role="refundDespt" class="refundDespt"></div>'
+                          +'<div class="actionBtn" style="float:right"><p><a href="javascript:void(0);" class="orderBtn bg-red staticPosition" role="button" id="postRefundWayBillBtn">提交退货运单</a></p><p><a href="javascript:void(0);" class="orderBtn bg-blue staticPosition" role="editRefundBtn">修改退货信息</a></p></div></dd>';  
+
+        $('.refundDetail').append('<dl data-statu="apply"><dt>'+orderStatuCode+'</dt>'+orderGoodsHTML+'</dl>'); 
+
+        //输出退货信息
+        //更新退货进度
+        updateRefundProcess(Item.refund_info,Item.refund_status);
+
+        $('#applyTime').append(Item.refund_info.applyTime);
+        $('.refundContact').html('<p>联系人：'+Item.refund_info.contact+'</p><p>联系电话：'+Item.refund_info.telNum+'</p>');
+        //截取退货详情文本
+        var sliceLength=Item.refund_info.detail.length<60?Item.refund_info.detail.length:60;
+        var detail=Item.refund_info.detail.substr(0,sliceLength);
+        detail+=Item.refund_info.detail.length>32?'...':'';
+        $('.refundDespt').html('<p>退货详情说明：'+Item.refund_info.detail+'</p>');
+        waybill_no=Item.refund_info.waybill_no;
+        //将退货信息填写进编辑模态框
+        $('#refundModal').find('#input_contact').val(Item.refund_info.contact);
+        $('#refundModal').find('#input_telNum').val(Item.refund_info.telNum);
+        refund_detail=Item.refund_info.detail;  
+
+        return false;     
+      }
+    })
+
+
+  //申请退货
+  $.fn.applyRefund=function(order_id,waybill_no){
+    $(this).on('click',function(){
+        $('#refundModal').on('show.bs.modal',function(){
+          var $this=$(this);
+          var refundGoodsHTML='';
+
+              var goodsItem = $('dd[data-gid="'+refund_goodsId+'"]');
+              var goods_id = goodsItem.attr('data-gid');
+              var imgSrc=goodsItem.find('.itemImg img').attr('src');
+              var goods_title=goodsItem.find('.listInfo a:first').text();
+
+              var selGoodsInfo='<div class="itemImg fixImgPadding refundGoods"><a href=""><img src="'+imgSrc+'" width="60" class="cartGoodsImg" alt=""></a><div>'+goods_title+'</div></div> ';
+              var refundDetailHTML='<div class="form-group"><div class="input-group col-sm-10 col-xs-10 center"><label for="inputDetailInfo">退货详情说明</label>'
+                    +'<textarea class="form-control" data-gid="'+goods_id+'" placeholder="请输入退货件数及退货理由" maxlength="100" required>'+refund_detail+'</textarea></div></div>';
+              refundGoodsHTML+=selGoodsInfo+refundDetailHTML;
+              
+
+          //将两个关键数据保存到属性中，然后插入商品详情及退货详情说明文本域
+          $this.find('#refundContent').attr({'data-serial':waybill_no,'data-id':order_id}).empty().append(refundGoodsHTML);
+        }).modal();      
+    })
+
+  }
+
+    //绑定提交退款申请事件
+    $('#postRefundBtn').on('click',function(){
+        var refundModal=$('#refundModal');
+        var refundContent=refundModal.find('#refundContent');
+        var contact=refundModal.find('input[name="contact"]').val();
+        var telNum=refundModal.find('input[name="telNum"]').val();
+        var detailInfo=refundModal.find('textarea');
+        var refundDespt='';
+
+        if(contact=='' || telNum==''){
+            alert('请先填写完整的退货申请信息，包括联系人、电话、退货详情说明！');
+            return false;
+        }
+
+        var detailCode='';
+        var refundInfo='';
+        var gidGroup='';
+
+        $.each(detailInfo,function(){
+            refundDespt=$(this).val();
+            if(refundDespt==''){
+              alert('请先填写完整的退货申请信息，包括联系人、电话、退货详情说明！');
+                return false;
+            }
+            var goods_id=$(this).attr('data-gid');
+
+            detailCode+=detailCode==''?'"'+goods_id+'":"'+refundDespt+'"':',"'+goods_id+'":"'+refundDespt+'"';
+            var separator=refundInfo==''?'':',';
+            refundInfo+=separator+'"'+goods_id+'":{"contact":"'+contact+'","telNum":"'+telNum+'","detail":"'+refundDespt+'"}';
+        })
+
+        //console.log('{'+refundInfo+'}'+'orderid:'+order_id);
+        //return false;
+        //
+        var modalContent=refundModal.find('.modal-content');
+        modalContent.setLoadingState({loadingTxt:'正在提交退货申请，请稍候...'});
+        refundInfo='{'+refundInfo+'}';
+        $.post(postApplyRefundURL,{order_id:order_id,gidGroup:refund_goodsId,refundInfo:String(refundInfo),type:1},function(data){
+            if(data.status==1){
+              //console.log(data.data);
+                refundModal.modal('hide');
+                //更新显示的退货信息
+                $('.refundContact').html('<p>联系人：'+data.data.contact+'</p><p>联系电话：'+data.data.telNum+'</p>');
+                //截取退货详情文本
+                var sliceLength=data.data.detail.length<60?data.data.detail.length:60;
+                var detail=data.data.detail.substr(0,sliceLength);
+                detail+=data.data.detail.length>32?'...':'';
+                $('.refundDespt').html('<p>退货详情说明：'+data.data.detail+'</p>');
+                refund_detail=data.data.detail;              
+                
+            }else{
+                alert(data.error);
+            }
+            modalContent.setLoadingState('destroy');
+        }).error(function(){
+            alert('链接服务器出错，无法提交数据,请稍候尝试！');
+            modalContent.setLoadingState('destroy');
+        })
+    })
+
+  //绑定编辑退货信息事件
+  if(refundStatus>0 && refundStatus<4){
+    $('[role="editRefundBtn"]').applyRefund(order_id,waybill_no);
+  }
+  })
+  </script>
+</body>
+</html>

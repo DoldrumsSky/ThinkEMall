@@ -1,0 +1,109 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="well form-search" method="post" action="{:U('AdminEMallBrand/index')}" enctype="multipart/form-data">		
+			字母查找： 
+			<select name="letter" style="width: 120px;">
+				<option value="0">全部品牌</option>
+				<option value="A">A</option>
+				<option value="B">B</option>
+				<option value="C">C</option>
+				<option value="D">D</option>
+				<option value="E">E</option>
+				<option value="F">F</option>
+				<option value="G">G</option>
+				<option value="H">H</option>
+				<option value="I">I</option>
+				<option value="J">J</option>
+				<option value="K">K</option>
+				<option value="L">L</option>
+				<option value="M">M</option>
+				<option value="N">N</option>
+				<option value="O">O</option>
+				<option value="P">P</option>
+				<option value="Q">Q</option>
+				<option value="R">R</option>
+				<option value="S">S</option>
+				<option value="T">T</option>
+				<option value="U">U</option>
+				<option value="V">V</option>
+				<option value="W">W</option>
+				<option value="X">X</option>
+				<option value="Y">Y</option>
+				<option value="Z">Z</option>
+			</select> 	
+			&nbsp; &nbsp;
+			关键字： 
+			<input type="text" name="keyword" style="width: 200px;" value="{$formget.keyword|default=''}" placeholder="请输入关键字...">
+			<input type="submit" class="btn btn-primary" value="搜索" />
+			<a class="btn btn-danger" href="{:U('AdminGoodsProperty/index')}">清空</a>
+		</form>
+
+		<form method="post" class="js-ajax-form" action="">
+		<div class="table-actions">
+			<button class="btn btn-primary js-ajax-submit" type="submit" data-action="{:U('AdminEMallBrand/listorders')}">{:L('SORT')}</button>
+			<a type="button" class="btn btn-primary" href="{:U('AdminEMallBrand/index')}">{:L('LIST_ALL')}</a>
+			<a type="button" class="btn btn-danger" href="{:U('AdminEMallBrand/add')}"><span class="fa fa-plus">&nbsp;</span>{:L('ADD_BRAND')}</a>
+			<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminEMallBrand/delete')}" data-subcheck="true" data-msg="您确定删除吗？">{:L('DELETE')}</button>
+		</div>
+			<table class="table table-hover table-bordered table-list">
+				<thead>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<th width="50">{:L('SORT')}</th>
+						<th width="50">ID</th>
+						<th width="160">{:L('EMALL_BRAND_NAME')}</th>
+						<th width="160">{:L('EMALL_BRAND_LOGO')}</th>
+						<th>{:L('EMALL_BRAND_SITEURL')}</th>
+						<th width="120">{:L('EMALL_BRAND_STATUS')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</thead>
+				<tbody>
+					<foreach name="brand" item="vo">
+						<tr>
+						<td><input type="checkbox" class="js-check" data-yid="js-check-y" data-xid="js-check-x" name="ids[]" value="{$vo.brand_id}" title="ID:{$vo.brand_id}"></td>
+						<td><input name="listorders[{$vo.brand_id}]" class="input input-order" type="text" size="5" value="{$vo.listorder}"></td>
+						<td>{$vo.brand_id}</td>
+						<td><a href="{$vo.editURL}">{$vo.brand_name}</a></td>
+						<td>
+							<a href="{$vo.editURL}">
+								<if condition="$vo['brand_logo'] neq ''">
+									<img src="{:sp_get_image_preview_url($vo['brand_logo'])}" width="102" style="height:36px">
+								<else />
+									无LOGO图片
+								</if>
+							</a>
+						</td>
+	    				<td><a href="{$vo.site_url}">{$vo.site_url}</a></td>
+	    				<td width="50"><if condition="$vo.display eq 1">正常显示<else />隐藏</if></td>
+						<td>{$vo.str_manage}</td>
+						</tr>
+					</foreach>
+				</tbody>
+				<tfoot>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<th width="50">{:L('SORT')}</th>
+						<th width="50">ID</th>
+						<th width="160">{:L('EMALL_BRAND_NAME')}</th>
+						<th width="160">{:L('EMALL_BRAND_LOGO')}</th>
+						<th>{:L('EMALL_BRAND_SITEURL')}</th>
+						<th width="120">{:L('EMALL_BRAND_STATUS')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</tfoot>
+			</table>
+			<div class="table-actions">
+			<button class="btn btn-primary js-ajax-submit" type="submit" data-action="{:U('AdminEMallBrand/listorders')}">{:L('SORT')}</button>
+			<a type="button" class="btn btn-primary" href="{:U('AdminEMallBrand/index')}">{:L('LIST_ALL')}</a>
+			<a type="button" class="btn btn-danger" href="{:U('AdminEMallBrand/add')}"><span class="fa fa-plus">&nbsp;</span>{:L('ADD_BRAND')}</a>
+			<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminEMallBrand/delete')}" data-subcheck="true" data-msg="您确定删除吗？">{:L('DELETE')}</button>
+			<div class="pagination">{$page}</div>
+		</form>
+
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+</body>
+</html>

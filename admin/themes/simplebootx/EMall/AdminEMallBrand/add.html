@@ -1,0 +1,91 @@
+<admintpl file="header" />
+<link rel="stylesheet" type="text/css" href="__PUBLIC__/js/webuploader/webuploader.css">
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="form-horizontal js-ajax-form" action="{:U('AdminEMallBrand/add_post')}" method="post" enctype="multipart/form-data">
+			<div class="tabbable">
+		        <div class="tab-content">
+		          <div class="tab-pane active" id="A">
+						<fieldset>
+							
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_BRAND_NAME')}</label>
+								<div class="controls">
+									<input type="text" name="brand_name" value="" form-required><span class="form-required">*</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_ALIAS_NAME')}</label>
+								<div class="controls">
+									<input type="text" name="alias" value=""><span class="form-required">中英文名分开时使用</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_BRAND_LOGO')}</label>
+								<div class="controls">
+									<div id="uploader" style="width:200px;overflow:hidden">
+									    <div id="fileList" class="uploader-list">
+									    </div>
+									    <div id="cfilePicker">选择图片</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_BRAND_SITEURL')}</label>
+								<div class="controls">
+									<input type="text" name="site_url" value="">
+								</div>
+							</div>							
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_BRAND_STATUS')}</label>
+								<div class="controls">
+								<label class="radio"><input type="radio" name="display" value="1" checked="true">显示</label>
+								<label class="radio"><input type="radio" name="display" value="0">隐藏</label>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SORT')}</label>
+								<div class="controls">
+									<input type="text" name="listorders" value="50">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_BRAND_KEYWORDS')}</label>
+								<div class="controls">
+									<textarea name="brand_keywords" rows="5" cols="57"></textarea>  多个关键词请使用空格分开
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_BRAND_DESCRIPTION')}</label>
+								<div class="controls">
+									<textarea name="brand_desc" rows="5" cols="57"></textarea>
+								</div>
+							</div>
+						</fieldset>
+		          </div>
+
+		        </div>
+		    </div>
+		    <div class="form-actions">
+		     	<button class="btn btn-primary js-ajax-submit"type="submit">{:L('ADD')}</button>
+		      	<a class="btn" href="javascript:history.back(-1);">{:L('BACK')}</a>
+		    </div>
+		</form>
+	</div>
+	<script type="text/javascript">
+    // 添加全局站点信息
+    var BASE_URL = '__PUBLIC__/js/webuploader/';
+    var UPLOAD_SERVER='{:U("AdminEMallUpload/uploadSinglePic")}';
+    </script>
+	<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/js/webuploader/webuploader.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/js/webuploader/getting-started.js"></script>
+	<script type="text/javascript">
+	$(function() {
+    	$("#uploader").setUploader(null,{uploadImgType:'normal'});
+	});
+	</script>
+</body>
+</html>

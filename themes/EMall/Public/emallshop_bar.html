@@ -1,0 +1,72 @@
+<div id="EMallShopBar" data-expand="false">
+  <div class="shopBar">
+      <div class="shopBarTab" role="shopCart">
+        <div class="tab-cart">
+        <i class="icon iconfont"></i>
+          购物车
+        <div class="mui-mbar-tab-sup-bd">0</div> 
+        </div>
+        <div class="barBorder"></div>
+      </div>
+      <div class="shopBarTab">
+        <div class="tab-asset">
+          <i class="icon iconfont icon-goumai"></i>
+        </div>
+        <div class="barTooltip">我的资产<i style="color:#494949">◆</i></div>
+      </div>
+      <div class="shopBarTab">
+        <div class="tab-focus">
+          <i class="icon iconfont icon-pinpai"></i>
+        </div>
+        <div class="barTooltip">关注的品牌<i style="color:#494949">◆</i></div>
+      </div>
+      <div class="shopBarTab" role="favorGoods">
+        <div class="tab-favor">
+          <i class="icon iconfont icon-shoucang"></i>
+        </div>
+        <div class="barTooltip">我的收藏<i style="color:#494949">◆</i></div>
+      </div>
+      <div class="shopBarTab posFixBottom">
+        <div class="tab-backTop">
+          <i class="icon iconfont icon-huidaodingbu"></i>
+        </div>
+        <div class="barTooltip">返回顶部<i style="color:#494949">◆</i></div>
+      </div>
+  </div>
+  <div class="barWrap">
+    <div class="barTabContent" id="shopCart">
+      <div class="titleBar form-inline">
+        <label class="checkbox"><input type="checkbox" class="check-all" data-target="shopList">全选</label><a href="{:U('User/Order/viewAllOfCartGoods')}" id="fullView">全屏查看</a>
+      </div>
+      <div class="warningShopInfo">商品库存量以结算时为准，请快速下单！</div>
+      <ul class="cartList" id="cartList">
+      </ul>
+      <div class="accounts">
+          <div class="accountInfo"><span>已选中<em id="selCartListItemNum">0</em>件</span><span class="accountsPrice">总金额：<em>¥</em><em id="accountPrice">0</em></span></div>
+          <a role="button" class="btn btn-red" href="javascript:shopCart.createGIDStrToAccount();" target="_blank">去结算<span class="goBtn"></span></a>
+      </div>
+    </div>
+    <div class="barTabContent" id="myAssets">
+      <ul>
+        <li><p>我的积分</p><em id="myScore">0</em></li>
+        <li><p>我的余额</p>¥<em id="myBalance">0.00</em></li>
+      </ul>
+      <a href="javascript:;" class="goFavorDetail" id="doDeposit">我要充值<i></i></a>
+    </div>
+    <div class="barTabContent">
+      <div style="text-align:center;color:#999;margin-top:20px">此功能尚未开发...</div>
+    </div>
+    <div class="barTabContent" id="favorGoods">
+      <div class="favorTitle">我的收藏<i class="icon iconfont icon-shoucang"></i></div>
+      <div class="favorList">
+        <s></s>
+        <div class="favorTimer">最近添加</div>
+        <ul>
+
+        </ul>
+        <a href="{:U('User/center/myFavorGoods')}" class="goFavorDetail">查看全部<i></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+

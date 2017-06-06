@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+<style>
+.control-label{
+	font-weight: bold;
+	float: left;
+	width: 70px;
+}
+.wrapper{
+  overflow: hidden;
+}
+
+.userPoints,.pointsInfo{
+  float:left;
+  border-right:1px dotted #999;
+  padding:10px 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.userPoints a ,.pointsInfo a{
+  color:#FFF;
+}
+
+.pointsInfo{
+  border:none;
+}
+
+.userPoints p{
+  font-size:18px;
+}
+
+.userPoints em{
+  font-size: 22px;
+  color:#288c29;
+}
+
+.points_deduction,.points_plus{
+  display: inline-block;
+  padding:0 10px;
+  font-weight: 700;
+  font-size:14px;
+}
+
+.points_deduction em{
+  font-size: 16px;
+  color:#dd2727;
+}
+
+.points_plus em{
+  font-size: 16px;
+  color:#288c29;
+}
+
+</style>
+</head>
+<body class="body-white" id="top">
+	<tc_include file="Public:user_nav" />
+  <div class="wrapper tc-main">
+      <tc_include file="Public:user_left_nav"/>
+      <div class="centerContent">
+      <div class="cWrap">
+        <div class="userPoints">
+          <p>可用商城积分</p>
+          <em>{$users.points}</em>
+        </div>
+        <div class="pointsInfo">
+          <p>积分有效时间：永久</p>
+          <a href="" class="btn bg-red disabled">积分商城尚未开启</a>
+        </div>
+      </div>
+      <div class="cWrap marginTop-8">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>积分来源</th>
+              <th style="text-align:center;">积分变化</th>
+              <th>获得日期</th>
+              <th>备注</th>
+            </tr>
+          </thead>
+          <tbody>
+          <volist name="pointsData" key="key" id="vo">
+            <tr>
+              <th scope="row">{$key}</th>
+              <td class="text-success" width="500">{$goods_data[$gid]['goods_title']}<p>商城购物</p>订单编号：{$vo.order_serial}</td>
+              <td style="text-align:center;">
+                <php>
+                  if($vo['points_plus']>0){
+                    echo '<div class="points_plus">购物 <em>+'.$vo['points_plus'].'</em></div>';
+                  }
+
+                  if($vo['points_deduction']>0){
+                    echo '<div class="points_deduction">抵扣 <em>-'.$vo['points_deduction'].'</em></div>';
+                  }
+                </php>
+              </td>
+              <td>{$vo.pay_time}</td>
+              <td>购物产生</td>
+            </tr>           
+          </volist>
+          </tbody>
+        </table>
+        <div style="float:right"><ul  class="pagination">{$page}</ul></div>
+      </div>    
+  </div>
+</div>
+
+<tc_include file="Public:footer" />
+	<!-- /container -->
+<tc_include file="Public:scripts" />
+<script type="text/javascript">
+var totalPrice='{$totalPrice}';
+$('#expenditure').text('￥'+Number(totalPrice).toFixed(2));
+</script>
+</body>
+</html>

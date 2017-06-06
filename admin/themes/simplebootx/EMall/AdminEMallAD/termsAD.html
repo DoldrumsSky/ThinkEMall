@@ -1,0 +1,487 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="well form-search" method="post" action="{:U('AdminEMallAD/termsAD')}">
+			广告状态： 
+			<select name="ad_status" style="width: 120px;">
+				<option value="-1">全部状态</option>	
+				<option value="1">投放中</option>
+				<option value="0">禁用</option>
+			</select> &nbsp;&nbsp;			
+			关键字： 
+			<input type="text" name="keywords" style="width: 200px;" value="{$formget.keyword|default=''}" placeholder="请输入关键字...">
+			<input type="submit" class="btn btn-primary" value="搜索" />
+			<a class="btn btn-danger" href="{:U('AdminEMallAD/termsAD')}">清空</a>
+		</form>
+		<form method="post" class="js-ajax-form" action="{:U('AdminEMallAD/listorders')}">
+			<div class="table-actions">
+				<button type="submit" class="btn btn-primary js-ajax-submit">{:L('SORT')}</button>
+				<button class="btn btn-danger js-ajax-submit" type="submit" data-subcheck="true" data-action="{:U('AdminEMallAD/delete')}">{:L('DELETE')}</button>
+				<a class="btn btn-primary" href="{:U('AdminEMallAD/add',array('ad_type'=>2))}">{:L('ADD_AD')}</a>
+			</div>
+			<table class="table table-hover table-bordered table-list">
+				<thead>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<th width="50">{:L('SORT')}</th>
+						<th width="50">ID</th>
+						<th>{:L('NAME')}</th>
+						<th>{:L('SUB_NAME')}</th>
+						<th>{:L('HOME_AD')}</th>
+						<th>{:L('AD_TYPE')}</th>
+						<th>{:L('STATUS')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</thead>
+				<tbody>
+					<foreach name="adData" item="vo">
+					<tr>
+						<td><input type="checkbox" class="js-check" data-yid="js-check-y" data-xid="js-check-x" name="ids[]" value="{$vo.id}" title="ID:{$vo.id}"></td>
+						<td><input name="listorders[{$vo.id}]" type="text" size="3" value="{$vo.listorder}" class="input input-order valid" aria-invalid="false"></td>
+						<td>{$vo.id}</td>
+						<td>{$vo.ad_name}</td>
+						<td>{$vo.sub_name}</td>
+						<td><php>if($vo['ad_home']==1){echo '是';}else{echo '否';}</php></td>
+						<td><php>if($vo['ad_type']==1){echo '幻灯广告';}else if($vo['ad_type']==2){echo '类目组广告';}else if($vo['ad_type']==3){echo '普通广告';}</php></td>
+						<td><php>if($vo['ad_status']==1){echo '投放中';}else{echo '禁用';}</php></td>
+						<td><a href="{:U('AdminEMallAD/manageTermsAD',array('id'=>$vo['id'],'ad_name'=>$vo['ad_name']))}">管理广告</a>  |  <a href="{:U('AdminEMallAD/setTermsADCover',array('id'=>$vo['id']))}">{:L('SET_COVER')}</a>  |  <a href="{:U('AdminEMallAD/edit',array('id'=>$vo['id']))}">{:L('EDIT')}</a> | <a href="{:U('AdminEMallAD/delete',array('id'=>$vo['id']))}" class="js-ajax-delete" >{:L('DELETE')}</a></td>
+					</tr>
+					</foreach>
+				</tbody>
+				<tfoot>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<th width="50">{:L('SORT')}</th>
+						<th width="50">ID</th>
+						<th>{:L('NAME')}</th>
+						<th>{:L('SUB_NAME')}</th>
+						<th>{:L('HOME_AD')}</th>
+						<th>{:L('AD_TYPE')}</th>
+						<th>{:L('STATUS')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</tfoot>
+			</table>
+			<div class="pagination">{$page}</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script type="text/javascript">
+	var getTermBrandURL="{:U('AdminEMallBrand/getTermBrand')}";
+	var searchBrandURL="{:U('AdminEMallBrand/searchBrand')}";
+	var postBrandToTermURL="{:U('AdminEMallBrand/postBrandToTerm')}";
+	var imgPath="{:sp_get_image_preview_url()}";
+	var selBrandNum=0;
+	var selAddBrandNum=0;
+	//按字母搜索时的选择字母
+	var searchLetter='';
+	//搜索品牌数据分页数
+	var searchPageSize=2;
+	//当前所有搜索页数
+	var curSearchPageNum=1;
+
+		function manageTermBrand(term_id,termBrandId){
+			var container=$(window.parent.document);
+
+			//加入管理界面HTML
+			container.find("body").append('<div class="EMallLoading opacity" style="width:100%;height:100%;position:fixed;z-index:10000;top:0;left:0;color:#fafafa;text-align:center;">'
+			+'<div class="closeBtn" id="closeManageBrand">关闭</div><div class="brandManage"><ul class="sl-b-letter J_brandLetter" style="display: block;"><li data-initial="a" style="display: " class="">A</li><li data-initial="b" style="display: " class="">B</li><li data-initial="c" style="display: " class="">C</li><li data-initial="d" style="display: " class="">D</li><li data-initial="e" style="display: " class="">E</li><li data-initial="f" style="display: " class="">F</li><li data-initial="g" style="display: " class="">G</li><li data-initial="h" style="display: " class="">H</li><li data-initial="i" style="display: " class="">I</li><li data-initial="j" style="display: ">J</li><li data-initial="k" style="display: ">K</li><li data-initial="l" style="display: ">L</li><li data-initial="m" style="display: ">M</li><li data-initial="n" style="display: ">N</li><li data-initial="o" style="display: ">O</li><li data-initial="p" style="display: ">P</li><li data-initial="q" style="display: ">Q</li><li data-initial="r" style="display: ">R</li><li data-initial="s" style="display: ">S</li><li data-initial="t" style="display: ">T</li><li data-initial="u" style="display: ">U</li><li data-initial="v" style="display: ">V</li><li data-initial="w" style="display: ">W</li><li data-initial="x" style="display: ">X</li><li data-initial="y" style="display: ">Y</li><li data-initial="z" style="display: ">Z</li><li data-initial="other" style="display: none;">其它</li>'
+	        +'</ul>'
+	        +'<div class="brandSearcher"><input type="text" id="searchKeywords" class="brandSearchTxt" placeholder="请输入品牌名/关键字"><button type="button" class="btn bg-orange" id="searchBtn">搜索品牌</button></div></div>'
+	        +'<div class="searchBrand sl-v-logos"></div>'	        
+	        +'<div class="termBrand sl-v-logos" id="termBrand"><div class="brandControlBar">'
+	        +'<a role="button" id="removeTermBrand" class="btn bg-orange" href="javascript:;">移除品牌</a><a role="button" id="cancelSelect" class="btn bg-blue" href="javascript:;">取消选择</a><a role="button" id="topBrandRank" class="btn bg-blue" href="javascript:;">排序置顶</a><a role="button" id="upBrandRank" class="btn bg-blue" href="javascript:;">排序往前</a><a role="button" id="downBrandRank" class="btn bg-blue" href="javascript:;">排序往后</a>'
+	        +'<input type="text" id="brandRankNum" placeholder="请输入排序数值"><button type="button" id="valueBrandRank" class="btn bg-blue valueRank">设定排序</button>'
+	        +'<a role="button" id="expandAllBrand" class="btn disabled" href="javascript:;">展开所有</a>'
+	        +'<a role="button" id="saveBrandRank" class="btn bg-orange" href="javascript:;">保存排序</a>'
+	        +'</div></div><div class="mask"></div></div>');
+
+	        //绑定关闭事件
+	        container.find('#closeManageBrand').on('click',function(){
+	        	self.location.reload();
+	        	container.find('.EMallLoading').remove();
+	        })
+
+			//整合商品类目品牌ID
+			var finalAddBrandId;
+        	function getTermBrandId(addBrandId,action){
+        		var brand_id='';
+				//整合所有品牌的ID，过滤掉重复添加的品牌数据
+				var termBrand=container.find('#brandsArea li');
+				if(addBrandId){
+					if(termBrand.length>0){
+						var addBrandArray=addBrandId.split(',');
+						termBrand.each(function(){
+							var bid=$(this).attr('data-bid');
+							var existIdx=$.inArray(bid,addBrandArray);
+							brand_id+=brand_id!==''?','+bid:bid;
+							//过滤重复品牌
+							if(existIdx>=0){
+								addBrandArray.splice(existIdx,1);
+							}
+						})
+						//如果存在可添加的品牌，则整合品牌ID
+						if(addBrandArray && addBrandArray.length>0){
+							finalAddBrandId=addBrandArray;
+							$.each(addBrandArray,function(index,Item){
+								brand_id=Item+','+brand_id;
+							})
+						}else{
+							alert('选择添加的品牌已经存在于商品类目中！');
+							return false;
+						}
+					}else{
+						finalAddBrandId=brand_id=addBrandId;
+					}
+				//移除品牌时直接取未被选择的品牌ID
+				}else{
+					termBrand.each(function(){
+						if(action=='delete'){
+							if(!$(this).hasClass('selected')){
+								var bid=$(this).attr('data-bid');
+								brand_id+=brand_id!==''?','+bid:bid;
+							}
+						}else{
+							var bid=$(this).attr('data-bid');
+							brand_id+=brand_id!==''?','+bid:bid;							
+						}
+					})
+				}
+				return brand_id;
+        	}
+
+
+
+        	//解析搜索结果数据：searchData返回的搜索数据，page：搜索结果分页数据
+        	function parseSearchResult(searchData,page){
+				if(!searchData || searchData==''){
+					container.find('.searchBrand').empty().append('<div style="height:40px;padding:10px 0">未搜索到任何数据，请更换关键词再尝试！</div>');
+					container.find('.addBrandToTerm').remove();
+					return false;
+				}
+
+				var brandHTML='<ul class="J_valueList v-fixed" id="searchBrand">';
+				//console.log(data.data);
+				$.each(searchData,function(index,Item){
+					//根据是否存在logo图片生成代码
+					var brand_logo=Item.brand_logo!==''?'<img class="loading-style2" data-lazy-img="done" src="'+imgPath+Item.brand_logo+'">'+Item.brand_name:Item.brand_name;
+					//整合代码
+					brandHTML+='<li data-bid="'+Item.brand_id+'"><a href="javascript:;" title="'+Item.brand_name+'" rel="nofollow"><i></i>'+brand_logo+'</a></li>';
+				})
+
+				var addBrandBtn=container.find('.addBrandToTerm');
+				container.find('.searchBrand').empty().queue(function(next){
+					//插入添加到商品类目按钮
+					if(addBrandBtn.length==0){
+						$(this).after('<div class="addBrandToTerm"><a title="添加品牌到商品类目" href="javascript:;" id="addBrandToTerm" role="button" class="btn bg-orange"><span class="fa fa-plus">&nbsp;</span>添加到商品类目</a></div>');
+
+						//添加品牌到商品类目事件
+						container.find('#addBrandToTerm').on('click',function(){
+							var addBrand=container.find('#searchBrand .selected');
+							var brand_id='';
+							var addBrandId='';
+							if(addBrand.length>0){
+								addBrand.each(function(){
+									var bid=$(this).attr('data-bid');
+									addBrandId+=addBrandId!==''?','+bid:bid;
+								})
+							}else{
+								alert('请先选择一个品牌logo！');
+								return false;
+							}
+							//如果没有可添加的品牌则直接退出执行
+							brand_id=getTermBrandId(addBrandId);
+							if(brand_id===false){
+								addBrand.removeClass('selected');
+								return false;
+							}
+							//提交添加的品牌数据
+							$.post(postBrandToTermURL,{brand_id:brand_id,term_id:term_id},function(data){
+								if(data.status==1){
+									alert('添加成功');
+									$.each(addBrand,function(){							
+										if($.inArray($(this).attr('data-bid'),finalAddBrandId)>=0){
+											var createBrand=$(this).clone(true).removeClass('selected');
+											var brandWrap=container.find('#brandsArea');
+											if(brandWrap.length==0){
+												brandWrap=$('<ul class="J_valueList v-fixed" id="brandsArea"></ul>').appendTo(container.find('#termBrand'));
+											}
+											brandWrap.prepend(createBrand);
+										}
+									})
+									addBrand.removeClass('selected');
+									//如果品牌超过20个，激活展开所有按钮
+									if(container.find('#brandsArea li').length>20){
+										container.find('#expandAllBrand').removeClass('disabled').addClass('bg-blue');
+									}
+									//window.location.reload();
+								}else{
+									alert(data.error);
+								}
+							}).error(function(){
+								alert('链接服务出错，无法添加品牌到商品类目，请稍候尝试！');
+							})
+						})	
+					}
+
+					//输出搜索到的品牌logo
+					$(this).append(brandHTML+'</ul>');
+					//添加分页数据跳转的前进与后退按钮
+					if(page.total>searchPageSize){
+						$(this).append('<div class="preBrandPage"></div><div class="nextBrandPage"></div>');
+						preBrandPage=$(this).find('.preBrandPage');
+						nextBrandPage=$(this).find('.nextBrandPage');
+						//绑定分页事件
+						preBrandPage.on('click',function(){
+							if(curSearchPageNum>1){
+								if($(this).hasClass('disabled')){
+									return false;
+								}
+								curSearchPageNum-=1;
+								//数据返回前禁止再次点击
+								$(this).addClass('disabled');
+								nextBrandPage.addClass('disabled');
+								postToSearch({chartext:searchLetter,keywords:searchKeywords,curSearchPageNum:curSearchPageNum});
+							}
+						})
+
+						nextBrandPage.on('click',function(){
+							if(curSearchPageNum<parseInt(page.pageCount)){
+								if($(this).hasClass('disabled')){
+									return false;
+								}
+								curSearchPageNum+=1;
+								//数据返回前禁止再次点击
+								$(this).addClass('disabled');
+								preBrandPage.addClass('disabled');
+								postToSearch({chartext:searchLetter,keywords:searchKeywords,curSearchPageNum:curSearchPageNum});
+							}
+						})
+					}
+
+					$(this).dequeue();
+				});
+
+				//绑定选择品牌事件
+				var brandWrap=container.find('#searchBrand');
+				brandWrap.find('li').on('click',function(){
+					if($(this).hasClass('selected')){
+						$(this).removeClass('selected');
+						selAddBrandNum--;
+					}else{
+						$(this).addClass('selected');
+						selAddBrandNum++;
+					}
+				})	
+        	}
+
+        	function postToSearch(postData){
+				$.post(searchBrandURL,postData,function(data){
+        			if(data.status==1){
+        				console.log(data);
+        				parseSearchResult(data.data,data.page);
+        			}else{
+        				alert(data.error);
+        			}
+        			//console.log(data.data);
+        		}).error(function(){
+        			alert('链接服务器搜索品牌数据出错，请稍候尝试！');
+        		})
+        	}
+
+	        //绑定搜索事件
+	        container.find('#searchBtn').on('click',function(){	
+	        	var keywords=container.find('#searchKeywords').val();
+	        	if(keywords==''){
+	        		alert('请先输入搜索关键词！');
+	        	}else{
+	        		searchKeywords=keywords;
+	        		searchLetter=''
+	        		postToSearch({keywords:keywords});
+	        	}
+	        })
+
+	        //按字母搜索品牌
+	        container.find('.J_brandLetter li').on('click',function(){
+	        	var chartext=$(this).text();
+	        		searchLetter=chartext;
+	        		searchKeywords='';
+	        		postToSearch({chartext:chartext});        	
+	        })
+
+			//取当前类目存在的品牌
+			$.get(getTermBrandURL,{brand_id:termBrandId},function(data){
+				if(data.status==1){
+					if(data.data.length==0){
+						return false;
+					}
+					var brandHTML='<ul class="J_valueList v-fixed" id="brandsArea">';
+					termBrandArray=termBrandId.split(',');
+					//console.log(data.data);
+					$.each(termBrandArray,function(index,Id){
+						var BrandData;
+						$.each(data.data,function(idx,Item){
+							if(Id==Item.brand_id){
+								BrandData=Item;
+								return false;
+							}
+						})
+						//根据是否存在logo图片生成代码
+						var brand_logo=BrandData.brand_logo!==''?'<img class="loading-style2" data-lazy-img="done" src="'+imgPath+BrandData.brand_logo+'">'+BrandData.brand_name:BrandData.brand_name;
+						//整合代码
+						brandHTML+='<li data-bid="'+BrandData.brand_id+'"><a href="javascript:;" title="'+BrandData.brand_name+'" rel="nofollow"><i></i>'+brand_logo+'</a></li>';
+					})
+					var termBrand=container.find('#termBrand');
+					termBrand.append(brandHTML+'</ul>');
+
+					//绑定选择品牌事件
+					var brandWrap=container.find('#brandsArea');
+					brandWrap.find('li').on('click',function(){
+						if($(this).hasClass('selected')){
+							$(this).removeClass('selected');
+							selBrandNum--;
+						}else{
+							$(this).addClass('selected');
+							selBrandNum++;
+						}
+					})
+
+					//绑定排序置顶按钮事件（允许多选排序，选中的品牌将直接排列到最前）		
+					container.find('#topBrandRank').on('click',function(){
+						var selBrand=brandWrap.find('.selected');
+						if(selBrand.length>0){
+							selBrand.each(function(){
+								var rankBrand=$(this).clone(true);
+								brandWrap.prepend(rankBrand);
+								$(this).remove();
+							})
+						}else{
+							alert('请先选择一个品牌logo！')
+						}
+					})
+
+					//绑定排序往前按钮事件（单选）				
+					container.find('#upBrandRank').on('click',function(){
+						var selBrand=brandWrap.find('.selected:first');
+						if(selBrand.length>0){
+							selBrand.each(function(){
+								var rankBrand=$(this).clone(true);
+								var rankNum=$(this).index()>0?$(this).index()-1:0;
+								var switchBrand=brandWrap.find('li:eq('+rankNum+')');
+								switchBrand.before(rankBrand);
+								$(this).remove();
+							})
+						}else{
+							alert('请先选择一个品牌logo！')
+						}
+					})
+
+					//绑定排序往后按钮事件（单选）			
+					container.find('#downBrandRank').on('click',function(){
+						var selBrand=brandWrap.find('.selected:first');
+						if(selBrand.length>0){							
+							var rankBrand=selBrand.clone(true);
+							var rankNum=selBrand.index()+1;
+							var switchBrand=brandWrap.find('li:eq('+rankNum+')');
+							switchBrand.after(rankBrand);
+							selBrand.remove();
+						}else{
+							alert('请先选择一个品牌logo！')
+						}
+					})
+
+					//绑定设定排序按钮事件（单选）			
+					container.find('#valueBrandRank').on('click',function(){
+						var selBrand=brandWrap.find('.selected:first');
+						var rankNum=container.find('#brandRankNum').val();
+						rankNum=isNaN(rankNum)?0:rankNum;
+						if(selBrand.length>0){
+							var rankBrand=selBrand.clone(true);
+							var switchBrand=brandWrap.find('li:eq('+rankNum+')');
+							if(rankNum>selBrand.index()){
+								switchBrand.after(rankBrand);
+							}else{
+								switchBrand.before(rankBrand);
+							}
+							selBrand.remove();
+						}else{
+							alert('请先选择一个品牌logo！')
+						}
+					})
+
+					//绑定展开所有品牌事件
+					if(data.data.length>20){
+						var expandAllBrand=container.find('#expandAllBrand');
+						expandAllBrand.removeClass('disabled').addClass('bg-blue');
+						expandAllBrand.on('click',function(){
+							if($(this).text()=='展开所有'){
+								$(this).text('收起品牌');
+								termBrand.addClass('expanded');
+							}else{
+								$(this).text('展开所有');
+								termBrand.removeClass('expanded');
+							}
+						})
+					}
+
+					//取消所有选中的品牌
+					container.find('#cancelSelect').on('click',function(){
+						brandWrap.find('.selected').removeClass('selected');
+						selBrandNum=0;
+					})
+
+				}else{
+					alert(data.error);
+				}
+			}).error(function(){
+				alert('链接服务器出错，无法获取品牌数据，请稍候尝试！');
+			})
+
+			//移除商品类目品牌事件
+			container.find('#removeTermBrand').on('click',function(){
+				var selRemoveBrand=container.find('#brandsArea .selected');
+				if(selRemoveBrand.length==0){
+					alert('请先选择一个品牌logo！');
+					return false;
+				}
+				var brand_id=getTermBrandId(null,'delete');
+				$.post(postBrandToTermURL,{brand_id:brand_id,term_id:term_id},function(data){
+					if(data.status==1){
+						alert('移除成功');
+						//self.location.reload();
+						selRemoveBrand.remove();
+						//如果品牌低于20个，禁用展开所有按钮
+						if(container.find('#brandsArea li').length<20){
+							container.find('#expandAllBrand').removeClass('bg-blue').addClass('disabled');
+						}
+					}else{
+						alert(data.error);
+					}
+				}).error(function(){
+					alert('链接服务出错，无法添加品牌到商品类目，请稍候尝试！');
+				})
+				//console.log(brand_id);
+			})
+
+			//保存品牌排序事件
+			container.find('#saveBrandRank').on('click',function(){
+				var brand_id=getTermBrandId();
+				$.post(postBrandToTermURL,{brand_id:brand_id,term_id:term_id},function(data){
+					if(data.status==1){
+						alert('保存排序成功');
+						//self.location.reload();
+					}else{
+						alert(data.error);
+					}
+				}).error(function(){
+					alert('链接服务出错，无法添加品牌到商品类目，请稍候尝试！');
+				})
+				//console.log(brand_id);
+			})
+
+		}
+
+	</script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="well form-search" method="post" action="{:U('AdminEMallGoods/index')}">
+			分类： 
+			<select name="term" style="width: 120px;">
+				<option value='0'>全部</option>{$taxonomys}
+			</select> &nbsp;&nbsp;
+			时间：
+			<input type="text" name="start_time" class="js-datetime" value="{$formget.start_time|default=''}" style="width: 120px;" autocomplete="off">-
+			<input type="text" class="js-datetime" name="end_time" value="{$formget.end_time|default=''}" style="width: 120px;" autocomplete="off"> &nbsp; &nbsp;
+			关键字： 
+			<input type="text" name="keyword" style="width: 200px;" value="{$formget.keyword|default=''}" placeholder="请输入关键字...">
+			<input type="submit" class="btn btn-primary" value="搜索" />
+			<a class="btn btn-danger" href="{:U('AdminEMallGoods/index')}">清空</a>
+		</form>
+		<form class="js-ajax-form" action="" method="post">
+			<div class="table-actions">
+				<notempty name="term">
+				<button class="btn btn-primary btn-small js-ajax-submit" type="submit" data-action="{:U('AdminPost/listorders')}">{:L('SORT')}</button>
+				</notempty>
+				<button class="btn btn-primary js-articles-copy" type="button">{:L('COPY_BATCH')}</button>
+				<button class="btn btn-primary js-articles-move" type="button">{:L('MOVE_BATCH')}</button>
+				<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminEMallGoods/delete')}" data-subcheck="true" data-msg="删除的商品可以在回收站中找回，您确定删除吗？">{:L('DELETE_GOODS')}</button>
+				<a role="button" class="btn btn-danger" href="{:U('AdminEMallGoods/recyclebin')}">{:L('RECYCLEBIN')}</a>
+				<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminEMallGoods/offSale')}" data-subcheck="true">{:L('OFF_SALE')}</button>
+				<button class="btn btn-primary js-ajax-submit" type="submit" data-action="{:U('AdminEMallGoods/onSale')}" data-subcheck="true">{:L('ON_SALE')}</button>					
+				<a role="button" class="btn btn-primary" href="{:U('AdminEMallGoods/add',array('term'=>$term_id))}"><span class="fa fa-plus">&nbsp;</span>{:L('ADD_GOODS')}</a>
+
+			</div>
+			<table class="table table-hover table-bordered table-list">
+				<thead>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<notempty name="term">
+						<th width="50">{:L('SORT')}</th>
+						</notempty>
+						<th width="50">ID</th>
+						<th>{:L('TITLE')}</th>
+						<th width="50">{:L('GOODS_PRICE')}</th>
+						<th width="50">{:L('GOODS_DISCOUNT')}</th>
+						<th width="50">{:L('GOODS_STOCK')}</th>
+						<th width="50">{:L('HITS')}</th>
+						<th width="50">{:L('APPRAISE_COUNT')}</th>
+						<th width="50">{:L('AUTHOR')}</th>
+						<th width="100">{:L('PUBLISH_DATE')}</th>
+						<th width="50">{:L('STATUS')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</thead>
+				<foreach name="goods" item="vo">
+				<tr>
+					<td><input type="checkbox" class="js-check" data-yid="js-check-y" data-xid="js-check-x" name="ids[]" value="{$vo.goods_id}" title="ID:{$vo.goods_id}"></td>
+					<notempty name="term">
+					<td><input name="listorders[{$vo.tid}]" class="input input-order" type="text" size="5" value="{$vo.listorder}"></td>
+					</notempty>
+                    <td><b>{$vo.goods_id}</b></td>
+					<td>
+						<php>$goods_img=json_decode($vo['goods_img'],true);</php>
+						<notempty name="goods_img">
+							<a class="goods_img" href="javascript:parent.image_preview_dialog('{$goods_img[0]['goods_img']}');">
+								<img src="{$goods_img[0]['thumb']}" width="60">
+							</a>
+						</notempty>
+						<a class="goods_title" href="{:leuu('GoodsDetails/index',array('id'=>$vo['goods_id'],'cid'=>$vo['term_id']))}" target="_blank">{$vo.goods_title}</a>
+					</td>
+					<td width="70"><em>{$vo.market_price}</em></td>
+					<td width="70"><em>{$vo.goods_price}</em>
+					</td>
+					<td>{$vo.goods_stock}</td>
+					<td>{$vo.hits}</td>
+					<td>
+						<notempty name="vo.appraise_num">
+							<a href="javascript:parent.open_iframe_dialog('{:U('comment/commentadmin/index',array('post_id'=>$vo['id']))}','评论列表')">{$vo.appraise_num}</a>
+						<else/>
+							{$vo.appraise_num}
+						</notempty>
+					</td>
+					<td>{$vo.user_nicename|default=$vo.user_login}</td>
+					<td width="120">{:date('Y-m-d H:i',strtotime($vo['post_date']))}</td>
+					<td>
+						<if condition="$vo['goods_status'] ELT 0">
+							<em class="offSale" title="商品下架"></em>
+						<elseif condition="$vo['goods_status'] eq 1"/>
+							<em class="onSale" title="商品在售"></em>
+						</if>
+					</td>
+					<td>
+						<a href="{:U('AdminEMallGoods/edit',array('id'=>$vo['goods_id'],'term_id'=>$vo['term_id']))}">{:L('EDIT')}</a>		
+						<if condition="$vo['goods_status'] eq 0">
+						 | <a href="{:U('AdminEMallGoods/onSale',array('id'=>$vo['goods_id']))}" class="js-ajax-delete" data-msg="你确定要上架商品吗？">{:L('ON_SALE')}</a>
+						 <elseif condition="$vo['goods_status'] eq 1"/>
+						 | <a href="{:U('AdminEMallGoods/offSale',array('id'=>$vo['goods_id']))}" class="js-ajax-delete" data-msg="你确定要下架商品吗？">{:L('OFF_SALE')}</a>
+						 </if>
+						 | <a href="{:U('AdminEMallGoods/delete',array('id'=>$vo['goods_id']))}" class="js-ajax-delete" data-msg="删除的商品可以在回收站中找回，您确定删除吗？">{:L('DELETE')}</a>
+					</td>
+				</tr>
+				</foreach>
+				<tfoot>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<notempty name="term">
+						<th width="50">{:L('SORT')}</th>
+						</notempty>
+						<th width="50">ID</th>
+						<th>{:L('TITLE')}</th>
+						<th width="50">{:L('GOODS_PRICE')}</th>
+						<th width="50">{:L('GOODS_DISCOUNT')}</th>
+						<th width="50">{:L('GOODS_STOCK')}</th>
+						<th width="50">{:L('HITS')}</th>
+						<th width="50">{:L('APPRAISE_COUNT')}</th>
+						<th width="50">{:L('AUTHOR')}</th>
+						<th width="100">{:L('PUBLISH_DATE')}</th>
+						<th width="50">{:L('STATUS')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</tfoot>
+			</table>
+			<div class="table-actions">
+				<notempty name="term">
+				<button class="btn btn-primary btn-small js-ajax-submit" type="submit" data-action="{:U('AdminPost/listorders')}">{:L('SORT')}</button>
+				</notempty>
+				<button class="btn btn-primary js-articles-copy" type="button">{:L('COPY_BATCH')}</button>
+				<button class="btn btn-primary js-articles-move" type="button">{:L('MOVE_BATCH')}</button>
+				<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminEMallGoods/delete')}" data-subcheck="true" data-msg="删除的商品可以在回收站中找回，您确定删除吗？">{:L('DELETE_GOODS')}</button>
+				<a role="button" class="btn btn-danger" href="{:U('AdminEMallGoods/recyclebin')}">{:L('RECYCLEBIN')}</a>
+				<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminEMallGoods/offSale')}" data-subcheck="true">{:L('OFF_SALE')}</button>
+				<button class="btn btn-primary js-ajax-submit" type="submit" data-action="{:U('AdminEMallGoods/onSale')}" data-subcheck="true">{:L('ON_SALE')}</button>					
+				<a role="button" class="btn btn-primary" href="{:U('AdminEMallGoods/add',array('term'=>$term_id))}"><span class="fa fa-plus">&nbsp;</span>{:L('ADD_GOODS')}</a>
+
+			</div>
+			<div class="pagination">{$page}</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script>
+		function refersh_window() {
+			var refersh_time = getCookie('refersh_time');
+			if (refersh_time == 1) {
+				window.location = "{:U('AdminEMallGoods/index',$formget)}";
+			}
+		}
+		setInterval(function() {
+			refersh_window();
+		}, 2000);
+		$(function() {
+			setCookie("refersh_time", 0);
+			Wind.use('ajaxForm', 'artDialog', 'iframeTools', function() {
+				//批量复制
+				$('.js-articles-copy').click(function(e) {
+					var ids=[];
+					$("input[name='ids[]']").each(function() {
+						if ($(this).is(':checked')) {
+							ids.push($(this).val());
+						}
+					});
+					
+					if (ids.length == 0) {
+						art.dialog.through({
+							id : 'error',
+							icon : 'error',
+							content : '您没有勾选信息，无法进行操作！',
+							cancelVal : '关闭',
+							cancel : true
+						});
+						return false;
+					}
+					
+					ids= ids.join(',');
+					art.dialog.open("__ROOT__/index.php?g=EMall&m=AdminEMallGoods&a=copy&old_term_id={$term.term_id|default=0}&ids="+ ids, {
+						title : "批量复制",
+						width : "300px"
+					});
+				});
+				//批量移动
+				$('.js-articles-move').click(function(e) {
+					var ids=[];
+					$("input[name='ids[]']").each(function() {
+						if ($(this).is(':checked')) {
+							ids.push($(this).val());
+						}
+					});
+					
+					if (ids.length == 0) {
+						art.dialog.through({
+							id : 'error',
+							icon : 'error',
+							content : '您没有勾选信息，无法进行操作！',
+							cancelVal : '关闭',
+							cancel : true
+						});
+						return false;
+					}
+					
+					ids= ids.join(',');
+					art.dialog.open("__ROOT__/index.php?g=EMall&m=AdminEMallGoods&a=move&old_term_id={$term.term_id|default=0}&ids="+ ids, {
+						title : "批量移动",
+						width : "300px"
+					});
+				});
+			});
+		});
+	</script>
+</body>
+</html>

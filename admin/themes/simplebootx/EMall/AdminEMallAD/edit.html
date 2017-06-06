@@ -1,0 +1,101 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="form-horizontal js-ajax-form" action="{:U('AdminEMallAD/edit_post',array('id'=>$adData['id']))}" method="post">			<div class="tabbable">
+		        <div class="tab-content">
+		          <div class="tab-pane active" id="A">
+						<fieldset>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_TYPE')}</label>
+								<div class="controls">
+									<select name="ad_type" id="ad_type">
+										<option value="1">幻灯广告</option>
+										<option value="2">类目组广告</option>
+										<option value="3">普通广告</option>
+									</select>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('NAME')}</label>
+								<div class="controls">
+									<input type="text" name="ad_name" value="{$adData.ad_name}"><span class="form-required">*</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SUB_NAME')}</label>
+								<div class="controls">
+									<input type="text" name="sub_name" value="{$adData.sub_name}">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('HOME_AD')}</label>
+								<div class="controls">
+									<select name="ad_home" id="ad_home">
+										<option value="1" <php>if($adData['ad_home']==1){echo 'selected';}</php>>是</option>
+										<option value="0" <php>if($adData['ad_home']==0){echo 'selected';}</php>>否</option>
+									</select>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('STATUS')}</label>
+								<div class="controls">
+									<select name="ad_status" id="ad_status">
+										<option value="1">投放</option>
+										<option value="0">禁用</option>
+									</select>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SORT')}</label>
+								<div class="controls">
+									<input type="text" name="listorder" value="{$adData.listorder}" required><span class="form-required">*</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_CONTAINER_ID')}</label>
+								<div class="controls">
+									<input type="text" name="ad_container" value="{$adData.ad_container}" placeholder="请填写广告代码的容器ID" required><span class="form-required"> * id须与前端广告容器代码的id一致</span>
+								</div>
+							</div>
+						</fieldset>
+		          </div>
+
+		        </div>
+		    </div>
+		    <div class="form-actions">
+		     	<button class="btn btn-primary js-ajax-submit" type="submit">{:L('SAVE')}</button>
+		      	<a class="btn" href="javascript:backMainPage();">{:L('BACK')}</a>
+		    </div>
+		</form>
+	</div>
+<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+<script type="text/javascript">
+var ad_type='{$adData.ad_type}';
+var ad_status='{$adData.ad_status}';
+
+function backMainPage(){
+ switch(parseInt(ad_type)){
+ 	case 1 :
+ 	window.location="{:U('AdminEMallAD/sliderAD')}";
+ 	break;
+ 	case 2 :
+ 	window.location="{:U('AdminEMallAD/termsAD')}";
+ 	break;
+ 	case 3 :
+ 	window.location="{:U('AdminEMallAD/normalAD')}";
+ 	break;
+ 	defaut:
+
+ 	break;
+ }
+}
+
+
+$(function(){
+	$('#ad_type').val(ad_type);
+	$('#ad_status').val(ad_status);
+})
+</script>
+</body>
+</html>

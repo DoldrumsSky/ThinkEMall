@@ -1,0 +1,136 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="form-horizontal js-ajax-form" action="{:U('AdminGoodsProperty/addPropertyPost')}" method="post">
+		<input type="hidden" name="post[cat_id]" value="{$cat_id}" />
+		<input type="hidden" name="extra[pname]" value="{$cat_name}">
+			<div class="tabbable">
+		        <div class="tab-content">
+		          <div class="tab-pane active" id="A">
+						<fieldset>
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_ADMINGOODS_PROPERTY_NAME')}</label>
+								<div class="controls">
+									<input type="text" value="{$cat_name}" disabled="true">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('PROPERTY_CATEGORY_NAME')}</label>
+								<div class="controls">
+								<select name="property[category_name]" id="category_name">
+									<foreach name="category" item="vo">
+										<option value="{$vo}">{$vo}</option>
+									</foreach>
+								</select>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_ADMINGOODS_PARAM_NAME')}</label>
+								<div class="controls">
+									<input type="text" name="property[paramname]" id="paramname" value="" required><span class="form-required">*</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_ADMINGOODS_FORMTYPE')}</label>
+								<div class="controls">
+								<select name="property[formtype]" id="formtype">
+  									<option value="1">文本框</option>
+  									<option value="2">下拉列表框</option>
+  									<option value="3">单选框</option>
+								</select>
+								</div>
+								<div id="selectParam" style="display:none;">
+								<label class="control-label">{:L('EMALL_ADMINGOODS_PARAMLIST')}</label>
+								<div class="controls">
+									<textarea name="property[selectParam]" rows="5" cols="57" placeholder="列表项之间请用回车分隔"></textarea>*
+								</div>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('EMALL_ADMINGOODS_DESCRIPTION')}</label>
+								<div class="controls">
+									<textarea name="property[description]" rows="5" cols="57"></textarea>
+								</div>
+							</div>
+							<div class="control-group" id="exploreView">
+								<label class="control-label">{:L('EMALL_ADMINGOODS_PROPERTY_NAME')}</label>
+								<div class="controls">
+									<input type="text" value="{$cat_name}">
+								</div>
+							</div>
+						</fieldset>
+		          </div>
+
+		        </div>
+		    </div>
+		    <div class="form-actions">
+		     	<button class="btn btn-primary" id="submitBtn">{:L('ADD')}</button>
+		      	<a class="btn" href="{:U('AdminGoodsProperty/listProperty',array('id'=>$cat_id,'pname'=>$cat_name))}">{:L('BACK')}</a>
+		    </div>
+		</form>
+	</div>
+	<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+	<script type="text/javascript">
+    	$(function(){
+ 
+    		$("#formtype").change(function(){
+    			//alert("baby");
+    			exploreView(parseInt($(this).val()));
+    		});
+
+    		function exploreView($type){
+    			$eviewlabel=$("#exploreView label");
+    			$eviewForm=$("#exploreView .controls");
+    			//alert($type);
+    			switch($type){
+    				case(1):
+    				$('#selectParam').css({'display':'none'});
+    				$eviewlabel.text($("#paramname").val())
+    				$eviewForm.html("<input type=\"text\" value=\"\">")
+    				break;  
+    				case(2):
+    				$('#selectParam').css({'display':'block'});
+    				$eviewlabel.text($("#paramname").val())
+    				$eviewForm.html("<select></select>")
+    				break; 
+    				case(3):
+    				$('#selectParam').css({'display':'none'});
+    				$eviewlabel.text($("#paramname").val())
+    				$eviewForm.html("<select></select>")
+    				break; 
+    				case(4):
+    				$('#selectParam').css({'display':'none'});
+    				$eviewlabel.text($("#paramname").val())
+    				$eviewForm.html("<select></select>")
+    				break;    
+    				default:	
+
+    			}
+			
+    		}
+
+	$('#submitBtn').click(function(event){
+		$this=$(this);
+		$this.attr('disabled',true);
+		if($('#selectParam textarea').val()=='' && $('#formtype').val()=='2'){
+			alert('列表项值不能为空！');
+			return false;
+		}else if($('#paramname').val()==''){
+			alert('属性参数名不能为空！');
+			return false;			
+		}
+		$.post("{:U('AdminGoodsProperty/addPropertyPost')}",$("form").serialize(),function(data){
+			if(data.status==1){
+				alert('编辑保存成功!');
+				window.location.reload();
+			}else{
+				alert(data.error);
+			}
+		});
+	})
+
+    	});
+    </script>
+</body>
+</html>

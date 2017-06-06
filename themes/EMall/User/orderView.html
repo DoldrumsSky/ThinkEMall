@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+</head>
+<body class="bg-white" id="top">
+  <tc_include file="Public:user_nav" />
+
+  <div class="wrapper tc-main">
+  <h1 style="font-weight:normal;font-size:31px;display:inline;margin-right:10px;">订单详情</h1><span>请谨防钓鱼链接和诈骗电话</span>
+      <div class="orderViewTitle">
+          <h4>订单号：</h4><em class="orderSerial">{$orderData.order_serial}</em><em id="orderGoodsNum"></em><a href="{:U('User/Order/index')}">返回订单列表</a>
+      </div>
+      <div class="orderProcess">
+          <div class="processTitle">
+              <em>下单</em>
+              <em>付款</em>
+              <em>配货</em>
+              <em>出库</em>
+              <em>交易完成</em>
+          </div>
+          <div class="processBar">
+            <div style="width:100%;position:absolute;top:-6px;left:0">
+              <span class="processPoint"><em class="down"></em></span>
+              <span class="processPoint"><em class="down"></em></span>
+              <span class="processPoint"><em></em></span>
+              <span class="processPoint"><em></em></span>
+              <span class="processPoint"><em></em></span>
+            </div>
+              <div class="process"></div>
+          </div>
+          <div class="processTimerTxt">
+              <em id="orderTime">{$orderData.order_time}</em>
+              <em id="payTime">{$orderData.pay_time}</em>
+              <em id="prepareTime"></em>
+              <em id="shipTime"></em>
+              <em id="finishTime"></em>
+          </div>
+      </div>
+      <div class="orderDetail" data-id="{$orderData.order_gid}">
+
+      </div>
+</div>
+
+    <tc_include file="Public:footer" />
+	</div>
+
+  <tc_include file="User:refundModal" />
+  <tc_include file="User:afterSaleModal" />
+	<!-- /container -->
+
+	<tc_include file="Public:scripts" />
+  <script src="__TMPL__Public/assets/js/labs.js"></script>
+  <script src="__TMPL__Public/assets/js/jquery.raty.js"></script>
+  <script type="text/javascript">
+  //订单状态
+  var orderStatu="{$orderData.status}";
+  //出库运单数据
+  var waybill_no='{$orderData.waybill_no}';
+  //已配货数据
+  var prepare_goods='{$orderData.prepare_goods}';
+  //已完成评价的商品gid
+  var appraise_goods='{$orderData.appraise_goods}';
+  //已经完成追评的商品gid
+  var appraise_additional='{$orderData.appraise_additional}';
+  //退货数据
+  var refund_info='{$orderData.refund_info}';
+  //申请售后数据
+  var afterSale_goods='{$orderData.aftersale_goods}';
+  //订单状态的标识
+  var orderStatuCode='<em class="orderStatu-normal">配货中</em>商家正在为您以下购买的商品配货';
+  //查看运单数据的API链接
+  var waybillDetailURL='http://api.logistics.com/';
+  //申请退货链接 
+  var postApplyRefundURL="{:U('User/Order/postApplyRefund')}";
+  //查看退货详情链接 
+  var viewRefundURL="{:U('User/Order/viewRefund')}";
+  //申请售后链接
+  var postApplyAfterSaleURL="{:U('User/Order/postApplyAfterSale')}";
+  //查看申请售后详情链接
+  var viewAfterSaleURL="{:U('User/Order/viewAfterSale')}";
+  //提交评价数据链接
+  var postAppraiseURL="{:U('User/Order/postAppraise')}";
+  //提交追评数据链接
+  var postAppraiseAddtURL="{:U('User/Order/postAppraiseAdditional')}"; 
+  //当前显示的评价提交UI
+  var curShowAppraiseGID=null;
+
+
+  function changeToLogistaticsStr($idx){
+      $wayStr='';
+          switch(parseInt($idx)){
+              case 0:
+                  $wayStr='快递';
+                  break;
+              case 1:
+                  $wayStr='物流';
+                  break;
+              case 2:
+                  $wayStr='EMS';
+                  break;
+              case 3:
+                  $wayStr='平邮';
+                  break;
+          }
+      return $wayStr;
+  }
+
+  function setReceivedStatu(order_id,waybill_no,orderGoodsNum){
+      messagesBox({
+        title:'确认已经收到商品',
+        content:'您现在正在执行确认收货操作，确认后，货款将转入商家账户！是否确实地收到了商品？',
+        callFunc:function(){
+            $('body').setLoadingState({container:'body',loadingTxt:'正在执行确认收货操作，请稍候...'})
+            $.post("{:U('User/Order/setReceivedStatu')}",{order_id:order_id,waybill_no:waybill_no},function(data){
+                if(data.status==1){
+                  var curOptionWayBill=$('.orderDetail dl[data-serial="'+waybill_no+'"]');
+                  //改变当前运单状态为已完成
+                  curOptionWayBill.attr('data-statu','finished');
+                  //转换当前运单的状态标识
+                  curOptionWayBill.find('dt .orderStatu-normal').addClass('bg-green').text('已收货');
+                  //设置评价按钮状态与链接      
+                  curOptionWayBill.find('a[role="appraiseBtn"]').addClass('border-gray').removeClass('btn-disabled').each(function(){
+                    var gid=$(this).closest('dd').attr('data-gid');
+                      $(this).attr('href','javascript:showAppraise(\''+gid+'\')');
+                  })
+                  //移除确认收货按钮，添加申请退货和申请售后按钮
+                  curOptionWayBill.find('.actionBtn').empty().append(
+                    '<p><a class="border-gray padding-btn" href="javascript:applyRefund(\''+order_id+'\',\''+waybill_no+'\')">申请退货</a></p>'
+                    +'<p><a class="border-gray padding-btn" href="javascript:applyAfterSale(\''+order_id+'\',\''+waybill_no+'\')">申请售后</a></p>'
+                    );
+                  //为每件商品添加复选框，用于选择申请退货、售后操作
+                  var orderGoodosItem=curOptionWayBill.find('dd[role="orderGoods"]');
+                  //改变订单进程信息
+                  var finishedGoodsNum=$('.orderDetail dl[data-statu="finished"] dd[role="orderGoods"]').length;
+                  var orderGoodsNum=parseInt($('#orderGoodsNum i').text());
+
+                  if(finishedGoodsNum==orderGoodsNum){
+                      $('.processBar .process').css('width','100%');  
+                      $('#finishTime').text(data.data);  
+                  }else{
+                      $('#finishTime').text('交易完成进程('+finishedGoodsNum+'/'+orderGoodsNum+')');
+                      processNum=90+parseInt(Number(finishedGoodsNum/orderGoodsNum*100*0.1).toFixed(2));
+                      $('.processBar .process').css('width',processNum+'%');                   
+                  }
+                  $('.processBar em:eq(4)').addClass('down');
+
+                }else{
+                  alert(data.error);
+                }
+                $('body').setLoadingState('destroy');
+            }).error(function(){
+                alert('链接服务器出错，无法提交数据,请稍候尝试！');
+                $('body').setLoadingState('destroy');
+            })
+        }
+      })
+  }
+
+  //显示评价UI,type为1时表示追加评价
+  function showAppraise(gid,type){
+    var appraiseUI=$('.orderDetail dd[data-gid="'+gid+'"] .appraiseGoods');
+    appraiseUI.show();
+    if(curShowAppraiseGID==gid){
+      return false;
+    }
+
+    if(curShowAppraiseGID){
+      $('.orderDetail dd[data-gid="'+curShowAppraiseGID+'"] .appraiseGoods').hide();
+    }
+    curShowAppraiseGID=gid;
+  }
+
+  //关闭评价界面UI
+  function closeAppraise(gid){
+    $('.orderDetail dd[data-gid="'+gid+'"] .appraiseGoods').hide();
+    curShowAppraiseUI=null;
+  }
+
+  //提交评价数据
+  function postAppraise(order_id,gid){
+      var goodsItem=$('.orderDetail dd[data-gid="'+gid+'"]');
+      var appraiseBtn=goodsItem.find('[role="appraiseBtn"]');
+      var appraiseUI=goodsItem.find('.appraiseGoods');
+      var appraiseScore=appraiseUI.find('input[name="score"]').val();
+      var appraiseContent=appraiseUI.find('textarea').val();
+
+      if(appraiseScore==0){
+        appraiseUI.find('.appraiseScore').setPopTip({
+          content:'请先给商品评价星级再提交！',
+          direction:'top',
+          arrow:'bottom',
+          arrowAlign:'vcenter',
+          showonce:true
+        });
+        return false;
+      }
+
+      $('body').setLoadingState({container:'body',loadingTxt:'正在提交商品评价数据，请稍候...'});
+
+      //提交评价数据
+      $.post(postAppraiseURL,{order_id:order_id,gid:gid,appraiseContent:appraiseContent,appraiseScore:appraiseScore},function(data){
+          if(data.status==1){
+            //刷新评价标识，开启追评提交链接
+            appraiseBtn.attr('href','javascript:showAppraise(\''+gid+'\',1);');
+            appraiseBtn.text('追加评价');
+            //重设评论UI为追评UI
+            appraiseBtn.closest('.appraiseWrap').queue(function(next){
+              $(this).find('.appraiseBottomBar a:first').attr('href','javascript:postAppraiseAdditional(\''+order_id+'\',\''+gid+'\')');
+              $(this).find('dt').html('<em class="orderStatu-obligation" style="float:left">追加评价</em>请在下方填写商品追加评价的内容');
+              $(this).next();
+            })
+            appraiseBtn.removeClass('border-gray').addClass('border-red');
+          }else{
+            alert(data.error);
+          }
+          //console.log(data);
+          $('body').setLoadingState('destroy');
+      }).error(function(){
+          alert('链接服务器出错，无法提交评价数据,请稍候尝试！');
+          $('body').setLoadingState('destroy');
+      })
+  }
+
+  //提交追评数据
+  function postAppraiseAdditional(order_id,gid){
+      var goodsItem=$('.orderDetail dd[data-gid="'+gid+'"]');
+      var apprasieBtn=goodsItem.find('[role="appraiseBtn"]');
+      var appraiseUI=goodsItem.find('.appraiseGoods');
+      var appraiseContent=appraiseUI.find('textarea').val();
+
+      if(appraiseContent==''){
+        alert('必须填写追加评价的内容！');
+        return false;
+      }
+
+      $('body').setLoadingState({container:'body',loadingTxt:'正在提交商品评价数据，请稍候...'});
+      //提交追评数据
+      $.post(postAppraiseAddtURL,{order_id:order_id,gid:gid,appraiseContent:appraiseContent,appraiseAddt:appraise_additional},function(data){
+          if(data.status==1){
+            //清除评价UI
+            appraiseUI.remove();
+            //刷新评价标识
+            apprasieBtn.attr('href','javascript:void(0);');
+            apprasieBtn.text('评价完成');
+            apprasieBtn.removeClass('border-gray').addClass('border-red');
+          }else{
+            alert(data.error);
+          }
+          console.log(data);
+          $('body').setLoadingState('destroy');
+      }).error(function(){
+          alert('链接服务器出错，无法提交评价数据,请稍候尝试！');
+          $('body').setLoadingState('destroy');
+      })   
+  }
+
+    //订单商品列表代码生成（gid:商品id，Item:商品数据，checkEnable:商品是否可勾选操作，appraiseEnable:为true时用于更新评价按钮的激活样式）
+   function makeGoodsListHTML(order_id,gid,Item,checkEnable,appraiseEnable){
+    //商品状态
+    var goods_status=parseInt(Item.status);
+    var refund_status=parseInt(Item.refund_status);
+    var afterSaleStatus=Item.afterSaleData?parseInt(Item.afterSaleData.afterSaleStatus):null;
+    //按长度要求截取标题字符
+    var sliceLength=Item.goods_title.length<32?Item.goods_title.length:32;
+    var goods_title=Item.goods_title.substr(0,sliceLength);
+    goods_title+=Item.goods_title.length>32?'...':'';
+
+    //商品图片中的退货标识代码
+    var imgRefundTag='';
+    //商品退货详情按钮代码
+    var refundBtnHtml='';
+    //商品退货状态标识属性代码
+    var refundStatusAttr='';
+
+    //商品图片中的售后申请标识
+    var imgAfterSaleTag='';
+    //商品售后详情按钮代码
+    var afterSaleBtnHtml='';
+    //商品售后状态标识属性代码
+    var afterSaleStatusAttr='';
+
+    //appraiseEnable为true时输出已经出库的商品UI代码
+    //评价样式代码（用于标识评价按钮状态，有三种：常规状态、禁用状态、已评价状态）
+    var appraiseBtnState=appraiseEnable?'border-gray':'btn-disabled';
+    //设定评价按钮是否可用
+    var appraiseHref=appraiseEnable?'javascript:showAppraise(\''+gid+'\')':'javascript:void(0)';
+    var postAppraiseHref='javascript:postAppraise(\''+order_id+'\',\''+gid+'\')';
+    var appraiseBtnTxt='评价商品';
+    var appraiseTitle='评价商品星级';
+    //商品星级选择的HTML，商品完成初评后不再显示
+    var scoreHTML='<div class="appraiseScore" data-score="0" style="float:left;cursor: pointer;"></div>';
+    var appraiseOptHTML='';
+    //是否已经完成商品追评的标识，追评后评价将不可用
+    var noAppraise=false;
+
+    //退货商品UI元素
+    if(!isNaN(refund_status) && refund_status!==0){
+      var refundTag='申请退货';
+      var refundProccessTxt='退货进度';
+
+      //被拒绝退货的商品只输出被拒绝的标识，并添加退货的状态码属性
+      if(refund_status==-1){
+        refundProccessTxt=refundTag='拒绝退货';
+      }else if(refund_status==5){
+        refundTag='退货已完成';
+      }
+      //输出申请退货的标识以及增加查看申请售后详情的链接按钮
+      imgRefundTag='<em class="applyRefund">'+refundTag+'</em>';
+      refundBtnHtml='<p><a class="orderBtn bg-red refundBtn staticPosition" target="_blank" href="'+viewRefundURL+'&gid='+gid+'&order_id='+order_id+'">'+refundProccessTxt+'</a></p>';
+      refundStatusAttr='data-refundstatu="'+refund_status+'"';
+
+    //输出申请售后商品的售后标识
+    }else if(Item.afterSaleData){
+      var afterSaleTag='申请售后';
+      //输出申请售后的标识以及增加查看申请售后详情的链接按钮
+      imgAfterSaleTag='<em class="applyRefund">'+afterSaleTag+'</em>';
+      afterSaleBtnHtml='<p><a class="orderBtn bg-red refundBtn staticPosition" target="_blank" href="'+viewAfterSaleURL+'&gid='+gid+'&order_id='+order_id+'&as_id='+Item.afterSaleData.as_id+'">售后进度</a></p>';
+      //标识商品处于申请售后状态
+      afterSaleStatusAttr='data-asstatu="'+afterSaleStatus+'"';
+    }
+
+    //判断当前商品是否已经评价过
+      if(goods_status==5){
+        appraiseBtnState='border-red';
+        appraiseBtnTxt=appraiseTitle='追加评价';
+        scoreHTML='请在下方填写商品追加评价的内容';
+        appraiseHref='javascript:showAppraise(\''+gid+'\',1);';
+        postAppraiseHref='javascript:postAppraiseAdditional(\''+order_id+'\',\''+gid+'\');';
+      }
+
+    //判断是否提交过追评（提交过追评的商品是正式的完成评价）    
+      if(goods_status==6){
+        appraiseBtnState='border-red';
+        appraiseBtnTxt='评价完成';
+        appraiseHref='javascript:void(0)';
+        noAppraise=true;
+      }      
+
+
+    //评价操作按钮代码，已经完成追评的商品不会再输出评价提交UI代码
+    if(!noAppraise){
+      appraiseOptHTML='<div class="appraiseGoods"><div class="arrowWrap"><span class="arrow">◆</span><span class="down">◆</span></div><dl><dt><em class="orderStatu-obligation" style="float:left";>'+appraiseTitle+'</em>'+scoreHTML+'</dt>'
+                        +'<dd><textarea placeholder="请填写您对商品的评价"></textarea></dd>'
+                        +'<dd class="appraiseBottomBar"><a href="'+postAppraiseHref+'" class="orderBtn bg-blue staticPosition marginRight-20">提交评价</a>'
+                        +'<a href="javascript:closeAppraise(\''+gid+'\');" class="orderBtn bg-blue staticPosition">取消返回</a></dd></dl></div>';
+    } 
+
+    //非出库的商品不显示评价按钮,出库未确认商品不允许评价
+    var actionHTML=checkEnable?'<div class="appraiseWrap" style="float:right;position:relative;"><p><a class="padding-btn '+appraiseBtnState+'" role="appraiseBtn" href="'+appraiseHref+'">'+appraiseBtnTxt+'</a></p>'+refundBtnHtml+afterSaleBtnHtml+appraiseOptHTML+'</div>':'';
+    
+
+    //运费和配送方式信息显示（商品出库时会独立显示在一列中）
+    var shopInfoHTML=checkEnable?'</p></div><div style="margin-left:24px"><p>运费：<em>¥</em> <em>'+Number(Item.logistics_price).toFixed(2)+'</em></p><p>配送方式：<em>'+changeToLogistaticsStr(Item.logistics)+'</em></p>':'运费：<em>¥</em> <em>'+Number(Item.logistics_price).toFixed(2)+'</em>&nbsp;&nbsp;&nbsp;&nbsp;配送方式：<em>'+changeToLogistaticsStr(Item.logistics)+'</em></p>';
+    //勾选框代码
+    var checkboxHTML=checkEnable?'<div style="width:4%"><input type="checkbox" data-name="orderGoods"></div>':'';
+    //是否可购买的标识
+    var canBuyTag=Item.shopBuyNum==0?'<em class="outOfStock">已售罄</em>':'';
+    //主要的商品信息代码
+    var HTMLCode='<dd data-gid="'+gid+'" role="orderGoods" '+refundStatusAttr+afterSaleStatusAttr+'>'+checkboxHTML+'<div class="itemImg fixImgPadding">'
+                                  +'<a href=""><img src="'+Item.goods_img+'" width="80" class="cartGoodsImg" alt=""></a>'+imgRefundTag+imgAfterSaleTag+'</div>'
+                                  +'<div class="listInfo"><p><a href="{:U(\'EMall/GoodsDetails/index\')}'+'&id='+Item.goods_id+'" target="_blank">'+goods_title+'</a></p>'
+                                  +'<p>'+Item.sku_style+' '+Item.sku_spec+'</p>'
+                                  +'<p><em>¥</em> <em>'+Number(Item.price).toFixed(2)+'</em> X '+Item.shopBuyNum
+                                  +'&nbsp;&nbsp;&nbsp;&nbsp;'+shopInfoHTML+'</div>'
+                                  +actionHTML+'</dd>';
+    return HTMLCode;
+  }
+
+
+
+  //解析订单商品数据到订单内容容器中
+  function parseOrderGoodsData(goodsData,status){
+    if(!goodsData){
+      return false;
+    }
+
+      var result=$.parseJSON(goodsData);
+      var deliveryGoods=waybill_no?$.parseJSON(waybill_no):'';
+      var prepareGoods=prepare_goods?prepare_goods.split(','):'';
+      var orderGoodsHTML='';
+      var deliveryGoodsHTML='';
+      var prepareGoodsHTML='';
+      var goodsItemWrap=$('.orderDetail');
+      var order_id=goodsItemWrap.attr('data-id');
+      //订单操作按钮代码生成
+      //var actionBtn=order_status[index]>0?'<a href="{:U(\'User/Order/orderView\')}'+'&id='+orderId[index]+'" class="paymentBtn">订单详情</a>':'<a href="" class="paymentBtn">立即支付</a>';
+
+      //
+
+      var specTotalPriceHTML='';
+      var prepareGoodsHTML='';
+      var orderGoodsHTML='';
+      //出库商品数
+      var shipGoodsNum=0;
+      //完成配货的商品数
+      var prepareGoodsNum=0;
+      //完成交易的商品数
+      var finishedGoodsNum=0;
+      //订单商品总数
+      var orderGoodsNum=Object.keys(result).length;
+
+
+      $.each(result,function(gid,Item){
+        var goods_status;
+        goods_status=parseInt(Item.status);
+        refund_status=parseInt(Item.refund_status);
+        
+        //出库商品，如果出库商品的运单号一样，则输出商品到同组容器中
+        if(goods_status >=3){
+          var deliveryGoodsHTML='';
+          var appraiseEnable=goods_status==4?true:false;
+          deliveryGoodsHTML=makeGoodsListHTML(order_id,gid,Item,true,appraiseEnable);
+          if(goods_status<4){
+            shipGoodsNum++;
+          }else{
+            finishedGoodsNum++;
+          }
+
+          var statusText=goods_status>=4?'<em class="orderStatu-normal bg-green">已收货</em>':'<em class="orderStatu-normal">已出库</em>';
+          //data-statu的值
+          var statuTag=goods_status>=4?'finished':'delivery';
+          var sameContainer=goodsItemWrap.find('dl[data-serial="'+Item.waybill_no+'"]');
+          //判断是否运单号相同，相同的放置到同组容器中
+          if(sameContainer.length==0){
+            //外部容器代码
+            goodsItemWrap.prepend('<dl data-statu="'+statuTag+'" data-serial="'+Item.waybill_no+'"><dt>'+statusText+' 运单号：'+Item.waybill_no+'<a class="orderBtn bg-green" href="'+waybillDetailURL+'">运单详情</a></dt>'+deliveryGoodsHTML+'</dl>');
+            //操作项代码生成
+            var setOrderBtn=goods_status>=4?'<p><a class="border-gray padding-btn" href="javascript:applyRefund(\''+order_id+'\',\''+Item.waybill_no+'\')">申请退货</a></p>'
+                  +'<p><a class="border-gray padding-btn" href="javascript:applyAfterSale(\''+order_id+'\',\''+Item.waybill_no+'\')">申请售后</a></p>':
+                  '<p><a class="border-gray padding-btn" href="javascript:setReceivedStatu(\''+order_id+'\',\''+Item.waybill_no+'\');">确认收货</a></p>'
+                  +'<p><a class="border-gray padding-btn" href="javascript:applyRefund(\''+order_id+'\',\''+Item.waybill_no+'\')">申请退货</a></p>';
+
+            var actionHtml='<dd class="noPaddingR noBorder" style="width:14%"><div class="actionBtn" style="float:right;text-align:right">'+setOrderBtn+'</div></dd>';
+            //每个运单只有一组操作按钮
+            $('dl[data-serial="'+Item.waybill_no+'"] dd:first').after(actionHtml);
+          }else{
+            sameContainer.append(deliveryGoodsHTML);
+          }
+                
+          //已完成配货的商品
+          }else if(goods_status==2){
+            prepareGoodsHTML+=makeGoodsListHTML(order_id,gid,Item);                    
+            prepareGoodsNum++;
+           
+          //未完成配货的商品
+          }else if(goods_status==1 || goods_status==0){
+            orderGoodsHTML+=makeGoodsListHTML(order_id,gid,Item);
+
+          }
+       })
+
+      //输出订单中已经完成配货的商品
+      if(prepareGoodsHTML!==''){
+        goodsItemWrap.append('<dl data-statu="prepare"><dt><em class="orderStatu-normal">已配货</em>以下订单商品等待出库</dt>'+prepareGoodsHTML+'</dl>');
+      }
+
+      //输出订单中等待配货的商品
+      if(orderGoodsHTML!==''){
+        goodsItemWrap.append('<dl data-statu="normal"><dt><em class="orderStatu-normal">配货中</em>商家正在为您以下购买的商品配货</dt>'+orderGoodsHTML +'</dl>');
+      }
+
+      $('#orderGoodsNum').append('总计订购商品：<i>'+orderGoodsNum+'</i>件');
+
+      
+      //判断未配货数量
+      if((prepareGoodsNum+shipGoodsNum+finishedGoodsNum)>0){
+        //输出配货进程信息
+        var processNum=0;
+        if(orderGoodsNum==(prepareGoodsNum+shipGoodsNum+finishedGoodsNum)){
+            $('#prepareTime').append('所有商品已完成配货');
+            $('.processBar .process').css('width','60%');
+        }else{
+            $('#prepareTime').append('配货进程('+(prepareGoodsNum+shipGoodsNum+finishedGoodsNum)+'/'+orderGoodsNum+')');
+            processNum=50+parseInt(Number((prepareGoodsNum+shipGoodsNum+finishedGoodsNum)/orderGoodsNum*100*0.1).toFixed(2));
+            $('.processBar .process').css('width',processNum+'%');            
+        }
+        $('.processBar em:eq(2)').addClass('down');
+      }else{
+        $('#prepareTime').append('商家正在配货'); 
+      }
+      
+
+      //输出出库进程信息
+      if(shipGoodsNum>0){
+          if((shipGoodsNum+finishedGoodsNum)==orderGoodsNum){
+              $('.processBar .process').css('width','80%');
+              $('#shipTime').append('所有商品已出库');
+          }else{
+              $('#shipTime').append('出库进程('+(shipGoodsNum+finishedGoodsNum)+'/'+orderGoodsNum+')');
+                processNum=70+parseInt(Number((shipGoodsNum+finishedGoodsNum)/orderGoodsNum*100*0.1).toFixed(2));
+              $('.processBar .process').css('width',processNum+'%');
+          }
+          $('.processBar em:eq(3)').addClass('down');
+      //如果出库数为零则计算是否存在交易完成的商品，有则改变进度
+      }else{
+          if(finishedGoodsNum>0){
+              $('.processBar em:eq(3)').addClass('down');
+              $('#shipTime').append('出库进程('+(shipGoodsNum+finishedGoodsNum)+'/'+orderGoodsNum+')');
+                processNum=70+parseInt(Number((shipGoodsNum+finishedGoodsNum)/orderGoodsNum*100*0.1).toFixed(2));
+              $('.processBar .process').css('width',processNum+'%');              
+          }
+          //不存在任何出库商品时输出等待出库文本
+          if(shipGoodsNum==0 && finishedGoodsNum==0){
+              $('#shipTime').append('所有商品待出库');
+          }
+      }
+
+      //输出交易完成的进程信息
+      if(finishedGoodsNum>0){
+          if(finishedGoodsNum==orderGoodsNum){
+              $('.processBar .process').css('width','100%');
+              $('#finishTime').append('已经完成所有交易');
+          }else{
+              $('#finishTime').text('交易完成进程('+finishedGoodsNum+'/'+orderGoodsNum+')');
+                processNum=90+parseInt(Number(finishedGoodsNum/orderGoodsNum*100*0.1).toFixed(2));
+              $('.processBar .process').css('width',processNum+'%');
+          }
+          $('.processBar em:eq(4)').addClass('down');
+      }else{
+          $('#finishTime').text(shipGoodsNum+'件商品等待确认收货');
+      }
+
+      //console.log(goodsData);
+  }
+
+  //申请退货
+  function applyRefund(order_id,waybill_no){
+          
+    //判断是否存在提交申请的商品
+    var applyGoodsItem=$('dl[data-serial="'+waybill_no+'"] :checkbox[data-name="orderGoods"]:checked');
+    //console.log(applyGoodsItem);
+    if(applyGoodsItem.length>0){
+        $('#refundModal').on('show.bs.modal',function(){
+          var $this=$(this);
+          var refundGoodsHTML='';
+          var refundGoodsNum=0;
+
+            $.each(applyGoodsItem,function(){
+              var goodsItem = $(this).closest('dd');
+              var refundStatus=goodsItem.attr('data-refundstatu');
+              var afterSaleStatus=parseInt(goodsItem.attr('data-asstatu'));
+              //跳过被拒绝退货和完成退货的商品
+              if(refundStatus=='-1' || refundStatus=='5'){
+                return true;
+              }
+              var goods_id = goodsItem.attr('data-gid');
+              var isAfterSale=false;
+              //判断商品是否申请售后状态，是则跳出退货申请
+              if(!isNaN(afterSaleStatus)){
+                return true;
+              }
+
+              var imgSrc=goodsItem.find('.itemImg img').attr('src');
+              var goods_title=goodsItem.find('.listInfo a:first').text();
+              //加入申请退货商品信息的HTML及申请详情说明的文本域
+              var selGoodsInfo='<div class="itemImg fixImgPadding refundGoods"><a href=""><img src="'+imgSrc+'" width="60" class="cartGoodsImg" alt=""></a><div>'+goods_title+'</div></div> ';
+              var refundDetailHTML='<div class="form-group"><div class="input-group col-sm-10 col-xs-10 center"><label for="inputDetailInfo">退货详情说明</label>'
+                    +'<textarea class="form-control" data-gid="'+goods_id+'" placeholder="请输入退货件数及退货理由" maxlength="100" required></textarea></div></div>';
+              refundGoodsHTML+=selGoodsInfo+refundDetailHTML;
+              refundGoodsNum++;
+          })
+          //console.log(refundGoodsNum);
+          if(refundGoodsNum==0){
+            refundGoodsHTML='<p style="text-align:center;">没有任何可申请退货的商品！</p>';
+          }
+
+          //将两个关键数据保存到属性中，然后插入商品详情及退货详情说明文本域
+          $this.find('#refundContent').attr({'data-serial':waybill_no,'data-id':order_id}).empty().append(refundGoodsHTML);
+        }).modal();
+
+    }else{
+        alert('请先勾选需要退货的商品！');
+    }
+  }
+
+  //申请售后
+  function applyAfterSale(order_id,waybill_no){
+          
+    //判断是否存在提交申请的商品
+    var applyGoodsItem=$('dl[data-serial="'+waybill_no+'"] :checkbox[data-name="orderGoods"]:checked');
+    //console.log(applyGoodsItem);
+    if(applyGoodsItem.length>0){
+        $('#afterSaleModal').on('show.bs.modal',function(){
+          var $this=$(this);
+          var afterSaleGoodsHTML='';
+          var applyGoodsNum=0;
+
+            $.each(applyGoodsItem,function(){
+              var goodsItem = $(this).closest('dd');
+              var afterSaleStatus=parseInt(goodsItem.attr('data-asstatu'));
+              var refundStatus=parseInt(goodsItem.attr('data-refundstatu'));
+              //跳过申请退货和完成退货的商品
+              if((!isNaN(afterSaleStatus)) || (!isNaN(refundStatus) && refundStatus>=0)){
+                return true;
+              }
+              var goods_id = goodsItem.attr('data-gid');
+              var imgSrc=goodsItem.find('.itemImg img').attr('src');
+              var goods_title=goodsItem.find('.listInfo a:first').text();
+              //加入申请售后商品信息的HTML及申请详情说明的文本域
+              var selGoodsInfo='<div class="itemImg fixImgPadding afterSaleGoods"><a href=""><img src="'+imgSrc+'" width="60" class="cartGoodsImg" alt=""></a><div>'+goods_title+'</div></div> ';
+              var afterSaleDetailHTML='<div class="form-group"><div class="input-group col-sm-10 col-xs-10 center"><label for="inputDetailInfo">申请售后详情说明</label>'
+                    +'<textarea class="form-control" data-gid="'+goods_id+'" placeholder="请输入申请售后件数及原因" maxlength="100" required></textarea></div></div>';
+              afterSaleGoodsHTML+=selGoodsInfo+afterSaleDetailHTML;
+              applyGoodsNum++;
+          })
+          //console.log(refundGoodsNum);
+          
+          if(applyGoodsNum==0){
+            afterSaleGoodsHTML='<p style="text-align:center;">没有任何可申请售后的商品！</p>';
+          }
+          //将两个关键数据保存到属性中，然后插入商品详情及退货详情说明文本域
+          $this.find('#afterSaleContent').attr({'data-serial':waybill_no,'data-id':order_id}).html(afterSaleGoodsHTML);
+        }).modal();
+
+    }else{
+        alert('请先勾选需要申请售后的商品！');
+    }
+  }
+
+  $(function(){
+    //绑定提交退货申请事件
+    $('#postRefundBtn').on('click',function(){
+        var refundModal=$('#refundModal');
+        var refundContent=refundModal.find('#refundContent');
+        var order_id=refundContent.attr('data-id');
+        var gidGroup='';
+        var waybill_no=refundContent.attr('data-serial');
+        var contact=refundModal.find('input[name="contact"]').val();
+        var telNum=refundModal.find('input[name="telNum"]').val();
+        var detailInfo=refundModal.find('textarea');
+        var refundDespt='';
+
+        if(detailInfo.length==0){
+          alert('被拒绝退货或者已经完成退货以及正在申请售后的商品无法申请退货！');
+          return false;
+        }
+
+        if(contact=='' || telNum==''){
+            alert('请先填写完整的退货申请信息，包括联系人、电话、退货详情说明！');
+            return false;
+        }
+
+        var refundInfo='';
+
+        $.each(detailInfo,function(){
+            refundDespt=$(this).val();
+            if(refundDespt==''){
+              alert('请先填写完整的退货申请信息，包括联系人、电话、退货详情说明！');
+                return false;
+            }
+            var goods_id=$(this).attr('data-gid');
+            gidGroup+=gidGroup==''?goods_id:','+goods_id;
+            var separator=refundInfo==''?'':',';
+            refundInfo+=separator+'"'+goods_id+'":{"contact":"'+contact+'","telNum":"'+telNum+'","detail":"'+refundDespt+'"}';
+        })
+        if(refundDespt==''){
+            return false;
+        }
+        //console.log('{'+refundInfo+'}');
+        //return false;
+        //
+        var modalContent=refundModal.find('.modal-content');
+        modalContent.setLoadingState({loadingTxt:'正在提交退货申请，请稍候...'});
+        refundInfo='{'+refundInfo+'}';
+        $.post(postApplyRefundURL,{order_id:order_id,gidGroup:gidGroup,refundInfo:String(refundInfo)},function(data){
+            if(data.status==1){
+                refundModal.modal('hide');
+                //console.log(data);
+                //根据返回的商品gid，标识处于退货申请状态的商品
+                $.each(data.data,function(index,Item){
+                  var goodsItem=$('dd[data-gid="'+Item+'"]');
+                  goodsItem.find('.itemImg').append('<em class="applyRefund">申请退货</em>');
+                  goodsItem.find('[role="appraiseBtn"]').closest('div').append('<p><a class="orderBtn bg-red refundBtn staticPosition" href="'+viewRefundURL+'&gid='+Item+'&order_id='+order_id+'">退货进度</a></p>');
+                })
+            }else{
+                alert(data.error);
+            }
+            modalContent.setLoadingState('destroy');
+        }).error(function(){
+            alert('链接服务器出错，无法提交数据,请稍候尝试！');
+            modalContent.setLoadingState('destroy');
+        })
+    })
+
+
+    //绑定提交售后申请事件
+    $('#postAfterSaleBtn').on('click',function(){
+        var afterSaleModal=$('#afterSaleModal');
+        var afterSaleContent=afterSaleModal.find('#afterSaleContent');
+        var order_id=afterSaleContent.attr('data-id');
+        var waybill_no=afterSaleContent.attr('data-serial');
+        var contact=afterSaleModal.find('input[name="contact"]').val();
+        var telNum=afterSaleModal.find('input[name="telNum"]').val();
+        var detailInfo=afterSaleModal.find('textarea');
+        var afterSaleDespt='';
+
+        if(detailInfo.length==0){
+          alert('退货商品无法申请售后！');
+          return false;
+        }
+
+        if(contact=='' || telNum==''){
+            alert('请先填写完整的售后申请信息，包括联系人、电话、申请售后详情说明！');
+            return false;
+        }
+
+        var afterSaleInfo='';
+
+        $.each(detailInfo,function(){
+            afterSaleDespt=$(this).val();
+            if(afterSaleDespt==''){
+              alert('请先填写完整的售后申请信息，包括联系人、电话、申请售后详情说明！');
+                return false;
+            }
+            var goods_id=$(this).attr('data-gid');
+
+            var separator=afterSaleInfo==''?'':',';
+            afterSaleInfo+=separator+'"'+goods_id+'":{"contact":"'+contact+'","telNum":"'+telNum+'","detail":"'+afterSaleDespt+'"}';
+        })
+        if(afterSaleDespt==''){
+            return false;
+        }
+        //console.log('{'+refundInfo+'}');
+        //return false;
+        //
+        var modalContent=afterSaleModal.find('.modal-content');
+        modalContent.setLoadingState({loadingTxt:'正在提交售后申请，请稍候...'});
+        afterSaleInfo='{'+afterSaleInfo+'}';
+        $.post(postApplyAfterSaleURL,{order_id:order_id,afterSaleInfo:String(afterSaleInfo)},function(data){
+            if(data.status==1){
+                afterSaleModal.modal('hide');
+                //标识处于退货申请状态的商品
+                $.each(data.data.split(','),function(index,Item){
+                  var goodsItem=$('dd[data-gid="'+Item+'"]');
+                  goodsItem.find('.itemImg').append('<em class="applyAfterSale">申请售后</em>');
+                  //添加查看申请进度链接 
+                  goodsItem.find('[role="appraiseBtn"]').closest('div').append('<p><a class="orderBtn bg-red refundBtn staticPosition" href="'+viewAfterSaleURL+'&gid='+Item+'&order_id='+order_id+'">售后进度</a></p>');
+                })
+            }else{
+                alert(data.error);
+            }
+            //console.log(data);
+            modalContent.setLoadingState('destroy');
+        }).error(function(){
+            alert('链接服务器出错，无法提交数据,请稍候尝试！');
+            modalContent.setLoadingState('destroy');
+        })
+    })
+
+    //解析商品数据
+    parseOrderGoodsData('{$orderData.goods_data}','{$orderData.status}');
+
+
+    $('.appraiseScore').raty({
+      starOff:GV.TMPL_ROOT+'assets/images/star-off.png',
+      starOn:GV.TMPL_ROOT+'assets/images/star-on.png',
+      hints: ['非常不满','不满意','一般','满意','非常满意'],
+      score: function() {
+        return $(this).attr('data-score');
+      }
+    });
+  })
+  </script>
+</body>
+</html>

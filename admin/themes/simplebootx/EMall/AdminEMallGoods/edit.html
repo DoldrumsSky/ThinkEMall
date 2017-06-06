@@ -1,0 +1,815 @@
+<admintpl file="header" />
+<style type="text/css">
+.pic-list li {
+	margin-bottom: 5px;
+}
+</style>
+<link rel="stylesheet" type="text/css" href="__PUBLIC__/js/webuploader/webuploader.css">
+<link href="__PUBLIC__/Emall/EmallAdmin.css"  rel="stylesheet" type="text/css">
+<script type="text/html" id="photos-item-wrapper">
+	<li id="savedimage{id}">
+		<input id="photo-{id}" type="hidden" name="photos_url[]" value="{filepath}"> 
+		<input id="photo-{id}-name" type="text" name="photos_alt[]" value="{name}" style="width: 160px;" title="图片名称">
+		<img id="photo-{id}-preview" src="{url}" style="height:36px;width: 36px;" onclick="parent.image_preview_dialog(this.src);">
+		<a href="javascript:upload_one_image('图片上传','#photo-{id}');">替换</a>
+		<a href="javascript:$('#savedimage{id}').remove();">移除</a>
+	</li>
+</script>
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<php>
+			$status_yes=$goods['goods_status']==1?"checked":"";
+			$status_no=$goods['goods_status']==0?"checked":"";
+			$optPoints=$goods['goods_points']<=0?"checked":"";
+			if($goods['goods_points']>0){
+				$cusOptPoints="checked";
+				$goods_Points=$goods['goods_points'];
+			}else{
+				$cusOptPoints="";
+			}
+			
+		</php>
+		<form method="post" class="form-horizontal js-ajax-forms form-inline" enctype="multipart/form-data">
+			<input type="text" value="{$goods.goods_id}" name="goods_id" style="display:none">
+			<input type="text" value="1" name="postType" style="display:none">
+			<div class="row-fluid">
+				<div class="span9">
+					<table class="table table-bordered" id="data-body">
+						<tr>
+							<th width="80">商品类目</th>
+							<td>
+								<select style="max-height: 100px;" name="post[term_id]" id="term_id">{$taxonomys}</select>
+							</td>
+						</tr>
+						<tr>
+							<th>商品标题</th>
+							<td>
+								<input type="text" style="width:400px;" name="post[goods_title]" id="title" required value="{$goods.goods_title}" placeholder="请输入商品标题"/>
+								<span class="form-required">*</span>
+							</td>
+						</tr>
+						<tr>
+							<th>商品编号</th>
+							<td>
+								<label>
+									  <input type="text" name="post[goods_sn]" placeholder="商品编号" id="goods_sn" value="{$goods.goods_sn}" style="width: 150px">
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<th>关键字</th>
+							<td>
+								<input type="text" style="width:400px;" name="post[goods_keywords]" id="keywords"  placeholder="关键字必须以空格分隔" value="{$goods.goods_keywords}" />
+							</td>
+						</tr>
+						<tr>
+							<th>市场价格</th>
+							<td><input type="text" name="post[market_price]" id="market_price" value="{$goods.market_price}" style="width: 150px" placeholder="请输入市场价" required="true"></td>
+						</tr>
+						<tr>
+							<th>商品品牌</th>
+							<td>
+								<div class="form-group">							
+									<select name="post[brand_id]" id="goods_brand"  style="width: 165px;margin-right:20px">
+										<option value="-1">请选择商品品牌</option>
+										{$brand.optionCode}
+									</select>
+									<div style="display: inline;position:relative;" id="fastAddBrand" data-expand="normal">
+										<input type="button" class="btn btn-blue" value="添加品牌">
+									</div>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th>商品属性</th>
+							<td>
+								<div id="goods_phase">
+									<label class="radio-inline">
+									  <input type="radio" name="post[type_id]" value="1"> 全新商品
+									</label>
+									<label class="radio-inline">
+									  <input type="radio" name="post[type_id]" value="2"> 促销/特价商品 ¥
+									</label>
+									<label>
+									  <input type="text" name="post[goods_discount]" id="goods_discount" value="{$goods.goods_discount}"  placeholder="促销价" class="priceInput" disabled="true"> 
+									</label>
+									<label>促销时间：
+									<input type="text" name="post[discount_startdate]" class="js-datetime" placeholder="促销起始时间" value="{$goods.discount_startdate}" id="startDiscountTime" style="width:150px;" disabled="true"> - 
+									<input type="text" name="post[discount_enddate]" class="js-datetime" placeholder="促销结束时间" value="{$goods.discount_enddate}" id="endDiscountTime" style="width:150px;" disabled="true">
+									</label>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th>单品项</th>
+							<td>
+								{$SKU_View}
+								<div id="SKU_Title">
+									<ul>
+										<li class="title_spec">规格</li>
+										<li class="title_style">外观</li>
+										<li class="title_stock">库存数量</li>
+										<li class="title_skuprice">单品价格</li>
+										<li class="title_skusn">SKU编号</li>
+									</ul>
+								</div>
+								<div id="SKU_Form" data-count="0"></div>
+								<div id="SKU_Upload"></div>
+								<div id="controlBar" class="controlBar"><a role="button" class="btn bg-red" href="javascript:Emall.SetSKUOption(goods_sku);" title="将数据还原到未编辑前">重置还原</a></div>
+							</td>
+						</tr>
+						<tr>
+							<th>商品库存</th>
+							<td>
+								<label>
+									  <input type="text" name="post[goods_stock]" placeholder="设置商品库存量" id="goodsStock" value="{$goods.goods_stock}" style="width: 150px" required>
+									   最大数量99999
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<th>展示图片</th>
+							<td id="goodsPicUploader">
+							<div style="float:left;margin-right:6px;">
+								<div id="mPicUploader" class="uploaderWrap">
+								    <div id="cfilePicker"></div>
+								    <div class="picTitle">商品主图</div>  
+								    <div id="fileList" class="uploader-list"></div>
+								</div>
+							</div>
+							<div style="float:left;margin-right:6px;">
+								<div id="sPicUploader-1" class="uploaderWrap">
+								    <div id="sfilePicker-1"></div>
+								    <div class="picTitle">细节图</div>  
+								    <div id="sfileList-1" class="uploader-list"></div>
+								</div>	
+							</div>	
+							<div style="float:left;margin-right:6px;">
+								<div id="sPicUploader-2" class="uploaderWrap">
+								    <div id="sfilePicker-2"></div>
+								    <div class="picTitle">细节图</div>  
+								    <div id="sfileList-2" class="uploader-list"></div>
+								</div>	
+							</div>	
+							<div style="float:left;margin-right:6px;">
+								<div id="sPicUploader-3" class="uploaderWrap">
+								    <div id="sfilePicker-3"></div>
+								    <div class="picTitle">细节图</div>  
+								    <div id="sfileList-3" class="uploader-list"></div>
+								</div>	
+							</div>	
+							<div style="float:left;margin-right:6px;">
+								<div id="sPicUploader-4" class="uploaderWrap">
+								    <div id="sfilePicker-4"></div>
+								    <div class="picTitle">细节图</div>  
+								    <div id="sfileList-4" class="uploader-list"></div>    
+								</div>	
+							</div>	
+							</td>
+						</tr>
+						<tr>
+							<th>商品描述</th>
+							<td>
+								<script type="text/plain" id="content" name="goods_description">{$goods.goods_description}</script>
+							</td>
+						</tr>
+						<tr>
+							<th>包装清单</th>
+							<td>
+								<textarea name="post[goods_packing]" id="goods_price" style="width: 300px;height:60px" placeholder="请输入包装清单" required>{$goods.goods_packing}</textarea>
+							</td>
+						</tr>	
+						<tr>
+							<th>商品重量</th>
+							<td>
+							<label>
+								<input type="text" name="post[goods_weight]" id="goods_weight" value="{$goods.goods_weight}" class="stockInput" placeholder="请输入商品重量" required>
+								单位：公斤(Kg)
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<th>运费设置</th>
+							<td>
+								<label class="radio-inline">
+								  <input type="radio" name="logistics_borne" value="0" <php>if($goods['logistics_borne']==0){echo checked;}</php>> 商家包邮
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="logistics_borne" value="1" <php>if($goods['logistics_borne']==1){echo checked;}</php>> 买家承担运费 
+								</label>
+						</tr>
+						<tr>
+							<th>运费模板</th>
+							<td>
+								<label>
+								  <select name="post[logistics_id]" id="goods_logistics">
+								  <option value="0">请选择运费模板</option>
+								  </select> 
+								</label>
+								<label><a href="{:U('AdminEMallLogistics/add')}">添加运费模板</a>
+								</label>
+						</tr>
+						<tr>
+							<th>运费险</th>
+							<td>
+								<div>
+									<label>
+									  <input type="text" name="post[freinsurance]" id="freinsurance"  placeholder="运费险价格" value="{$goods.freinsurance}" class="priceInput" required="true"> 
+									</label>
+									<label class="checkbox-inline">赠送运费险 <input type="checkbox" name="post[freeInsurance]" value="1"></label>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<th>消费积分</th>
+							<td>
+								<label class="radio-inline">
+								  <input type="radio" name="optPoints" value="1" {$optPoints}> 按配置公式计算
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="optPoints" value="2" {$cusOptPoints}> 手动设置
+								</label>
+								<label>
+								  <input type="text" id="goods_points" name="post[goods_points]" value="{$goods_Points}" placeholder="消费积分数" class="priceInput" disabled>
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<th>商品状态</th>
+							<td>
+								<label class="radio-inline">
+								  <input type="radio" name="post[goods_status]" value="1" {$status_yes}> 立刻上架
+								</label>
+								<label class="radio-inline">
+								  <input type="radio" name="post[goods_status]" value="0" {$status_no}> 下架
+								</label>
+							</td>
+						</tr>
+						<tr>
+							<th>详细参数</th>
+							<td>
+								<label class="radio-inline">
+								  <input type="button" value="填写更多商品参数" id="setGoodsParamBtn" class="btn btn-blue">	
+								</label>
+								<div>填写的详细参数可供买家对比参考</div>
+								<div id="paramForm"></div>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div class="span3">
+					<table class="table table-bordered">
+						<tr>
+							<th><b>缩略图</b></th>
+						</tr>
+						
+						<tr>
+							<th><b>发布时间</b></th>
+						</tr>
+						<tr>
+							<td><input type="text" name="post[post_date]" value="{:date('Y-m-d H:i:s',time())}" class="js-datetime" style="width: 160px;"></td>
+						</tr>
+
+						<tr style="display:none">
+							<th>文章模板</th>
+						</tr>
+						<tr style="display:none">
+							<td>
+								<php>
+									$tpl_list=sp_admin_get_tpl_file_list();
+									unset($tpl_list['page']);
+								</php>
+								<select style="min-width: 190px;" name="smeta[template]">
+									<option value="">请选择模板</option>
+									<foreach name="tpl_list" item="vo">
+										<option value="{$vo}">{$vo}{:C("TMPL_TEMPLATE_SUFFIX")}</option>
+									</foreach>
+								</select>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div class="form-actions">
+				<button class="btn btn-primary" type="button" id="submitBtn">提交</button>
+				<a class="btn" href="{:U('AdminEMallGoods/index')}">返回</a>
+			</div>
+		</form>
+	</div>
+	<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+	<script type="text/javascript">
+		//编辑器路径定义
+		var editorURL = GV.WEB_ROOT;
+	    var BASE_URL = '__PUBLIC__';
+	    //多图上传链接
+	    var UPLOAD_SERVER='{:U("AdminEMallUpload/uploadMultiPic")}';
+	    //品牌快速添加链接
+		var	brandPostURL="{:U('AdminEMallBrand/add_post',array('isAjaxReturn'=>true))}";
+		//获取运费模板链接
+		var logisticsTmplURL='{:U("AdminEMallLogistics/getLogisticsTmpl")}';
+		//获取更多商品属性参数链接（更换添加商品的类目时会使用）
+		var getMoreGoodsPropertyURL="{:U('AdminEMallGoods/getMoreGoodsProperty')}";
+		//提交添加的商品数据
+		var postAddGoodsDataURL="{:U('AdminEMallGoods/postAddGoodsData')}";
+		//商品SKU单品项数据
+		var goods_sku='{$goods.goods_sku}';
+		//商品类目id
+		var term_id='{$goods.term_id}';
+		//商品类型标识
+		var type_id='{$goods.type_id}';
+		//商品品牌id
+		var brand_id='{$goods.brand_id}';
+		//商品类目所有品牌数据
+		var brandData='{$brand}';
+		//选择的运费模板
+		var logistics_id='{$goods.logistics_id}';
+		//运费险
+		var freinsurance='{$goods.freinsurance}';
+		//筛选项数据
+		var filterData='{$termFilter}';
+		//设定的筛选项id
+		var filter_id='{$goods.filter_id}';
+		//商品属性id
+		var cat_id='{$cat_id}';
+		//商品属性参数数据
+		var propertyData='{$termProperty}';
+		//商品属性参数填写信息
+		var propertyInfo='{$goods.smeta}';
+		//是否处于填写更多商品参数状态
+		var fillMoreProperty=false;
+	</script>
+	<script type="text/javascript" src="__PUBLIC__/js/ueditor/ueditor.config.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/js/ueditor/ueditor.all.min.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/js/webuploader/webuploader.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/js/webuploader/getting-started.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/js/custom/Emall.js"></script>
+	<script type="text/javascript">
+		$(function() {
+			//商品属性设定
+			$(':input[name="post[type_id]"][value="'+type_id+'"]').trigger('click');
+
+			//运费险设定
+			var freeInsurance=$(':input[name="post[freeInsurance]"][type="checkbox"]');
+			var freinsuranceInput=$(':input[name="post[freinsurance]"]');
+			if(parseFloat(freinsurance)==0){
+				freinsuranceInput.attr('disabled',true);
+				freeInsurance.prop('checked',true);
+			}
+			//绑定运费险勾选事件
+			freeInsurance.on('click',function(){
+				if($(this).is(':checked')){
+					freinsuranceInput.val(0).attr('disabled',true);
+				}else{
+					freinsuranceInput.removeAttr('disabled');
+				}
+			})
+
+			$(".js-ajax-close-btn").on('click', function(e) {
+				e.preventDefault();
+				Wind.use("artDialog", function() {
+					art.dialog({
+						id : "question",
+						icon : "question",
+						fixed : true,
+						lock : true,
+						background : "#CCCCCC",
+						opacity : 0,
+						content : "您确定需要关闭当前页面嘛？",
+						ok : function() {
+							setCookie("refersh_time", 1);
+							window.close();
+							return true;
+						}
+					});
+				});
+			});
+			/////---------------------
+			Wind.use('validate', 'ajaxForm', 'artDialog', function() {
+				//javascript
+
+				//编辑器
+				editorcontent = new baidu.editor.ui.Editor();
+				editorcontent.render('content');
+				try {
+					editorcontent.sync();
+				} catch (err) {
+				}
+				//增加编辑器验证规则
+				jQuery.validator.addMethod('editorcontent', function() {
+					try {
+						editorcontent.sync();
+					} catch (err) {
+					}
+					return editorcontent.hasContents();
+				});
+				var form = $('form.js-ajax-forms');
+				//ie处理placeholder提交问题
+				if ($.browser && $.browser.msie) {
+					form.find('[placeholder]').each(function() {
+						var input = $(this);
+						if (input.val() == input.attr('placeholder')) {
+							input.val('');
+						}
+					});
+				}
+
+				var formloading = false;
+				//表单验证开始
+				form.validate({
+					//是否在获取焦点时验证
+					onfocusout : false,
+					//是否在敲击键盘时验证
+					onkeyup : false,
+					//当鼠标掉级时验证
+					onclick : false,
+					//验证错误
+					showErrors : function(errorMap, errorArr) {
+						//errorMap {'name':'错误信息'}
+						//errorArr [{'message':'错误信息',element:({})}]
+						try {
+							$(errorArr[0].element).focus();
+							art.dialog({
+								id : 'error',
+								icon : 'error',
+								lock : true,
+								fixed : true,
+								background : "#CCCCCC",
+								opacity : 0,
+								content : errorArr[0].message,
+								cancelVal : '确定',
+								cancel : function() {
+									$(errorArr[0].element).focus();
+								}
+							});
+						} catch (err) {
+						}
+					},
+					//验证规则
+					rules : {
+						'post[post_title]' : {
+							required : 1
+						},
+						'post[post_content]' : {
+							editorcontent : true
+						}
+					},
+					//验证未通过提示消息
+					messages : {
+						'post[post_title]' : {
+							required : '请输入标题'
+						},
+						'post[post_content]' : {
+							editorcontent : '内容不能为空'
+						}
+					},
+					//给未通过验证的元素加效果,闪烁等
+					highlight : false,
+					//是否在获取焦点时验证
+					onfocusout : false,
+					//验证通过，提交表单
+					submitHandler : function(forms) {
+						if (formloading)
+							return;
+						$(forms).ajaxSubmit({
+							url : form.attr('action'), //按钮上是否自定义提交地址(多按钮情况)
+							dataType : 'json',
+							beforeSubmit : function(arr, $form, options) {
+								formloading = true;
+							},
+							success : function(data, statusText, xhr, $form) {
+								formloading = false;
+								if (data.status) {
+									setCookie("refersh_time", 1);
+									//添加成功
+									Wind.use("artDialog", function() {
+										art.dialog({
+											id : "succeed",
+											icon : "succeed",
+											fixed : true,
+											lock : true,
+											background : "#CCCCCC",
+											opacity : 0,
+											content : data.info,
+											button : [ {
+												name : '继续添加？',
+												callback : function() {
+													reloadPage(window);
+													return true;
+												},
+												focus : true
+											}, {
+												name : '返回列表页',
+												callback : function() {
+													location = "{:U('AdminPost/index')}";
+													return true;
+												}
+											} ]
+										});
+									});
+								} else {
+									artdialog_alert(data.info);
+								}
+							}
+						});
+					}
+				});
+			});
+			//配置上传
+			$("#mPicUploader").setUploader(null,{postName:'goodsPic',infoText:'商品主图',thumb:{height:102}});
+			$("#sPicUploader-1").setUploader('#sfileList-1',{postName:'goodsPic',infoText:'细节图',pick:{id:'#sfilePicker-1'},thumb:{height:102}});
+			$("#sPicUploader-2").setUploader('#sfileList-2',{postName:'goodsPic',infoText:'细节图',pick:{id:'#sfilePicker-2'},thumb:{height:102}});
+			$("#sPicUploader-3").setUploader('#sfileList-3',{postName:'goodsPic',infoText:'细节图',pick:{id:'#sfilePicker-3'},thumb:{height:102}});
+			$("#sPicUploader-4").setUploader('#sfileList-4',{postName:'goodsPic',infoText:'细节图',pick:{id:'#sfilePicker-4'},thumb:{height:102}});
+
+			//绑定快速添加品牌事件
+			$('#fastAddBrand input[type="button"]').on('click',function(){
+				Emall.AddEMallBrand(brandPostURL,term_id);
+			})
+
+			//解析展示图片数据，取图片缩略图并且放置原来的上传数据
+			var goodsPic='{$goods.goods_img}';
+			var picArray=$.parseJSON('{"goodsPic":'+goodsPic+'}');
+			var goodsPicNum=picArray.goodsPic.length;
+			$.each($("#goodsPicUploader .uploaderWrap"),function(index){
+				if(index>goodsPicNum-1){
+					return false;
+				}
+				$(this).find('.webuploader-pick').css('background','url('+picArray.goodsPic[index].thumb+') no-repeat center center');
+				$(this).find('.uploader-list').append(
+					'<input type="text" name="UpFilePathInfo[goodsPic][]" value="'+picArray.goodsPic[index].goods_img+'" style="display:none">'
+					);
+				//这个隐藏域用于存放图片更新状态，如果里面有值，表示图片处于更新状态，后台会根据这个值判断是否需要生成图片缩略图
+				$(this).append('<input type="text" name="updateTag[goodsPic][]" value="" style="display:none">');
+			});
+
+
+			//设置积分
+			goods_points=$('#goods_points');
+			if(goods_points.val()>0){
+				goods_points.removeAttr('disabled');
+			}
+
+			//SKU单品项属性选择事件监听
+			Emall.SetSKUOptionListen(['#SKU_Style','#SKU_Spec']);
+
+			//按保存的商品数据设置单品项数据
+			Emall.SetSKUOption(goods_sku);
+
+			//设置商品折扣
+			if('{$goods.type_id}'==2){
+				discountBtn=$('#setDiscountTimeBtn');
+				discountBtn.removeAttr('disabled');
+			}
+
+
+			//获取运费模板
+			$('#goods_logistics').getLogisticsTmpl(logistics_id);
+
+			//解析加载必填筛选项数据,goods_required为1时加载的是必填的筛选项，0为非必填的其它筛选项
+			function parseTermFilterData(parseData,goods_required,insertPosition){
+				if(parseData!=='' && parseData!=='Array'){
+					filterData=goods_required==1?$.parseJSON(parseData):parseData;
+					filterTag=goods_required==1?'filterRequired':'filterMore';
+					var filterRequiredHTML='';
+					var insertPos=!insertPosition?$('#goods_brand').closest('tr'):insertPosition;
+
+					$.each(filterData,function(index,Item){
+						if(Item.goods_required==goods_required){
+							var filterOption='';
+							filterRequiredHTML+='<tr class="'+filterTag+'"><th>'+Item.filter_name+'</th><td><div class="form-group">'		
+												+'<select name="filter[required'+Item.id+']">';
+							$.each(Item.child,function(childIdx,Option){
+								filterOption+='<option value="'+Option.id+'">'+Option.filter_name+'</option>'									
+							})
+							filterRequiredHTML+=filterOption+'</select></div></td></tr>';
+						}					
+					})
+
+					insertPos.after(filterRequiredHTML);
+
+					//赋值筛选项
+					if($('#term_id').val()==term_id){
+						valueFilterRequired();
+					}
+					return true;
+				}
+				return false;
+			}
+			parseTermFilterData(filterData,1);
+
+			//赋值筛选项
+			function valueFilterRequired(){
+				var filterRequired=$('.filterRequired select,.filterMore select');
+				var selFilterIdGroup=filter_id.split(' ');
+				$.each(filterRequired,function(){
+					$this=$(this);
+					$.each(selFilterIdGroup,function(index,FilterId){
+						if(FilterId==''){
+							delete selFilterIdGroup[index];
+							return true;
+						}else{
+							$.each($this.find('option'),function(){
+								var selFilterId=$(this).attr('value');
+								if(selFilterId==FilterId){
+									$this.val(FilterId);
+									delete selFilterIdGroup[index];
+									return false;
+								}
+							})
+						}
+					})
+				})
+			}
+
+			//加载当前商品类目下的品牌数据,init为true时表示页面初始加载
+			function parseBrandData(brandData,init){
+				var BrandData=brandData!==''?$.parseJSON(brandData):'';
+				var brandOption='';
+				$.each(BrandData.brandData,function(index,Brand){
+					brandOption='<option value="'+Brand.brand_id+'">'+Brand.chartext+'&nbsp;&nbsp;'+Brand.brand_name+'</option>'+brandOption;
+				})
+				$('#goods_brand').html(brandOption);
+				//排序
+				$('#goods_brand option').sort(function(a,b){ 
+				    var aText = $(a).text().toUpperCase(); 
+				    var bText = $(b).text().toUpperCase(); 
+				    if(aText>bText) return 1; 
+				    if(aText<bText) return -1; 
+				    return 0; 
+				}).appendTo('#goods_brand');
+				$('#goods_brand').prepend('<option value="-1">请选择商品品牌</option>');
+
+				//初始加载页面时选择默认值
+				if(init){
+					$('#goods_brand').val(brand_id);
+				}
+			}
+			parseBrandData(brandData,true);
+
+			//绑定切换商品添加到的类目事件
+			$('#term_id').on('change',function(){
+				var $this=$(this);
+				cat_id=$this.find('option:selected').attr('data-cid');
+				var curSelTermId=$this.val();
+				//同步更新快速添加品牌需要的brandTermId表单值
+				$('#brandTermId').val(curSelTermId);
+				$('#goods_brand').after('<span class="loadingGif"><img src="'+BASE_URL+'/images/loading.gif"></span>');
+				$.get(getMoreGoodsPropertyURL,{term_id:$this.val(),cat_id:cat_id},function(data){
+					if(data.status==1){
+						//移除原有的筛选数据
+						$('.filterRequired').remove();
+						filterData=data.filterData;
+						propertyData=data.propertyData?data.propertyData:'';
+						cat_id=data.cat_id;
+						//如果正处于添加更多商品参数状态，移除原添加商品参数的表单
+						if(fillMoreProperty==true){
+							$('#setGoodsParamBtn').trigger('click');
+						}
+						if(filterData.length>0){
+							parseTermFilterData(filterData,1);
+						}
+						//如果是原来设定的商品类目并且包含更多商品参数选项时展开商品参数选项表单
+						if(curSelTermId==term_id && propertyInfo!==''){
+							$('#setGoodsParamBtn').trigger('click');
+						}
+
+						brandData=data.brandData;
+						//解析品牌数据
+						parseBrandData(brandData);
+						//切换回原来商品类目时还原到选择的品牌						
+						if(curSelTermId==term_id){
+							$('#goods_brand').val(brand_id);
+						}
+						//加载数据成功后赋值当前选择的商品类目id变量
+						term_id=curSelTermId;
+
+					}else{
+						alert(data.error);
+						$this.val(term_id);
+						$('#brandTermId').val(term_id);
+					}
+					$('.loadingGif').remove();
+				}).error(function(){
+					$this.val(term_id);
+					$('#brandTermId').val(term_id);
+					alert('无法加载当前选择类目的筛选项及商品详细参数数据，请稍候尝试！');
+					$('.loadingGif').remove();
+				})
+			})
+
+			//解析商品属性参数
+			function parseTermPropertyData(insertPosition){
+				if(propertyData && propertyData!==''){
+					//console.log(propertyData);
+					var parseData=$.parseJSON(propertyData);
+					var termPropertyHTML='';
+					var insertPos=!insertPosition?$('#setGoodsParamBtn').closest('tr'):insertPosition;
+					$.each(parseData,function(index,Item){
+						$.each(Item,function(pidx,Property){
+							var selectOption='';
+							var formHTML='';
+							termPropertyHTML+='<tr class="termProperty"><th>'+Property.paramname+'</th><td><div class="form-group">';
+							if(Property.formtype==1){
+								formHTML='<input type="text" class="propertyForm" data-category="'+index+'" data-name="'+Property.paramname+'">';
+							}else if(Property.formtype==2){
+								formHTML='<select class="propertyForm" data-category="'+index+'" data-name="'+Property.paramname+'" >';
+								$.each(Property.selectParam,function(selIdx,Option){
+									selectOption+='<option value="'+Option+'">'+Option+'</option>';
+								})
+								selectOption+='</select>'	
+							}
+							termPropertyHTML+=formHTML+selectOption+'</div></td></tr>';
+						})
+					})
+					insertPos.after(termPropertyHTML);
+					return true;
+				}
+				return false;
+			}
+
+			//加载更多商品属性和筛选项数据
+			$('#setGoodsParamBtn').on('click',function(){
+				if($(this).val()=='填写更多商品参数'){
+					fillMoreProperty=true;
+					$(this).val('取消填写更多参数');
+					parseTermPropertyData($(this).closest('tr'));
+					parseTermFilterData(filterData,0,$(this).closest('tr'));
+					if(term_id==$('#term_id').val() && propertyInfo && propertyInfo!=='' && propertyInfo!=='null'){
+						var goodsPropertyInfo=$.parseJSON(propertyInfo);
+						//赋值存在的商品属性参数表单
+						$.each(goodsPropertyInfo,function(index,Category){
+							$.each(Category,function(pIdx,Item){
+								$('[data-category="'+index+'"][data-name="'+Item.paramname+'"]').val(Item.value);							
+							})
+						})
+					}
+				}else{
+					fillMoreProperty=false;
+					$(this).val('填写更多商品参数');
+					$('.filterMore').remove();
+					$('.termProperty').remove();
+				}
+			})
+
+			//如果存在已经选择的模板，自动展开列表及参数并赋值
+			if(propertyData!=='' || (filterData!=='' && filterData!=='Array')){
+				$("#setGoodsParamBtn").trigger("click");
+			}
+
+			//提交商品数据
+			$('#submitBtn').on('click',function(){
+				//表单验证
+				if(parseInt($(':input[name="post[type_id]"]:checked').val())==2){
+					var discountInput=$('#goods_discount');
+					if(discountInput.val()=='' || parseFloat(discountInput.val())==0){
+						discountInput.val('').attr('placeholder','价格空或太小').focus();
+						return false;
+					}
+				}
+				if(!freeInsurance.is(':checked')){
+					if(freinsuranceInput.val()==''){
+						freinsuranceInput.attr('placeholder','金额不能为空').focus();
+						return false;
+					}
+				}
+				var formData=$('.js-ajax-forms').serialize();
+				//如果填写了更多商品参数，则将参数表单值手动加入序列化后的表单数据
+				if(fillMoreProperty==true){
+					var propertyForm=$('.propertyForm');
+					var postPropertyTxt='';
+					$.each(propertyForm,function(index){
+						var category=$(this).attr('data-category');
+						var paramname=$(this).attr('data-name');
+						var propertyValue=$(this).val();
+						postPropertyTxt+='&'+encodeURIComponent('property['+index+']')+'='+encodeURIComponent('{"category":"'+category+'","paramname":"'+paramname+'","value":"'+propertyValue+'"}');
+					})
+					
+					//console.log(postPropertyTxt);
+				}
+				//console.log(formData);
+				$(window.parent.document).find('body').setLoadingState({
+					container:'body',
+					loadingTxt:'正在提交编辑的商品数据，请稍候...'
+				});
+				$.post(postAddGoodsDataURL,formData+postPropertyTxt,function(data){
+					if(data.status==1){
+						alert('编辑商品成功！');
+						console.log(data.data);
+					}else{
+						alert(data.error);
+					}
+					$(window.parent.document).find('body').setLoadingState('destroy',function(){
+						//window.location.reload();
+					});
+				}).error(function(){
+					alert('无法提交商品数据，请稍候尝试！');
+					$(window.parent.document).find('body').setLoadingState('destroy');
+				})
+			})
+
+			////-------------------------
+		});
+	</script>
+</body>
+</html>

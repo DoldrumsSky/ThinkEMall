@@ -1,0 +1,689 @@
+<admintpl file="header" />
+<style>
+	em{
+		font-style:normal;
+		color:#dd2727;
+	}
+
+	i{
+		font-style:normal;
+		padding-left:4px;
+	}
+
+	td{
+		position: relative;
+	}
+
+	td .orderDetail{
+		position: absolute;
+		display: none;
+		background: #fff;
+		z-index: 1;
+		width:550px;
+		top:0;
+		left:100%;
+		border:1px #ccc solid;
+		box-shadow: 0 0 2px #ccc;
+		
+	}
+
+	.orderDetail span.arrow,.orderDetail span.down{
+    height: 24px;
+    width: 12px;
+    color:#FFF;
+    position: absolute;
+    top:0;
+    left:-6px;
+    font-family: 'simsun';
+    font-size: 24px;
+    overflow: hidden;
+    z-index: 10;
+	}
+
+	.orderDetail span.down{
+	text-shadow: 0 0 2px #ccc;
+	color:#ccc;
+	left:-7px;
+	z-index: 9;
+	padding:0;
+	
+	text-align: left;
+	}
+
+	.arrowWrap{
+    height:12px ;
+    width:6px ;
+    position: absolute;
+    top:8px;
+    left:-6px;
+	}
+
+</style>
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="well form-search" method="post" action="{:U('AdminOrder/recycleOrder')}">
+			
+			下单时间：
+			<input type="text" name="start_time" class="js-datetime" value="{$formget.start_time|default=''}" style="width: 120px;" autocomplete="off">-
+			<input type="text" class="js-datetime" name="end_time" value="{$formget.end_time|default=''}" style="width: 120px;" autocomplete="off"> &nbsp; &nbsp;
+			订单号/商品关键字： 
+			<input type="text" name="keyword" style="width: 200px;" value="{$formget.keyword|default=''}" placeholder="请输入订单号/商品关键字...">
+			<input type="submit" class="btn btn-primary" value="搜索" />
+			<a class="btn btn-danger" href="{:U('AdminOrder/recycleOrder')}">清空</a>
+		</form>
+		<form class="js-ajax-form" action="" method="post">
+			<table class="table table-hover table-bordered table-list">
+				<thead>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<notempty name="term">
+						<th width="50">{:L('SORT')}</th>
+						</notempty>
+						<th width="50">ID</th>
+						<th>{:L('ORDER_SERIAL')}</th>
+						<th>{:L('TOTALPRICE')}</th>
+						<th>{:L('MODIFY_PRICE')}</th>
+						<th width="80">{:L('CONSIGNEE')}</th>
+						<th>{:L('TELPHONE')}</th>
+						<th width="300">{:L('ADDRESS')}</th>
+						<th width="150">{:L('ORDER_TIME')}</th>
+						<th width="50">{:L('STATUS')}</th>
+						<th width="100">{:L('ACTIONS')}</th>
+					</tr>
+				</thead>
+				<script type="text/javascript">
+					var orderGoodsData={};
+					var waybill_no={};	
+					var prepare_goods={};
+					var refund_goods={};
+				</script>
+				<foreach name="orderData" item="vo">
+				<tr>
+					<td><input type="checkbox" class="js-check" data-yid="js-check-y" data-xid="js-check-x" name="ids[]" value="{$vo.order_gid}" title="ID:{$vo.order_gid}"></td>
+                    <td><b>{$vo.order_gid}</b></td>
+					<td>{$vo.order_serial} <a href="javascript:parseOrderGoodsData(orderGoodsData[{$vo.order_serial}],waybill_no[{$vo.order_serial}],prepare_goods[{$vo.order_serial}],refund_goods[{$vo.order_serial}],{$vo.order_serial});">查看订购商品</a><div class="orderDetail" data-serial="{$vo.order_serial}" data-id="{$vo.order_gid}" data-statu="{$vo.status}"></div></td>
+					<td><em>¥</em><em>{$vo.total_price}</em></td>
+					<td>
+					 <empty name="vo['modify_price']">保持原价<else /><em class="currency">¥</em> <em class="modifyPrice">{$vo.modify_price}</em></empty>
+					</td>
+					<td>{$vo.consignee}</td>
+					<td>{$vo.telphone}</td>
+					<td>{$vo.address}</td>
+					<td>{:date('Y年m月d日 H:i',strtotime($vo['order_time']))}</td>
+					<td><em>无效</em></td>
+					<td>
+						<a href="{:U('AdminOrder/restoreOrder',array('order_id'=>$vo['order_gid']))}" class="restoreOrderBtn js-ajax-delete" data-msg="您确认要恢复这笔订单吗？">{:L('RESTORE_ORDER')}</a> | 
+
+						<if condition="$vo['status'] elt 0">
+						<a href="{:U('AdminOrder/deleteOrder',array('order_id'=>$vo['order_gid'],'deleteType'=>2))}" class="js-ajax-delete " data-subcheck="true" data-msg="您确定要执行彻底删除操作吗？彻底删除后的订单无法再找回！<br>注：已经支付的订单只能手动删除！">{:L('DELETE')}</a>
+						<else />
+							<a href="javascript:void(0);" class="color-gray">{:L('DELETE')}</a>
+						</if>
+
+					</td>
+				</tr>
+				<script type="text/javascript">
+					orderGoodsData['{$vo.order_serial}']='{$vo.goods_data}';
+					waybill_no['{$vo.order_serial}']='{$vo.waybill_no}';
+					prepare_goods['{$vo.order_serial}']='{$vo.prepare_goods}';
+					refund_goods['{$vo.order_serial}']='{$vo.refund_info}';
+				</script>
+				</foreach>
+				<tfoot>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<notempty name="term">
+						<th width="50">{:L('SORT')}</th>
+						</notempty>
+						<th width="50">ID</th>
+						<th>{:L('ORDER_SERIAL')}</th>
+						<th>{:L('TOTALPRICE')}</th>
+						<th>{:L('MODIFY_PRICE')}</th>
+						<th width="80">{:L('CONSIGNEE')}</th>
+						<th>{:L('TELPHONE')}</th>
+						<th width="300">{:L('ADDRESS')}</th>
+						<th width="150">{:L('ORDER_TIME')}</th>
+						<th width="50">{:L('STATUS')}</th>
+						<th width="70">{:L('ACTIONS')}</th>
+					</tr>
+				</tfoot>
+			</table>
+			<div class="table-actions">
+				<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminOrder/restoreOrder')}" data-subcheck="true" data-msg="你确定要恢复当前选中的失效订单吗？">{:L('RESTORE_ORDER')}</button>
+				<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminOrder/deleteOrder',array('deleteType'=>2))}" data-subcheck="true" data-msg="您确定要执行彻底删除操作吗？彻底删除后的订单无法再找回！<br>注：已经支付的订单需要手动删除！">{:L('DELET_SELECT_ORDRE')}</button>
+			</div>
+			<div class="pagination">{$page}</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script src="__PUBLIC__/js/custom/Emall.js"></script>
+	<script>
+	//当前显示的查看订单商品内容
+	var curShowOrderDetail=null;
+	//设置配货状态链接
+	var postPrepareURL="{:U('AdminOrder/postPrepare')}";
+	//设置出库状态链接
+	var postDeliveryURL="{:U('AdminOrder/postDelivery')}";
+	//编辑保存运单号链接 
+	var postEditSerialURL="{:U('AdminOrder/postEditSerial')}";
+	//处理退货商品
+	var disposeRefundURL="{:U('AdminOrder/disposeRefund')}";
+	//删除重置退货单链接（对应的退货信息会被全部清空）
+	var deleteRefundURL="{:U('AdminOrder/deleteRefund')}";
+	//确认退款
+	var postRefundPriceURL="{:U('AdminOrder/postRefundPrice')}"
+
+	//隐藏订单商品信息
+      function closeOrderDetail(){
+      	curShowOrderDetail.hide();
+      	curShowOrderDetail=null;
+      }
+
+      //隐藏退货信息
+      function closeRefundDetail(gid){
+      	var refundInfoWrap=$('.orderDetail dd[data-gid="'+gid+'"]');
+      	refundInfoWrap.find('.refundInfo').hide();
+      	refundInfoWrap.find('.disposeRefundBtn').show();
+      }
+
+ 
+      //刷新退货处理操作界面元素
+      function updateRefundOptionUI(gid,order_id,status){ 
+      	var actionBtnHTML='';
+		//操作按钮代码生成（当退货处于申请状态时有三个操作按钮，进入正式退货流程后只有确认收货按钮和确认退款按钮）
+		var cancelBtn='<a class="orderBtn bg-gray" href="javascript:closeRefundDetail(\''+gid+'\')">取消退出</a>';
+		if(status==0){
+			actionBtnHTML='<div class="refundBottomBar"><p>退货处理详细说明：</p><textarea placeholder="请输入退款金额/拒绝退货理由/其它说明等"></textarea><a class="orderBtn bg-red setDelivery" href="javascript:postRefundDispose(2,\''+order_id+'\',\''+gid+'\');">拒绝退货</a><a class="orderBtn bg-red setDelivery" href="javascript:postRefundDispose(1,\''+order_id+'\',\''+gid+'\');">同意退货</a>'+cancelBtn+'</div></div>';
+		}else if(status==1 || status==-1){
+				actionBtnHTML='<div class="refundBottomBar"><a class="orderBtn bg-red deleteRefund" href="javascript:deleteRefund(\''+order_id+'\',\''+gid+'\')">删除重置</a>'
+				+'<a class="orderBtn bg-red setPrepare" href="javascript:postRefundDispose(3,\''+order_id+'\',\''+gid+'\');">确认收货</a>'
+				+cancelBtn+'</div></div>';
+		}else if(status==2){
+			actionBtnHTML='<div class="refundBottomBar"><a class="orderBtn bg-red confirmReveivedGoods" href="javascript:postRefundDispose(3,\''+order_id+'\',\''+gid+'\');">确认收货</a>'+cancelBtn+'</div></div>';
+		}else if(status==3){
+			actionBtnHTML='<div class="refundBottomBar"><em class="currency">¥</em><input type="text" class="refundPrice" placeholder="请填写需要扣除的金额"><a class="orderBtn bg-red confirmRefundPrice" href="javascript:postRefundPrice(\''+order_id+'\',\''+gid+'\');">确认退款</a>'+cancelBtn+'</div></div>';
+		}else if(status==4){
+			actionBtnHTML='<div class="refundBottomBar">'+cancelBtn+'</div></div>';
+		}
+		return actionBtnHTML;
+      }
+
+		function refersh_window() {
+			var refersh_time = getCookie('refersh_time');
+			if (refersh_time == 1) {
+				window.location = "{:U('AdminOrder/index',$formget)}";
+			}
+		}
+
+		setInterval(function() {
+			refersh_window();
+		}, 2000);
+
+		  var orderStatuCode='<em class="orderStatu-normal">配货中</em>以下订单商品等待配货';
+		  var waybillDetailURL='http://api.logistics.com/';
+
+		  //解析订单商品数据到订单内容容器中
+		  function parseOrderGoodsData(goodsData,waybill_no,prepare_goods,refund_goods,order_serial){
+		    if(!goodsData){
+		      return false;
+		    }
+
+		      var result=$.parseJSON(goodsData);
+		      var deliveryGoods=waybill_no?$.parseJSON(waybill_no):'';
+		      var refundGoods=refund_goods?$.parseJSON(refund_goods):'';
+		      var prepareGoods=prepare_goods?prepare_goods.split(','):'';
+		      var orderGoodsHTML='';
+		      var deliveryGoodsHTML='';
+		      var prepareGoodsHTML='';
+		      var goodsItemWrap=$('.orderDetail[data-serial="'+order_serial+'"]');
+		      var order_id=goodsItemWrap.attr('data-id');
+
+		      if(goodsItemWrap.text()==''){
+			      goodsItemWrap.append('<div class="arrowWrap"><span class="arrow">◆</span><span class="down">◆</span></div>').show();
+			      if(curShowOrderDetail){
+			      	curShowOrderDetail.hide();
+			      }
+			      curShowOrderDetail=goodsItemWrap;
+		      }else{
+			      if(curShowOrderDetail){
+			      	curShowOrderDetail.hide();
+			      }
+			      curShowOrderDetail=goodsItemWrap;
+		      	  goodsItemWrap.show();
+		      	  return false;
+		      }
+
+		      
+	           //添加绑定编辑保存运单号事件
+	           function bindEidtEvnt(titleBar){
+	               titleBar.find('.edit-right').on('click',function(){
+	               		var $this=$(this);
+	               		var serial=titleBar.find('.serial');
+		               	var editText=$this.text();
+		               	var oldSerial=serial.text();
+
+	               		if(editText=='编辑运单号'){
+		               		serial.append('<input type="text" value="'+serial.text()+'">');
+	               			$this.text('保存编辑')
+	               		}else{
+	               			$this.text('编辑运单号');
+	               			var newSerial=serial.find('input').val()
+	               			if(newSerial==oldSerial){
+	           					serial.find('input').remove();
+	           					serial.text(newSerial);
+	           					$this.text('编辑运单号');
+	               				return false;
+	               			}
+	               			//提交编辑数据
+	               			$.post(postEditSerialURL,{waybill_no:newSerial,oldSerial:oldSerial,order_id:order_id},function(data){
+	               				if(data.status==1){
+	               					serial.find('input').remove();
+	               					serial.text(newSerial);
+	               					$this.text('编辑运单号');
+	               				}else{
+	               					alert(data.error);
+	               				}
+	               			}).error(function(){
+	               				alert('链接服务器出错，无法提交数据,请稍候尝试！');
+	               			})
+	               		}
+	               		
+	               })		               	
+	           }
+
+	           function makeGoodsListHTML(gid,Item,checkEnable){
+                //按长度要求截取标题字符
+                var sliceLength=Item.goods_title.length<32?Item.goods_title.length:32;
+                var goods_title=Item.goods_title.substr(0,sliceLength);
+                goods_title+=Item.goods_title.length>32?'...':'';
+
+	           	var checkboxHTML=checkEnable?'<div style="width:6%"><input type="checkbox" data-name="orderList"></div>':'';
+	           	var HTMLCode='<dd data-gid="'+gid+'">'+checkboxHTML+'<div class="itemImg fixImgPadding">'
+		                                +'<a href=""><img src="'+Item.goods_img+'" width="80" class="cartGoodsImg" alt=""></a></div>'
+		                                +'<div class="listInfo"><p><a href="{:U(\'EMall/GoodsDetails/index\')}'+'&id='+Item.goods_id+'" target="_blank">'+goods_title+'</a></p>'
+		                                +'<p>'+Item.sku_style+' '+Item.sku_spec+'</p>'
+			                            +'<p><em>¥</em> <em class="goodsPrice">'+Number(Item.price).toFixed(2)+'</em> X '+Item.shopBuyNum
+			                            +'&nbsp;&nbsp;&nbsp;&nbsp;运费：<em>¥</em> <em>'+Number(Item.logistics_price).toFixed(2)+'</em>&nbsp;&nbsp;&nbsp;&nbsp;配送方式：<em>'+Item.logistics+'</em></p></div></dd>';
+			    	return HTMLCode;
+	           }
+
+		      var specTotalPriceHTML='';
+		      var shipGoodsNum=0;
+		      //输出订单中已经出库的商品
+		      if(deliveryGoods!=='' && deliveryGoods!==null){
+		          $.each(deliveryGoods,function(waybill_no,info){
+		            var gidGroup=info.goods_id.split(',');
+		              $.each(gidGroup,function(index){
+		                var Item=result[gidGroup[index]];
+
+
+		                //如果当前订单已经处于确认收货状态则不再显示勾选框
+		                var checkEnable=info.status==0?true:false;
+		                deliveryGoodsHTML+=makeGoodsListHTML(gidGroup[index],Item,checkEnable); 
+		                shipGoodsNum++;
+		              })
+		              
+		               var editHTML=info.status==0?'<a href="javascript:void(0);" class="edit-right">编辑运单号</a>':'';
+		               var statusText=info.status==1?'已收货':'已出库';
+		               var titleBar= $('<dl data-statu="delivery" data-serial="'+waybill_no+'"><dt><em class="orderStatu-normal bg-green">'+statusText+'</em>物流公司：'+info.company+' 运单号：<i class="serial">'+waybill_no+'</i>'+editHTML+'</dt>'+deliveryGoodsHTML+'</dl>').appendTo(goodsItemWrap);
+
+		               //如果当前订单已经处于确认收货状态则不再显示编辑按钮
+		               if(info.status==0){
+		               		bindEidtEvnt(titleBar);
+						}
+		                //重新初始化，继续输出其它出库商品
+		                deliveryGoodsHTML='';
+		          })
+
+		      }
+
+		      var prepareGoodsNum=0;
+		      //输出订单中已经完成配货的商品
+		      if(prepareGoods!=='' && prepareGoods!==null){
+		      	$.each(prepareGoods,function(index){
+		      		var Item=result[prepareGoods[index]];
+
+		                prepareGoodsHTML+=makeGoodsListHTML(prepareGoods[index],Item,true); 		                
+		                prepareGoodsNum++;
+		      	})
+		                goodsItemWrap.append('<dl data-statu="prepare"><dt><em class="orderStatu-normal">已配货</em>以下订单商品等待出库</dt>'+prepareGoodsHTML+'</dl>');
+		      }
+
+		      var orderGoodsNum=0;
+		      //输出未出库的商品
+		      $.each(result,function(gid,Item){
+		        orderGoodsNum++;
+		        //查找当前商品是否为出库后的状态，是则跳过
+		        var outputGoods=goodsItemWrap.find('dd[data-gid="'+gid+'"]');
+		        if(outputGoods.length>0){    
+		          return true;
+		        }
+
+		        //生成html
+		        orderGoodsHTML+=makeGoodsListHTML(gid,Item,true); 	        
+
+		      })
+
+	      	//查看订单商品信息的操作设置栏代码
+	      	var orderStatu=goodsItemWrap.attr('data-statu');
+	      	var bottomBarHTML=orderStatu>0?'<div class="bottomBar"><a class="orderBtn bg-red setPrepare" href="javascript:void(0);">设置配货</a><a class="orderBtn bg-red setDelivery" href="javascript:void(0);">设置出库</a><a class="orderBtn bg-gray" href="javascript:closeOrderDetail()">取消退出</a></div>':'<div class="bottomBar"><a class="orderBtn bg-gray" href="javascript:closeOrderDetail()">取消退出</a></div>';
+
+		      //判断未配货数量
+		      if((prepareGoodsNum+shipGoodsNum)>0){
+		        //输出配货进程信息
+		        var processNum=0;
+		        if(orderGoodsNum==(prepareGoodsNum+shipGoodsNum)){
+		            $('#prepareTime').append('{$orderData.prepare_time}');
+
+		        }else{
+		            goodsItemWrap.append('<dl data-statu="normal"><dt><em class="orderStatu-normal">配货中</em>以下订单商品等待配货</dt>'+orderGoodsHTML +'</dl>');  
+		      
+		        }
+
+		      }else{
+		        $('#prepareTime').append('商家正在配货');
+		        goodsItemWrap.append('<dl data-statu="normal"><dt><em class="orderStatu-normal">配货中</em>以下订单商品等待配货</dt>'+orderGoodsHTML +'</dl>');
+	
+		      }
+		      goodsItemWrap.append(bottomBarHTML); 
+
+		      //输出退货商品信息
+		      if(refundGoods!=='' && refundGoods!==null){
+		        $.each(refundGoods,function(index,Item){
+		            var goodsItem=$('dd[data-gid="'+index+'"]');
+		            var refundTag='申请退货';
+		            var controlTag='处理退货';
+		            if(Item.status==-1){
+		            	controlTag=refundTag='拒绝退货';
+		            }else if(Item.status==4){
+		            	controlTag=refundTag='完成退货';
+			            //完成退货后隐藏运单编辑
+			            goodsItem.closest('dl').find('dt .edit-right').hide();
+		            }
+			            goodsItem.find('.itemImg').append('<em class="applyRefund">'+refundTag+'</em>');
+
+			            //添加退货处理按钮
+			            goodsItem.append('<a class="orderBtn bg-red disposeRefundBtn" target="_blank" href="javascript:disposeRefund(\''+index+'\',\''+order_id+'\',\''+order_serial+'\')">'+controlTag+'</a>');
+		        })
+		      }
+
+		      //绑定操作按钮事件
+		      //设置商品为已经完成配货的状态
+		    goodsItemWrap.find('.setPrepare').on('click',function(){
+		      	var gidGroup='';
+		      	var changeGID='';		//此gid字串用于更改已经出库的商品到配货完成状态
+		      	var prepareAll=0;		//用于标识当前商品是否全部完成配货
+		      	var setGoodsItem=goodsItemWrap.find('dl:not([data-statu="prepare"]) :checkbox[data-name="orderList"]:checked');
+		      	if(setGoodsItem.length<=0){
+		      		alert('请至少选择一件非配货完成状态的商品！');
+		      		return false;
+		      	}
+
+		      	
+		      	$('body').setLoadingState({container:'body',loadingTxt:'正在设置配货状态，请稍等...'});
+		      	//生成gidGroup字串
+		      	$.each(setGoodsItem,function(){
+		      		var gid = $(this).closest('dd').attr('data-gid');
+		      		if($(this).closest('dl').attr('data-statu')=='delivery'){
+		      			changeGID+=changeGID!==''?','+gid:gid;
+		      		}else{
+		      			gidGroup+=gidGroup!==''?','+gid:gid;
+		      		}
+		      	})
+		      	//附加上已经配货的商品gid到gidGroup字串
+		      	var curPrepareGoods=goodsItemWrap.find('dl[data-statu="prepare"] dd');
+		      	$.each(curPrepareGoods,function(){
+		      		var gid = $(this).attr('data-gid');
+		      		gidGroup+=gidGroup!==''?','+gid:gid;
+		      	})
+
+		      	//判断更新后，是否所有商品都处于完成配货状态（通过获取未配货容器是否存在或者其中所有商品是否被勾选设置来判断）
+		      	var normalGoodsItem=goodsItemWrap.find('dl[data-statu="normal"] dd');
+		      	if(normalGoodsItem.length>0){
+		      		if(normalGoodsItem.find(':checkbox:checked').length==normalGoodsItem.length){
+		      			prepareAll=1;
+		      		}
+		      	}else{
+		      		prepareAll=1;
+		      	}
+
+		      	//提交设置配货数据
+		      	$.post(postPrepareURL,{gidGroup:gidGroup,changeGID:changeGID,order_id:order_id,prepareAll:prepareAll},function(data){
+		      		//console.log(gidGroup+'|'+changeGID);
+		      		if(data.status==1){
+		      			var prepareContent;
+		      			//判断是否已经存在配货完成的商品,不存在则先直接按位置插入容器
+		      			if(goodsItemWrap.find('dl[data-statu="prepare"]').length==0){
+		      				var normalGoodsItem=goodsItemWrap.find('dl[data-statu="normal"]');
+		      				var deliveryGoodsItem=goodsItemWrap.find('dl[data-statu="delivery"]:last');
+		      				var wrapHTML='<dl data-statu="prepare"><dt><em class="orderStatu-normal">已配货</em>等待商品出库</dt></dl>';
+		      				//存在未配货商品时插入到其前
+		      				if(normalGoodsItem.length>0){
+		      					normalGoodsItem.before(wrapHTML);
+		      				//存在出库商品时插入到其后
+		      				}else if(deliveryGoodsItem.length>0){
+		      					deliveryGoodsItem.after(wrapHTML);
+		      				//否则直接插入
+		      				}else{
+		      					goodsItemWrap.prepend(wrapHTML);
+		      				}
+		      			}
+		      			prepareContent=goodsItemWrap.find('dl[data-statu="prepare"]');
+
+		      			//将原商品复制到已配货的商品列表中后删除
+		      			$.each(setGoodsItem,function(){
+		      				var goodsItem=$(this).closest('dd');
+		      				//取消勾选checkbox
+		      				goodsItem.clone(true).appendTo(prepareContent).find(':checkbox').prop('checked',false);
+		      				goodsItem.remove();
+		      				prepareGoodsNum++;
+		      			})
+		      			//如果所有商品都已经完成配货则移除其容器
+		      			var normalGoodsItem=goodsItemWrap.find('dl[data-statu="normal"]');
+		      			if(normalGoodsItem.find('dd').length==0){
+		      				normalGoodsItem.remove();
+		      			}
+		      			//如果包含从出库状态转换到配货状态的商品，循环判断所有出库容器是否需要清除
+		      			if(changeGID!==''){
+		      				$.each(goodsItemWrap.find('dl[data-statu="delivery"]'),function(){
+		      					if($(this).find('dd').length==0){
+		      						$(this).remove();
+		      					}
+		      				})
+		      			}
+		      			alert('提交成功');
+		      		}else{
+		      			alert(data.error);
+		      		}
+		      		$('body').setLoadingState('destroy');
+		      	}).error(function(data){
+		      		alert('链接服务器出错，无法提交数据,请稍候尝试！');
+		      		$('body').setLoadingState('destroy');
+		      	})
+		    })
+
+
+		    //设置出库事件绑定  
+			goodsItemWrap.find('.setDelivery').on('click',function(){
+		      	var setGoodsItem=goodsItemWrap.find('dl:not([data-statu="delivery"]) :checkbox[data-name="orderList"]:checked');
+		      	if(setGoodsItem.length<=0){
+		      		alert('请至少选择一件未出库的商品！');
+		      		return false;
+		      	}
+		      	var bottomBar=goodsItemWrap.find('.bottomBar');
+		      	//生成出库运单号设置界面
+		      	var setWayBill=goodsItemWrap.find('.setWayBill');
+		      	if(setWayBill.length==0){
+			      	//添加运单号的HTML
+			      	bottomBar.before('<div class="setWayBill">输入运单号：<input type="text" value="" id="waybill_no"><a href="javascript:void(0);" class="orderBtn bg-blue postDelivery">确认出库</a><a href="javascript:void(0);" class="orderBtn bg-gray cancelSet">取消设置</a></div>');
+			      	setWayBill=goodsItemWrap.find('.setWayBill');
+
+			      	//取消出库设置事件
+			      	setWayBill.find('.cancelSet').on('click',function(){	
+			      		setWayBill.hide();
+			      	})
+
+			      	//提交出库数据事件
+			      	setWayBill.find('.postDelivery').on('click',function(){
+				      	var setGoodsItem=goodsItemWrap.find('dl:not([data-statu="delivery"]) :checkbox[data-name="orderList"]:checked');
+				      	if(setGoodsItem.length<=0){
+				      		alert('请至少选择一件未出库的商品！');
+				      		return false;
+				      	}
+
+				      	var gidGroup='';
+				      	var prepare_gid='';
+				      	var shipAll=0;			//判断是否已经全部出库的标识（用于保存数据时判断是否需要更新状态数据）
+				      	var prepareAll=0;
+				      	//生成gidGroup字串
+				      	$.each(setGoodsItem,function(){
+				      		var gid=$(this).closest('dd').attr('data-gid');
+				      		gidGroup+=gidGroup!==''?','+gid:gid;
+				      	})
+				      	//如果当前商品已经全部出库则将配货商品字段数据清零,否则更新设置出库后的配货商品
+				      	var shipGoodsItem=goodsItemWrap.find('dl[data-statu="delivery"] dd');
+				      	if((shipGoodsItem.length+setGoodsItem.length)!==orderGoodsNum){		      		
+				      		var prepareGoodsItem=goodsItemWrap.find('dl[data-statu="prepare"] :checkbox[data-name="orderList"]:checked');
+				      		prepareGoodsNum=prepareGoodsItem.length;
+				      		//生成配货商品gid字串
+					      	$.each(prepareGoodsItem,function(){
+					      		var gid=$(this).closest('dd').attr('data-gid');
+					      		prepare_gid+=prepare_gid!==''?','+gid:gid;			      		
+					      	})
+				      	}else{
+				      		prepare_gid='';
+				      		shipAll=1;
+				      	}
+
+				      	//console.log(shipGoodsItem+'|'+orderGoodsNum);
+
+				      	//判断更新后，是否所有商品都处于完成配货状态（通过获取未配货容器是否存在或者其中所有商品是否被勾选设置来判断）
+				      	var normalGoodsItem=goodsItemWrap.find('dl[data-statu="normal"] dd');
+				      	if(normalGoodsItem.length>0){
+				      		if(normalGoodsItem.find(':checkbox:checked').length==normalGoodsItem.length){
+				      			prepareAll=1;
+				      		}
+				      	}else{
+				      		prepareAll=1;
+				      	}
+
+			      		//获取设置出库的运单号
+			      		var set_waybill_no=setWayBill.find('#waybill_no').val();
+			      		//console.log(set_waybill_no+'|'+prepare_gid+'|'+order_id+'|'+gidGroup);
+			      		
+			      		$('body').setLoadingState({container:'body',loadingTxt:'正在设置配货状态，请稍等...'});
+			      		//提交数据到服务器
+				      	$.post(postDeliveryURL,{
+					      		gidGroup:gidGroup,
+					      		waybill_no:set_waybill_no,
+					      		prepare_gid:prepare_gid,
+					      		order_id:order_id,
+					      		shipAll:shipAll,
+					      		prepareAll:prepareAll
+				      		},
+				      		function(data){
+					      		if(data.status==1){
+					      			//判断是否是后继合并出库设置商品到已经存在的运单中
+					      			var deliveryContent=goodsItemWrap.find('dl[data-serial="'+set_waybill_no+'"]');
+					      			if(deliveryContent.length==0){
+					      				deliveryContent=$('<dl data-statu="delivery" data-serial="'+set_waybill_no+'"><dt><em class="orderStatu-normal bg-green">已出库</em>物流公司：'+' 运单号：<i class="serial">'+set_waybill_no+'</i><a href="javascript:void(0);" class="edit-right">编辑运单号</a></dt></dl>').prependTo(goodsItemWrap);
+
+					      				bindEidtEvnt(deliveryContent.find('dt'));
+					      			}
+					      			//将原商品复制到已出库的商品列表中后删除
+					      			$.each(setGoodsItem,function(){
+					      				var goodsItem=$(this).closest('dd');
+					      				//取消checkbox勾选
+					      				goodsItem.clone(true).appendTo(deliveryContent).find(':checkbox').prop('checked',false);
+					      				goodsItem.remove();
+					      				shipGoodsNum++;
+					      			})
+
+				      				var normalGoodsItem=goodsItemWrap.find('dl[data-statu="normal"]');
+				      				var prepareGoodsItem=goodsItemWrap.find('dl[data-statu="prepare"]');
+				      				if(normalGoodsItem.find('dd').length==0){
+				      					goodsItemWrap.find('dl[data-statu="normal"]').remove();
+				      				}
+				      				if(prepareGoodsItem.find('dd').length==0){
+				      					goodsItemWrap.find('dl[data-statu="prepare"]').remove();
+				      				}
+
+					      			//alert('提交成功');
+					      		}else{
+					      			alert(data.error);
+					      		}
+
+					      		$('body').setLoadingState('destroy');
+				      	}).error(function(){
+				      		alert('链接服务器出错，无法提交数据,请稍候尝试！');
+				      		$('body').setLoadingState('destroy');
+				      	})		      		
+			      	})
+
+		      	}else{
+		      		setWayBill.show();
+		      	}
+
+			})
+
+			//定位订单信息容器
+	      	var offsetTop=curShowOrderDetail.closest('tr').offset().top;
+			$(window).scroll(function(){
+				offsetTop=offsetTop-$(this).scrollTop();
+				//console.log($(this).scrollTop());
+			})
+
+	      	var bodyHeight=$('body').height();
+	      	var offsetHeight=curShowOrderDetail.outerHeight();
+
+	      	if(offsetTop>bodyHeight/2){
+	      		if(offsetHeight>offsetTop || offsetHeight>bodyHeight/2){
+		      		curShowOrderDetail.css({'top':18-offsetHeight/2,'left':'100%'});
+		      		goodsItemWrap.find('.arrowWrap').css({'top':offsetHeight/2-10});
+	      		}else if(offsetHeight/2<offsetTop){
+		      		curShowOrderDetail.css({'top':36-offsetHeight,'left':'100%'});
+		      		goodsItemWrap.find('.arrowWrap').css({'top':offsetHeight-28});
+	      		}
+	      	}else{
+	      		if(bodyHeight-offsetTop<offsetHeight || bodyHeight<offsetHeight){
+		      		curShowOrderDetail.css({'top':0-offsetTop,'left':'100%'});
+		      		goodsItemWrap.find('.arrowWrap').css({'top':8+offsetTop});		      			
+	      		}else if(offsetHeight/2>offsetTop ){
+		      		curShowOrderDetail.css({'top':18-offsetHeight/2,'left':'100%'});
+		      		goodsItemWrap.find('.arrowWrap').css({'top':offsetHeight/2-10});
+	      		}
+	      	}
+
+		      //console.log(goodsData);
+		  }
+
+		 /*/删除订单(ajax暂时无用)
+		function deleteOrder(order_id,deleteType,returnType){
+			if(order_id && order_id!==''){
+				if(returnType=='ajax'){
+					$('body').setLoadingState({container:'body',loadingTxt:'正在执行删除订单操作，请稍候...'});
+					$.post(deleteOrderURL,{order_id:order_id,deleteType:deleteType},function(data){
+						if(data.status==1){
+
+						}else{
+							alert(data.error);
+						}
+						$('body').setLoadingState('destroy');
+					}).error(function(){
+						alert('链接服务器出错，无法删除订单,请稍候尝试！');
+						$('body').setLoadingState('destroy');
+					})
+				}else{
+					$(window).location.href(deleteOrderURL);
+				}
+			}
+		}*/
+
+		$(function(){
+
+
+		})
+	</script>
+</body>
+</html>

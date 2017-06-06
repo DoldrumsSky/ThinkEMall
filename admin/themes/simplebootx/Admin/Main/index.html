@@ -1,0 +1,180 @@
+<admintpl file="header" />
+<style>
+.wrap{
+	padding:0;
+}
+.staticData ul{
+	padding:0;
+	margin: 0 0 30px 0;
+	overflow: hidden;
+	border-bottom: 1px solid #eaeaea;
+}
+
+.staticData .dataTitle{
+	font-size:18px;
+}
+
+.staticData ul li{
+	float:left;
+	/*border:1px solid #ddd;
+	border-top:3px solid #119bdb;*/
+	width:20%;
+	padding:20px 0;
+	text-align: center;
+	font-weight: 700;
+	color:#666;
+	background: #fcfcfc;
+	position: relative;
+	/*margin:0 14px;
+	box-shadow: 0px 0px 12px #ddd; */
+}
+
+.staticData li em {
+	font-size:22px;
+	color:#119bdb;
+}
+
+.staticData li i{
+	position: absolute;
+	right:0;
+	top:0;
+	display: block;
+	width:1px;
+	height:100%;
+	background: #eaeaea;
+}
+
+li {
+	list-style: none;
+}
+
+.emallCopyright{
+	position: fixed;
+	bottom: 0;
+	left:0;
+	padding:10px;
+	background: #fafafa;
+	width:100%;
+	border-top:1px solid #eaeaea;
+}
+
+</style>
+</head>
+<body>
+	<div class="wrap">
+		<div class="staticData">
+			<ul>
+				<li><p class="dataTitle">今日订单成交量</p><em>{$curDateOrderNum}</em><i></i></li>
+				<li><p class="dataTitle">今日销售额</p><em>¥<empty name="daySales">0.00<else /> {$daySales}</empty></em><i></i></li>
+				<li><p class="dataTitle">本月销售额</p><em>¥<empty name="monthSales">0.00<else /> {$monthSales}</empty></em><i></i></li>
+				<li><p class="dataTitle">待处理退货商品</p><em>{$refundNum}</em><i></i></li>
+				<li><p class="dataTitle">待处理售后商品</p><em>{$afterSaleNum}</em><i></i></li>
+			</ul>
+		</div>
+		<div id="daySales" style="width: 46%;height:350px;float:left;margin:0 10px"></div>
+		<div id="monthSales" style="width: 46%;height:350px;float:right;margin:0 10px"></div>
+	</div>
+	<div class="emallCopyright">基于ThinkCMF版本：{$Think.THINKCMF_VERSION} <a href="http://www.thinkcmf.com" target="_blank">www.thinkcmf.com</a>，ThinkEMall电子商城管理系统 版本：{$Think.THINKEMALL_VERSION} ，作者：阳华，<strong style="color:#dd2727">技术交流群：1950562，联系方式：QQ：451343282，Email：451343282@qq.com</strong></div>
+</body>
+<script src="__PUBLIC__/js/echarts.common.min.js"></script>
+
+<script type="text/javascript">
+	var monthSalesData='{$monthSalesData}'; 
+	var daySalesData='{$daySalesData}'; 
+	var monthData=[];
+	var dayData=[]
+
+	//日销售额统计
+	if(daySalesData!==''){
+		daySalesData=$.parseJSON(daySalesData);
+		daySalesData=daySalesData.data;
+		for(i=0;i<=23;i++){
+			var hasData=false;
+			$.each(daySalesData,function(index,Item){
+				if(parseInt(Item.times)==i){
+					dayData[i]=parseFloat(Item.sales);
+					hasData=true;
+					return false;
+				}
+			})
+			if(!hasData){
+				dayData[i]=0;
+			}
+		}
+	}else{
+		for(i=0;i<=23;i++){
+			dayData[i]=0;
+		}
+	}
+
+	//月销售额统计
+	if(monthSalesData!==''){
+		monthSalesData=$.parseJSON(monthSalesData);
+		monthSalesData=monthSalesData.data;
+		for(i=1;i<=31;i++){
+			var hasData=false;
+			$.each(monthSalesData,function(index,Item){
+				if(parseInt(Item.days)==i){
+					monthData[i]=parseFloat(Item.sales);
+					hasData=true;
+					return false;
+				}
+			})
+			if(!hasData){
+				monthData[i]=0;
+			}
+		}
+	}else{
+		for(i=1;i<=31;i++){
+			monthData[i]=0;
+		}
+	}
+
+
+    // 基于准备好的dom，初始化echarts实例
+    var dayChart = echarts.init(document.getElementById('daySales'));
+    var monthChart = echarts.init(document.getElementById('monthSales'));
+    // 指定图表的配置项和数据
+    var dayOption = {
+        title: {
+            text: '日销售额统计图'
+        },
+        tooltip: {},
+        legend: {
+            data:['销售额']
+        },
+        xAxis: {
+            data: ["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24"]
+        },
+        yAxis: {},
+        series: [{
+            name: '销售额',
+            type: 'bar',
+            data: dayData
+        }]
+    };
+
+    var monthOption = {
+        title: {
+            text: '月销售额统计图'
+        },
+        tooltip: {},
+        legend: {
+            data:['销售额']
+        },
+        xAxis: {
+            data: ["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"]
+        },
+        yAxis: {},
+        series: [{
+            name: '销售额',
+            type: 'bar',
+            data: monthData
+        }]
+    };
+
+    // 使用刚指定的配置项和数据显示图表。
+    dayChart.setOption(dayOption);
+    monthChart.setOption(monthOption);
+    </script>
+</html>

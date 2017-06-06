@@ -1,0 +1,285 @@
+<script type="text/javascript">
+//全局变量
+var GV = {
+    ROOT: "__ROOT__/",
+    WEB_ROOT: "__WEB_ROOT__/",
+    TMPL_ROOT:"__TMPL__Public/",
+    JS_ROOT: "public/js/",
+    imgPath:"{:sp_get_image_preview_url()}",
+    //加载Json文件的目录（如：地域Json数据）
+    jsonURLRoot:'__PUBLIC__/Emall/',
+    //ajax登录链接
+    loginURL:"{:U('user/login/dologin',array('isAjaxReturn'=>1))}",
+    //登录状态检查链接
+    LoginCheckURL:"{:U('user/index/is_login')}",
+    //注册链接
+    regURL:"{:U('user/register/index')}",
+    //用户中心链接
+    UCenter:"{:U('user/center/index')}",
+    //登出链接
+    logoutURL:"{:U('user/index/logout')}",
+	//获取所有顶层显示的分类导航菜单
+	getAllTopShowNavURL:"{:U('EMall/GoodsDetails/getAllTopShowNav')}",
+    //获取广告数据的链接
+    getSpecifyAdDataURL:"{:U('EMall/EMallAD/getSpecifyAdData')}",
+    //购物车详情页面链接
+    fullViewCartURL:"{:U('User/Order/viewAllOfCartGoods')}",
+    //添加到购物车链接
+	addToCartURL:'{:U("User/Order/addToCart")}',
+	//获取购物车数据的链接
+	getCartDataURL:"{:U('User/Order/getShopCartData')}",
+	//删除购物车数据的链接
+	removeCartDataURL:"{:U('User/Order/removeShopCartData')}",
+	//获取商品评价数据的链接
+	getAppraiseDataURL:"{:U('EMall/GoodsDetails/getAppraiseData')}",
+	//获取商品SKU数据的链接
+	getSKUDataURL:"{:U('EMall/GoodsDetails/getSKUData')}",
+	//商品详情页面链接
+    goodsDetailURL:"{:U('EMall/GoodsDetails/index')}",	
+    //商品结算数据生成链接
+    shopAccountsURL:"{:U('User/Order/shopAccounts')}",		
+	ajaxSKUReturn:{},			//服务器返回的SKU数据临时存储变量
+    loginState:undefined,
+    logoutStateExec:1,			//返回未登录状态时是否激活登录对话框
+    cartView:'',				//当前浏览购物车的视图方式，barView是浏览页面侧栏购物车，fullView时表示浏览的是购物车详情页面
+    cartContainer:'',			//购物车数据列表容器名
+    cartGoodsNum:0,				//购物车中的商品数量
+    getCartView:false,			//是否当前正在通过顶部购物车获取购物车商品概览（主要用于判断未登录状态后是显示未登录文件还是弹出登录框）
+    limitCartGoodsNum:'{$limitCartGoodsNum}',			//限制的购物车商品数量
+    cartGoodsServData:{},		//用于存储购物车商品的原始数据，变量用于购物车详情页，供用户更换SKU单品项时更新页面数据
+    cartGoodsSKUData:{},		//用于存储单独调用返回的SKU数据，这个变量用在购物车详情页面中
+    lowStockNum:5,				//低库存过滤显示，低于此值会在低库存商品过滤时中显示
+	lowStockGoodsNum:0,	    	//低库存商品数量
+	accountsGID:"{$gid}",		//在侧栏购物车选中的商品gid结算以及使用立即购物时将对应gid传递到购物车详情页，页面加载数据后默认选中对应结算的商品	
+	specParam:"{$specParam}",	//进入本页面时的特定参数，目前用于判断是否是立即购买跳转进页面来显示loading加载UI
+    areaData:null,				//地域数据信息
+	isCartOverviewLoaded:false,	//是否顶部购物车正处于加载状态
+    cookieEnabled:(navigator.cookieEnabled)? true : false
+};
+
+
+</script>
+   <!-- Placed at the end of the document so the pages load faster -->
+   <script src="__PUBLIC__/js/jquery.js"></script>
+   <script src="__PUBLIC__/js/cookie.js"></script>
+   <script src="__PUBLIC__/js/wind.js"></script>
+   <script src="__PUBLIC__/js/lazyload.js"></script>
+   <script src="__TMPL__Public/assets/simpleboot/bootstrap/js/bootstrap.min.js"></script>
+   <script src="__PUBLIC__/js/frontend.js"></script>
+   <script src="__TMPL__Public/assets/js/custom.js"></script>
+   <script src="__TMPL__Public/assets/js/emallwidget.js"></script>
+   <script src="__TMPL__Public/assets/js/jquery.mCustomScrollbar.concat.min.js"></script>
+<script>
+	//手机验证码重新获取倒计时
+	var timerUntil={
+		settingTime:90,
+		countdown:function(e,mobileNum){
+			var _this=this;
+			//alert(e);
+			//判断时间是否已经为零，设定按钮状态
+			if(_this.settingTime<=0){
+				e.removeClass('disabled').html('获取验证码');
+				_this.settingTime=90;
+				//移除验证码请求时间的cookie
+				$.cookie(mobileNum+'vcode',null);
+				return false;
+			}else{				
+				_this.settingTime--;
+				e.addClass('disabled').html('已发送('+_this.settingTime+'s)');
+				setTimeout(function(){
+					_this.countdown($('#getMobVerify'),mobileNum);
+				},1000);
+			}
+		}
+	};
+
+	function changeToLogistaticsStr($idx){
+	    $wayStr='';
+	        switch(parseInt($idx)){
+	            case 0:
+	                $wayStr='快递';
+	                break;
+	            case 1:
+	                $wayStr='物流';
+	                break;
+	            case 2:
+	                $wayStr='EMS';
+	                break;
+	            case 3:
+	                $wayStr='平邮';
+	                break;
+	        }
+	    return $wayStr;
+	}
+
+$(function(){
+	$('body').on('touchstart.dropdown', '.dropdown-menu', function (e) { e.stopPropagation(); });
+	//挂载导航的控制脚本
+	$("#main-menu").menuAction();
+
+	//购物车参数设定
+	if($('#EMallShopBar').length>0){
+		GV.cartView='barView';
+		GV.cartContainer='#cartList .mCSB_container';
+	}else if($('#cartList').length>0){
+		GV.cartView='fullView';
+		GV.cartContainer='#cartList .cartListContainer';
+		GV.logoutStateExec=0;
+	}
+	//按浏览页面检查返回登录状态并执行对应的回调
+	checkUserLogin(GV.logoutStateExec,function(data){
+		//如果loadShopCartData为false表示不执行购物车商品数据加载而只返回购物车的商品数
+		//要直接加载购物车商品数据的话请在调用页面增加loadShopCartData这个变量，并将其设定为true
+		if(typeof loadShopCartData!=="undefined" && loadShopCartData==true){
+			shopCart.getShopCartData(
+				function callFunc(data){
+					shopCart.pushCartData(data,GV.cartContainer,GV.cartView);
+				},
+				'{$reqType}'
+			);
+		}
+		//输出购物车商品数量
+		GV.cartGoodsNum=data.user.shopcart?Object.keys(data.user.shopcart).length:0;
+		if(GV.cartView=='barView'){
+			$('#EMallShopBar .mui-mbar-tab-sup-bd').text(GV.cartGoodsNum);
+		}
+
+		$('#shopping-amount').text(GV.cartGoodsNum);
+		if(GV.cookieEnabled){
+			$.cookie('cartGoodsNum',GV.cartGoodsNum);
+		}
+	});	
+
+
+
+	;(function($){
+		$.fn.totop=function(opt){
+			var scrolling=false;
+			return this.each(function(){
+				var $this=$(this);
+				$(window).scroll(function(){
+					if(!scrolling){
+						var sd=$(window).scrollTop();
+						if(sd>100){
+							$this.fadeIn();
+						}else{
+							$this.fadeOut();
+						}
+					}
+				});
+				
+				$this.click(function(){
+					scrolling=true;
+					$('html, body').animate({
+						scrollTop : 0
+					}, 500,function(){
+						scrolling=false;
+						$this.fadeOut();
+					});
+				});
+			});
+		};
+	})(jQuery); 
+
+	//添加购物车的滚动条脚本
+	$('#EMallShopBar .cartList').mCustomScrollbar();
+	
+	$("#backtotop").totop();
+
+	$(".topRMenu .drop").TopDropMenu();
+	$('#catItem').showCatMenuItem();
+
+
+	$('.crumbs-nav a[class="menu-top"]').setMicroDropMenu({});
+	//弹出登录框后刷新验证码
+	$('#loginModal').on('shown.bs.modal', function (e) {
+		$('.verify_img').trigger('click');
+	})
+
+	//登录事件
+	$('#loginBtn').click(function(){
+		var $this=$(this);
+		$.post(GV.loginURL,$('#loginForm').serialize(),function(data,status){
+			if(data.status==1){
+				//显示顶部登录文字
+				$('.welcomeLang').html('欢迎访问ThinkEMall电子商城，'+data.user.user_nicename+'<a href="'+GV.UCenter+'">用户中心</a><a href="'+GV.logoutURL+'">退出</a>');
+				if(data.user.avatar){
+					$("#main-menu-user .headicon").attr("src",data.user.avatar.indexOf("http")==0?data.user.avatar:"{:sp_get_image_url('[AVATAR]','!avatar')}".replace('[AVATAR]',data.user.avatar));
+				}
+				//我的资产数据
+				$('#myScore').text(data.user.points);
+				$('#myBalance').text(data.user.balance);
+				//充值事件绑定
+				$('#doDeposit').on('click',function(e){
+					e.stopPropagation();
+					var deposit_input=$('#deposit_input :input');
+					if(deposit_input.length==0){
+						//添加充值输入框
+						$(this).before('<div id="deposit_input">充值金额：<input type="text" placeholder="请输入充值金额"><p>您未输入正确的充值金额！</p></div>');
+						$(this).html('进入支付<i></i>');
+					}else{
+						//跳转到支付页面
+						var deposit_fee=parseFloat(deposit_input.val());
+						if(deposit_fee>0){
+							window.location="/index.php?g=User&m=Payment&a=deposit&orderType=1&deposit_fee="+Number(deposit_fee).toFixed(2);
+						}else{
+							$('#deposit_input p').show();
+						}
+					}
+				})
+				
+				$("#main-menu-user .user-nicename").text(data.user.user_nicename!=""?data.user.user_nicename:data.user.user_login);
+				$("#main-menu-user .login").show();
+				$("#main-menu-user .offline").hide();		
+				$('#loginModal').modal('hide');
+
+				GV.loginState=true;
+				console.log(data);
+				if(data.cartGoodsNum>0){
+					//购物车商品数显示
+					$('#shopping-amount').text(data.cartGoodsNum);
+					$('#EMallShopBar [role="shopCart"] .mui-mbar-tab-sup-bd').text(data.cartGoodsNum);					
+					var cartData=shopCart.constructCartDataFromServ(data.data,true);
+					//用户登录时直接解析返回的购物车商品数据
+					shopCart.pushCartData(cartData,'#cartList .mCSB_container','barView');
+				}
+
+			}else{ 
+				GV.loginState=false;
+				//alert(data.error);
+				var input_verify=$('#input_verify').closest('.form-group');
+				var input_username=$('#input_username').closest('.form-group');
+				var input_password=$('#input_password').closest('.form-group');
+				if(data.errorCode==3){
+					input_verify.focus().addClass('has-error');	
+					input_username.removeClass('has-error');
+					input_password.removeClass('has-error');
+				}else if(data.errorCode<3){
+					input_username.focus().addClass('has-error');	
+					input_password.focus().addClass('has-error');
+					input_verify.removeClass('has-error');
+				}
+				$('.verify_img').trigger('click');
+				$('#input_verify').val('');
+				shake('.modal-dialog',4,20);
+			}
+		})
+	})
+
+  //绑定顶部购物车查看事件
+  $('#settleup-2014').cartOverview();
+
+  //下拉类菜单事件绑定（用户中心较多）
+  $('.FlatDropMenu').hover(function(){
+      $(this).addClass('expand').find('ul').show();
+  },function(){
+      $(this).removeClass('expand').find('ul').hide();
+  })  
+
+
+  $("img").lazyload({ 
+		effect : "fadeIn" 
+	}); 
+});
+</script>
+

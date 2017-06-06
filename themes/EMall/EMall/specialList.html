@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{$name} {$seo_title} {$site_name}</title>
+	<meta name="keywords" content="{$seo_keywords}" />
+	<meta name="description" content="{$seo_description}">
+    <tc_include file="Public:head-special" />
+</head>
+<body>
+<tc_include file="Public:special_nav" />
+<div class="content">
+	<div class="container tc-main">
+	<div class="mainBanner" id="mainBanner">
+				<div class="slider" data-role="sliderItem"><a data-acton="ad_link" href=""><img border="0" data-role="ad_image" src="" /></a>
+					<div class="sliderAddition" data-role="normalAD">
+						<ul>
+							<li data-role="normalAdItem"><a href="" data-action="ad_link"><img src="" data-role="ad_image"></a></li>
+							<li data-role="normalAdItem"><a href="" data-action="ad_link"><img src="" data-role="ad_image"></a></li>
+							<li data-role="normalAdItem"><a href="" data-action="ad_link"><img src="" data-role="ad_image"></a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="sliderNav"></div>
+		    </div>
+	 </div>    
+</div>
+    <tc_include file="Public:footer" />
+</div>
+    
+<!-- JavaScript -->
+<tc_include file="Public:scripts" />
+<script type="text/javascript">
+var adList='{$adData}';
+var curServerTime='{$curServerTime}';
+//类目及其对应筛选数据
+var termData='{$termData}';
+//列表页链接
+var goodsListURL="{:U('EMall/listEMall/index',array('navid'=>$navid))}";
+
+var imgPath="{:sp_get_image_preview_url()}";
+
+
+$(function(){
+
+	//按广告类id加载广告
+	getAdListData('11,12',function(){
+		//回调运行幻灯广告
+		$('.mainBanner').DoSlider();
+	});	
+
+	//根据类目数据生成导航菜单
+	if(termData!==''){
+		termData=$.parseJSON(termData);
+		menuHtml='';
+		console.log(termData);
+
+			$.each(termData.termGroupFilter,function(index,Terms){
+				if(parseInt(Terms.parent)==0){
+					$('.catMenuTitle').html(Terms.name+'分类');
+					return true;
+				}
+				menuHtml+='<li><div class="fixedLayer"><h2>'+Terms.name+'<i class="icon iconfont"></i></h2>';
+				if(parseInt(Terms.filter_menu)!==0 && Terms.filter_menu.child){
+					//console.log(Terms.filter_menu);
+					$.each(Terms.filter_menu.child,function(fidx,filter){
+						menuHtml+='<a href="'+goodsListURL+'&id='+Terms.term_id+'&fid='+filter.id+'">'+filter.filter_name+'</a>';
+					})
+				}
+				menuHtml+='<s class="triangle"></s></div><div class="cate_pop" style="display:none;"></div></li>';
+			})
+
+		$('#catItem').html('<ul>'+menuHtml+'</ul>');
+		$('#catItem').showCatMenuItem();
+		//console.log(menuHtml);
+	}
+
+	//生成mini顶层分类推荐导航
+	$('#categorys-mini').getTopShowNav({
+		postURL:GV.getAllTopShowNavURL
+	});
+
+
+})
+
+</script>
+</body>
+</html>

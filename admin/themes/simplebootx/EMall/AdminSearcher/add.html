@@ -1,0 +1,58 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap">
+		<form method="post" class="form-horizontal js-ajax-form" action="{:U('AdminSearcher/add_post')}">
+			<fieldset>
+				<div class="control-group">
+					<label class="control-label">所属筛选类:</label>
+					<div class="controls">
+						<select name="parentid" id="filter_id">
+							{$filterOption}						
+						</select>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label">筛选项名称:</label>
+					<div class="controls">
+						<input type="text" name="filter_name">
+						<span class="form-required">*</span>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label">排序ID:</label>
+					<div class="controls">
+						<input type="text" name="listorder" id="listorder" value="0">
+						<span class="form-required">*</span>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label">允许多选:</label>
+					<div class="controls">
+						<select name="multiselect">
+							<option value="1">是</option>
+							<option value="0">否</option>
+						</select>
+					</div>
+				</div>
+				<div class="control-group">
+					<label class="control-label">状态:</label>
+					<div class="controls">
+						<select name="status">
+							<option value="1">显示</option>
+							<option value="0">隐藏</option>
+						</select>
+					</div>
+				</div>
+				<input type="hidden" value="{$term_id}" name="term_id" id="term_id">
+			</fieldset>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary js-ajax-submit">{:L('ADD')}</button>
+				<a class="btn" href="javascript:history.back(-1);">{:L('BACK')}</a>
+			</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+
+</body>
+</html>

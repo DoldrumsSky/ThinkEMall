@@ -1,0 +1,643 @@
+@CHARSET "UTF-8";
+
+#EMallShopBar{
+    position: fixed;
+    top:0;
+    right:0;
+    background: #000;
+    height:100%;
+    font-family: 'Microsoft Yahei';
+    font-size: 14px;
+    color:#FFF;
+    z-index: 1009;
+    overflow: visible;
+}
+
+.shopBar{
+    width:35px;
+    height: 100%;
+    float:left;
+    position: relative;
+}
+
+.shopBarTab {
+    width: 100%;
+    cursor:pointer;
+    margin-bottom: 6px;
+    position: relative;
+    overflow: visible;
+}
+
+
+#EMallShopBar .tab-hover,#EMallShopBar .cur{
+    background: #dd2727;
+    color: #FFF;
+}
+
+.shopBarTab .tab-cart{
+    width:20px;
+    margin:650% auto 10px auto;
+    text-align: center;
+    padding:10px 0;
+
+}
+
+
+.shopBarTab .tab-cart i{
+    font-size: 18px;
+}
+
+#shopCart{
+    background: #e6e6e6;
+}
+
+.barBorder{
+    position: absolute;
+    border-top: 1px #666 solid;
+    border-bottom: 1px #666 solid; 
+    width:22px;
+    height:100%;   
+    top:0;
+    left:7px;
+}
+
+.shopBarTab .tab-focus,.shopBarTab .tab-asset{
+    width:100%;
+    text-align: center;
+    margin:0 auto;
+    padding:4px 0;
+}
+
+.shopBarTab .tab-focus i.iconfont,.shopBarTab .tab-asset i.iconfont{
+    font-size: 18px;
+    color:#FFF;
+}
+
+.shopBarTab .tab-favor{
+    width:100%;
+    text-align: center;
+    margin:0 auto;
+    padding:3px 0;
+}
+.shopBarTab .tab-favor i.iconfont{
+    font-size: 20px;    
+}
+
+  
+.shopBarTab .tab-backTop i.iconfont{
+    font-size: 22px;
+}
+
+.shopBarTab .tab-backTop{
+    width:100%;
+    text-align: center;
+    margin:0 auto;
+    padding:1px 0;
+  }
+
+.shopBarTab .barTooltip{
+    position: absolute;
+    height: 100%;
+    width:100px;
+    top:0;
+    left:-130px;
+    color:#FFF;
+    font-size: 13px;
+    background: #494949;
+    text-align: center;
+    line-height: 32px;
+    z-index: 100;
+    -webkit-box-shadow: 0 0 5px rgba(0,0,0,.2);
+    -moz-box-shadow: 0 0 5px rgba(0,0,0,.2);
+    box-shadow: 0 0 5px rgba(0,0,0,.2);
+    display: none;
+ }
+
+ .barTooltip i{
+    font-size: 38px;
+    position: absolute;
+    right:-8px;
+    color:#494949;
+    font-style: normal;
+    top:0px;
+ }
+
+.marginTabFix-50{
+    margin-top:50px;
+}
+
+#EMallShopBar .posFixBottom{
+    position: absolute;
+    left:0;
+    bottom: 0;
+    margin-bottom: 0;
+}
+
+
+.barWrap{
+    width:290px;
+    margin-right:-290px;
+    position: relative;
+    height:100%;
+    float:right;
+    background: #393939;
+}
+
+.barTabContent{
+    width:100%;
+    height: 100%;
+    margin:0;
+    display: none;
+}
+
+.titleBar{
+    width:100%;
+    height: 34px;
+    font-size: 12px;
+    color:#666;
+    padding:5px 20px 5px 5px;
+}
+
+.titleBar label{
+    padding:5px;
+    cursor: pointer;
+}
+
+.barWrap input[type="checkbox"]{
+    vertical-align:middle;
+    margin:0 5px 0px 0;
+    cursor: pointer;
+    outline: none;
+}
+
+#fullView{
+    font-size: 12px;
+    float:right;
+    padding:5px;
+    color:#666;
+}
+
+.warningShopInfo{
+    width:100%;
+    height:32px;
+    padding:5px;
+    border-top: 1px solid #edd28b;
+    border-bottom:1px solid #edd28b;
+    background: #fffdee;
+    text-align: center;
+    color:#333;
+    font-size:12px;
+    line-height: 22px;
+}
+
+ul.cartList{
+    padding:0;
+    margin:0;
+    font-size: 12px;
+    height:80%;
+    overflow: hidden;
+    width:100%;
+}
+
+
+ul.cartList li{
+    width:100%;
+    background: #fff;
+    margin-bottom:12px;
+    padding:10px 6px 10px 10px;
+    display: block;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+ul.cartList li:hover{
+    background: #f3fff3;
+}
+
+.mui-mbar-tab-sup-bd,.addToCartGoodsNum{
+    margin-top:4px;
+    padding: 0 3px;
+    min-width: 14px;
+    height: 20px;
+    line-height: 20px;
+    border-radius: 20px;
+    font-size: 12px;
+    background: #dd2727;
+    overflow: hidden;
+}
+
+ul.cartList li .cartImg{
+    float:left;
+    padding:1px;
+    border:1px #ccc solid;
+}
+
+ul.cartList li .cartGoodsInfo{
+    float:right;
+    color:#999;
+    width:212px;
+}
+
+ul.cartList li a{
+    color:#333;
+    font-size: 12px ;
+    display:block;
+    height:34px;
+    overflow: hidden;
+}
+
+ul.cartList li a:hover{
+    color: #000;
+}
+
+ul.cartList li span{
+    color: #666;
+    font-size: 13px;
+    font-weight: 300;
+
+    vertical-align: middle;
+}
+
+ul.cartList li span em{
+    color: #dd2727;   
+    vertical-align: middle; 
+}
+
+ul.cartList li span.shopBuyNum{
+    display: inline-block;
+    width:16px;
+    text-align: center;
+}
+
+.barTabContent .accounts{
+    position: absolute;
+    width:100%;
+    left:0;
+    bottom: 0;
+    background: #e6e6e6;
+}
+
+.barTabContent .accounts a{
+    border-radius: 0;
+    height:40px;
+    width:250px;
+    margin:0 auto 15px auto;
+    display: block;
+    line-height:26px;
+    font-size: 14px
+}
+
+.goBtn{
+    height:15px;
+    width:15px;
+    display: inline-block;
+    background: url(../images/goBtn.png) no-repeat center center;
+    margin:0 0 2px 10px;
+    vertical-align: middle;
+}
+
+
+.accountInfo{
+    height:30px;
+    width:250px;
+    margin: 0 auto;
+    padding:5px 0;
+    text-align: center;
+}
+
+.accountInfo span{
+    display: inline-block;
+    padding:0 10px;
+    color:#333;
+}
+
+.accountInfo span em{
+    color: #dd2727;
+    padding:0 2px;
+}
+
+.barTabContent .accounts a:hover{
+    background: #cc2727;
+}
+
+ul.cartList li a.tm-mcPlus, ul.cartList li a.btn-reduce{
+    width: 16px;
+    height:16px;
+    border-radius: 14px;
+    border: 1px solid #bfbfbf;
+    background: #f3f3f3;
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+    margin: 0 5px 0px 5px;
+}
+
+ul.cartList li a.tm-mcPlus s ,ul.cartList li a.btn-reduce s{
+    width: 8px;
+    height: 2px;
+    top: 6px;
+    left: 3px;
+    position: absolute;
+    overflow: hidden;
+    background: #bfbfbf;
+}
+
+ul.cartList li a.tm-mcPlus b {
+    width: 2px;
+    height: 8px;
+    top: 3px;
+    left: 6px;
+    position: absolute;
+    overflow: hidden;
+    background: #bfbfbf;
+}
+
+ul.cartList li a:hover.tm-mcPlus, ul.cartList li a:hover.btn-reduce{
+    background: #bfbfbf;
+}
+
+ul.cartList li a:hover b, ul.cartList li a:hover s{
+    background: #FFF;
+}
+
+ul.cartList li a.deleteBtn{
+    height:auto;
+    cursor: pointer;
+    float:right;
+    vertical-align: middle;
+    margin: 0 5px 0px 5px;    
+    margin-top:4px;
+    color:#dd2727;
+}
+
+ul.cartList li .cartListTitleBar{
+    width:100%;
+    height:25px;
+    overflow: hidden;
+    border-bottom: 1px #ccc dotted;
+    margin-bottom:5px;
+
+}
+
+ul.cartList li .cartListTitleBar span{
+    font-size: 12px;
+    color:#3385ff;
+}
+
+
+/*我的收藏*/
+.favorTitle,.goFavorDetail{
+    width:90%;
+    padding:5px 0;
+    background: #494949;
+    margin:10px auto 0 auto;
+    text-align: center;
+    color:#ccc;
+
+}
+
+.favorTitle i{
+    display: inline-block;
+    margin:0 0 2px 5px;
+    vertical-align: middle;
+}
+
+.goFavorDetail{
+    display: block;
+     width:100%; 
+     background: #494949;
+}
+
+a:hover.goFavorDetail,a:focus.goFavorDetail{
+    color:#FFF;
+    background: #555;
+}
+
+.goFavorDetail i{
+    display: inline-block;
+    height: 16px;
+    width:16px;
+    background: url(../images/goBtn.png) no-repeat center center;
+    margin:0 0 2px 5px;
+    vertical-align: middle;
+}
+
+.favorTimer{
+    height:50px;
+    background: url('../images/favorTimer.png') no-repeat 49.6% center;
+    position: relative;
+    z-index: 1;
+    padding-left:56%;
+    color:#aaa;
+    font-size: 13px;
+    line-height: 50px;
+}
+
+.favorList{
+    width:90%;
+    position: relative;
+    margin:0 auto;
+}
+
+.favorList s{
+    display: block;
+    width:50%;
+    border-right: 2px solid #999;
+    z-index: 0;
+    position: absolute;
+    left:0;
+    top:0;
+    height: 50px;
+}
+
+.favorList ul{
+    padding:0;
+    margin:0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.favorList ul li{
+    display: inline-block;
+    width:49%;
+    padding:5px;
+    position: relative;
+}
+
+.favorList ul li.emptyData{
+    width:100%;
+    color:#999;
+    font-size: 12px;
+    text-align: center;
+}
+
+.favorList ul li .cancelFavor{
+    display: block;
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    right: 8px;
+    top: 8px;
+    display: none;
+    background: url(../images/cancelFavor.png) no-repeat center center;
+    cursor: pointer;
+}
+
+.favorList ul li:hover .cancelFavor{
+    display: block;
+}
+
+.favorList ul li .favorRelation{
+    position: absolute;
+    bottom: 25px;
+    left:0;
+    width:100%;
+    padding:0 5px;
+    display: none;
+}
+
+.favorList ul li:hover .favorRelation{
+    display: block;
+}
+
+.favorList ul li .favorRelation a{
+    display: inline-block;
+    width: 50%;
+    height:22px;
+    text-align: center;
+    color: #FFF;
+    background: #000;
+    opacity: 0.5;
+    -webkit-opacity:0.5;
+}
+
+.favorList ul li .favorRelation a:hover{
+    background: #dd2727;
+    opacity: 1;
+    -webkit-opacity:1;
+}
+
+#myAssets{
+    padding:20px;
+}
+
+#myAssets ul{
+    margin:0 auto;
+    padding:0;
+    overflow: hidden;
+    width:100%;
+}
+
+#myAssets ul li{
+    display:block;
+    float:left;
+    background: #494949;
+    border-left: 1px solid #525252;
+    margin-left:-1px;
+    width:50%;
+    text-align: center;
+    padding:10px 0;
+    color:#ddd;
+}
+
+#myAssets p{
+    margin-bottom: 0;
+}
+
+#deposit_input{
+    padding:20px 0 10px 0;
+    text-align: center;
+}
+
+#deposit_input p{
+    margin:10px 0;
+    color:#999;
+    display: none;
+}
+
+#deposit_input input{
+    padding:2px;
+    color:#666;
+}
+
+.EMallLoading .mask{
+    opacity:.85;
+    filter: progid:DXImageTransform.Microsoft.Alpha(opacity=85);
+    background: #000;
+    width: 100%;
+    height:100%;
+    position: absolute;
+    z-index: -1;
+    top:0px;
+    left:0px;
+}
+
+.sprite {
+    background-image: url(../images/loading.png);
+    background-repeat: no-repeat;
+    display: block;
+    margin:0 auto 10px auto;    
+}
+
+.sprite-loadingIcon0 {
+    width: 28px;
+    height: 28px;
+    background-position: -5px -5px;
+}
+
+.sprite-loadingIcon1 {
+    width: 28px;
+    height: 28px;
+    background-position: -43px -5px;
+}
+
+.sprite-loadingIcon2 {
+    width: 28px;
+    height: 28px;
+    background-position: -81px -5px;
+}
+
+.sprite-loadingIcon3 {
+    width: 28px;
+    height: 28px;
+    background-position: -5px -43px;
+}
+
+.sprite-loadingIcon4 {
+    width: 28px;
+    height: 28px;
+    background-position: -43px -43px;
+}
+
+.sprite-loadingIcon5 {
+    width: 28px;
+    height: 28px;
+    background-position: -81px -43px;
+}
+
+.sprite-loadingIcon6 {
+    width: 28px;
+    height: 28px;
+    background-position: -5px -81px;
+}
+
+.sprite-loadingIcon7 {
+    width: 28px;
+    height: 28px;
+    background-position: -43px -81px;
+}
+
+.sprite-loadingIcon8 {
+    width: 28px;
+    height: 28px;
+    background-position: -81px -81px;
+}
+
+.sprite-loadingIcon9 {
+    width: 28px;
+    height: 28px;
+    background-position: -119px -5px;
+}
+
+

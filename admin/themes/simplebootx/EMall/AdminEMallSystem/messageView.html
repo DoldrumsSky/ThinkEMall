@@ -1,0 +1,115 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="well form-search" method="post" action="{:U('AdminEMallSystem/messageView')}">
+			消息类型： 
+			<select name="type_id" style="width: 120px;">
+				<option value='0'>全部</option>
+				<option value='1'>系统消息</option>
+				<option value='2'>VIP消息</option>
+			</select> &nbsp;&nbsp;
+			时间：
+			<input type="text" name="start_time" class="js-datetime" value="{$formget.start_time|default=''}" style="width: 120px;" autocomplete="off">-
+			<input type="text" class="js-datetime" name="end_time" value="{$formget.end_time|default=''}" style="width: 120px;" autocomplete="off"> &nbsp; &nbsp;
+			关键字： 
+			<input type="text" name="keyword" style="width: 200px;" value="{$formget.keyword|default=''}" placeholder="请输入关键字...">
+			<input type="submit" class="btn btn-primary" value="搜索" />
+			<a class="btn btn-danger" href="{:U('AdminEMallSystem/messageView')}">清空</a>
+		</form>
+		<form class="js-ajax-form" action="" method="post">
+			<div class="table-actions">
+				<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminEMallSystem/deleteMessage')}" data-subcheck="true">{:L('DELETE_MESSAGE')}</button>
+				<button type="submit" class="btn btn-danger js-ajax-delete" data-action="{:U('AdminEMallSystem/deleteExpiredMessage')}"  data-subcheck="true">{:L('DELETE_EXPIRED_MESSAGE')}</button>			
+				<a role="button" class="btn btn-primary" href="{:U('AdminEMallSystem/addMessage')}"><span class="fa fa-plus">&nbsp;</span>{:L('ADD_MESSAGE')}</a>
+
+			</div>
+			<table class="table table-hover table-bordered table-list">
+				<thead>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<th width="50">ID</th>
+						<th>{:L('MESSAGE_TITLE')}</th>
+						<th>{:L('MESSAGE_TYPE')}</th>
+						<th>{:L('SENDER')}</th>
+						<th>{:L('SEND_TIME')}</th>
+						<th>{:L('HITS')}</th>
+						<th>{:L('MESSAGE_STATUS')}</th>
+						<th width="100">{:L('NEED_SCORE')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</thead>
+				<foreach name="messageData" item="vo">
+				<tr>
+					<td><input type="checkbox" class="js-check" data-yid="js-check-y" data-xid="js-check-x" name="ids[]" value="{$vo.message_id}" title="ID:{$vo.message_id}"></td>
+                    <td><b>{$vo.message_id}</b></td>
+					<td>{$vo.message_title}</td>
+					<td><em>
+                    <php>
+	                    if($vo['message_type']==1){
+							echo '系统消息';
+	                    }else{
+							echo 'VIP消息';
+	                    }
+                    </php>
+                    </em></td>
+					<td>{$vo.user_nicename|default=$vo.user_login}</td>
+					<td width="120">{:date('Y-m-d H:i',strtotime($vo['send_time']))}</td>
+					<td>{$vo.hits}</td>
+					<td>
+						<if condition="$vo['message_status'] ELT 0">
+							<em>禁止阅读</em>
+						<elseif condition="$vo['message_status'] eq 1"/>
+							正常状态
+						</if>
+					</td>
+					<td>{$vo.need_score}</td>
+					<td>
+						<a href="{:U('AdminEMallSystem/editMessage',array('id'=>$vo['message_id']))}">{:L('EDIT')}</a>		
+
+						 | <a href="{:U('AdminEMallSystem/deleteMessage',array('id'=>$vo['message_id']))}" class="js-ajax-delete">{:L('DELETE')}</a>
+					</td>
+				</tr>
+				</foreach>
+				<tfoot>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<th width="50">ID</th>
+						<th>{:L('MESSAGE_TITLE')}</th>
+						<th>{:L('MESSAGE_TYPE')}</th>
+						<th>{:L('SENDER')}</th>
+						<th>{:L('SEND_TIME')}</th>
+						<th>{:L('HITS')}</th>
+						<th>{:L('MESSAGE_STATUS')}</th>
+						<th width="100">{:L('NEED_SCORE')}</th>
+						<th>{:L('ACTIONS')}</th>
+					</tr>
+				</tfoot>
+			</table>
+			<div class="table-actions">
+				<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminEMallSystem/deleteMessage')}" data-subcheck="true">{:L('DELETE_MESSAGE')}</button>		
+				<button type="submit" class="btn btn-danger js-ajax-delete" data-action="{:U('AdminEMallSystem/deleteExpiredMessage')}"  data-subcheck="true">{:L('DELETE_EXPIRED_MESSAGE')}</button>		
+				<a role="button" class="btn btn-primary" href="{:U('AdminEMallSystem/addMessage')}"><span class="fa fa-plus">&nbsp;</span>{:L('ADD_MESSAGE')}</a>
+
+			</div>
+			<div class="pagination">{$page}</div>
+		</form>
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script>
+		function refersh_window() {
+			var refersh_time = getCookie('refersh_time');
+			if (refersh_time == 1) {
+				window.location = "{:U('AdminEMallGoods/index',$formget)}";
+			}
+		}
+		setInterval(function() {
+			refersh_window();
+		}, 2000);
+		$(function() {
+			setCookie("refersh_time", 0);
+
+		});
+	</script>
+</body>
+</html>

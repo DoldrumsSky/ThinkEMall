@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+<style>
+.control-label{
+	font-weight: bold;
+	float: left;
+	width: 70px;
+}
+.wrapper{
+  overflow: hidden;
+}
+</style>
+</head>
+<body class="body-white" id="top">
+	<tc_include file="Public:user_nav" />
+  <div class="wrapper tc-main">
+      <tc_include file="Public:user_left_nav"/>
+      <div class="centerContent">
+      <div class="cWrap">
+        <div class="userInfo">
+          <div class="headicon">
+            <a href="{:U('profile/avatar')}">
+              <if condition="empty($avatar)">
+                <img src="__TMPL__Public/assets/images/headicon_128.png" width=104 height="104" class="headicon"/>
+                <else/>
+                <img src="{:sp_get_user_avatar_url($avatar)}" width=104 height="104" class="headicon"/>
+                </if>
+            </a>
+            <div class="mask"></div>
+          </div>
+          <div class="infoContent">
+            <dl class="dl-horizontal">
+              <dt>昵称：</dt>
+              <dd>{$user_nicename|default='未填写'}</dd>
+              <dt><a class="ulevel" href="#" target="_blank">银牌会员</a></dt>
+              <dd><a class="" href="#" target="_blank"><img id="userPlusIcon" src="__TMPL__Public/assets/images/weikaitong.png" alt="plus_icon" title="试用PLUS会员，领免运费券"></a></dd>
+              <dt>账户安全：</dt>
+              <dd><div class="progressBar saveLevel"><span class="progressBg"><span class="progress"></span></span><span><a href="#">较高</a></span></div></dd>
+            </dl>   
+          </div>
+        </div>
+        <ul class="orderInfo floatRefixToL">
+          <li><a href="{:U('User/Order/index',array('diff'=>0,'status'=>0))}" class="infoIcon-1">待付款<em>{$orderData.nopay_order_num}</em></a></li>
+          <li><a href="{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>1))}" class="infoIcon-2">待出库<em><empty name="orderData['orderGoodsStatus'][1]">0<else />{$orderData['orderGoodsStatus'][1]}</empty></em></a></li>
+          <li><a href="{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>3))}" class="infoIcon-3">待收货<em><empty name="orderData['orderGoodsStatus'][3]">0<else />{$orderData['orderGoodsStatus'][3]}</empty></em></a></li>
+          <li><a href="{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>4))}" class="infoIcon-4">待评价<em><empty name="orderData['orderGoodsStatus'][4]">0<else />{$orderData['orderGoodsStatus'][4]}</empty></em></a></li>
+          <li><a href="{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>6))}" class="infoIcon-5">退货<em><empty name="orderData['orderGoodsStatus']['refund']">0<else />{$orderData['orderGoodsStatus']['refund']}</empty></em></a></li>
+        </ul>
+        <div class="balanceInfo">
+          <h4>可用余额</h4>
+          <em>￥{$balance}</em>
+        </div>
+      </div>
+      <div class="cWrap marginTop-8">
+        <h5 class="text-danger">最近15天订单，总共消费<em id="expenditure">0.00</em>元</h5>
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>商品名称</th>
+              <th>收货人</th>
+              <th>价格</th>
+              <th>交易日期</th>
+              <th>订单状态</th>
+            </tr>
+          </thead>
+          <tbody>
+          <volist name="shoppingData" key="key" id="vo">
+          <php>
+            $goods_data=json_decode($vo['goods_data'],true);
+            $gid=$vo['goods_id'].'-'.$vo['sku_idx'];
+            $totalPrice+=$vo['goods_price'];
+            switch($vo['status']){
+                  case 1:
+                  $statuTxt='待出库';
+                  break;
+                  case 2:
+                  $statuTxt='已配货';
+                  break;
+                  case 3:
+                  $statuTxt='待收货';
+                  break;
+                  case 4:
+                  $statuTxt='待评价';
+                  break;
+                  case 5:
+                  $statuTxt='已完成';
+                  break;
+                  case 6:
+                  $statuTxt='已完成';
+                  break;
+            }
+          </php>
+            <tr>
+              <th scope="row">{$key}</th>
+              <td class="text-success" width="500">{$goods_data[$gid]['goods_title']}</td>
+              <td>{$vo.consignee}</td>
+              <td>￥{$vo.goods_price}</td>
+              <td>{$vo.pay_time}</td>
+              <td>{$statuTxt}</td>
+            </tr>           
+          </volist>
+          </tbody>
+        </table>
+        <div style="float:right"><ul  class="pagination">{$page}</ul></div>
+      </div>    
+  </div>
+</div>
+
+<tc_include file="Public:footer" />
+	<!-- /container -->
+<tc_include file="Public:scripts" />
+<script type="text/javascript">
+var totalPrice='{$totalPrice}';
+$('#expenditure').text('￥'+Number(totalPrice).toFixed(2));
+</script>
+</body>
+</html>

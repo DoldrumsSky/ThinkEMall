@@ -1,0 +1,96 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form method="post" class="js-ajax-form" action="">
+		<div class="table-actions">
+			<a type="button" class="btn btn-primary" href="{:U('AdminEMallLogistics/index')}">{:L('LIST_ALL')}</a>
+			<a type="button" class="btn btn-danger" href="{:U('AdminEMallLogistics/add')}"><span class="fa fa-plus">&nbsp;</span>{:L('ADD_LOGISTICS_TPL')}</a>
+			<button class="btn btn-danger js-ajax-submit" type="submit" data-action="{:U('AdminEMallLogistics/delete')}" data-subcheck="true" data-msg="您确定删除吗？">{:L('DELETE')}</button>
+		</div>
+			<table class="table table-hover table-bordered table-list" id="dataList">
+				<thead>
+					<tr>
+						<th width="15"><label><input type="checkbox" class="js-check-all" data-direction="x" data-checklist="js-check-x"></label></th>
+						<th width="50">ID</th>
+						<th width="160">{:L('LOGISTICS_TPLNAME')}</th>
+						<th width="120">{:L('LOGISTICS_TYPE')}</th>
+						<th width="160">{:L(LOGISTICS_FROM_AREA)}</th>
+						<th width="120">{:L(LOGISTICS_WAY)}</th>
+						<th>{:L('LOGISTICS_AREA')}</th>
+						<th width="120">{:L('ACTIONS')}</th>
+					</tr>
+				</thead>
+				<tbody>
+					<foreach name="logistics" item="vo">
+						<tr>
+						<td><input type="checkbox" class="js-check" data-yid="js-check-y" data-xid="js-check-x" name="ids[]" value="{$vo.logistics_id}" title="ID:{$vo.logistics_id}"></td>
+						<td>{$vo.logistics_id}<textarea style="display:none" data-tag="logistics_param">{$vo.logistics_param}</textarea></td>
+						<td><a href="{$vo.editURL}">{$vo.tmpl_name}</a></td>
+	    				<td width="100">{$vo.typeStr}</td>
+	    				<td class="fromArea">{$vo.province} {$vo.city}</td>
+	    				<td class="transWay">{:L(LOGISTICS_WAY)}</td>
+	    				<td class="addArea"></td>
+						<td>{$vo.str_manage}</td>
+						</tr>
+					</foreach>
+				</tbody>
+			</table>
+			<div class="table-actions">
+			<div class="pagination">{$page}</div>
+		</form>
+
+	</div>
+	<script src="__PUBLIC__/js/common.js"></script>
+	<script type="text/javascript" src="__PUBLIC__/js/custom/Emall.js"></script>
+	<script type="text/javascript">
+	var jsonURLRoot='__PUBLIC__/Emall/';
+	var submitURL='{:U("AdminEMallLogistics/edit_post")}';
+
+	//存储选择的配送地区数据	
+	var wayData={'0':[],'1':[],'2':[],'3':[]};
+    // 添加全局站点信息
+    $(function(){
+    	//加载模板配送数据
+    	var logisticsList=$('#dataList tbody tr');
+    	$.each(logisticsList,function(rowIdx){
+    		var inputData=$(this).find('textarea[data-tag="logistics_param"]').val();
+    		//console.log(inputData);
+    		var logisticsData=$.parseJSON(inputData);
+    		var wayStr='',areaStr='';
+    		$.each(logisticsData,function(idx,wayItem){
+    			if(wayItem.length>0){
+    				switch(idx){
+    					case '0':
+    					wayStr+='快递，';
+    					curWayStr='快递：';
+    					break;
+    					case '1':
+    					wayStr+='物流，';
+    					curWayStr='物流：';
+    					break;
+    					case '2':
+    					wayStr+='EMS，';
+    					curWayStr='EMS：';
+    					break;
+    					case '3':
+    					wayStr+='平邮，';
+    					curWayStr='平邮：';
+    					break;
+    				}
+    			}else{
+    				return true;
+    			}
+    			areaStr+=areaStr!==''?'<br><em>'+curWayStr+'</em>':'<em>'+curWayStr+'</em>';
+    			//获取选择的配送区域
+    			$.each(wayItem,function(index){
+    				areaStr+=wayItem[index].area.provinceName+'，';
+    			})
+    		})
+    		$(this).find('.transWay').text(wayStr);
+    		$(this).find('.addArea').html(areaStr);
+    	})
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<admintpl file="header" />
+<link rel="stylesheet" type="text/css" href="__PUBLIC__/js/webuploader/webuploader.css">
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="form-horizontal js-ajax-form" action="{:U('AdminEMallAD/postTermsADCover',array('id'=>$id))}" method="post">
+			<div class="tabbable">
+		        <div class="tab-content">
+		          <div class="tab-pane active" id="A">
+						<fieldset>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_TITLE')}</label>
+								<div class="controls">
+									<input type="text" name="ad_title" value="" required><span class="form-required"> *</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SECOND_TITLE')}</label>
+								<div class="controls">
+									<input type="text" name="second_title" value="">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SUB_TITLE')}</label>
+								<div class="controls">
+									<input type="text" name="sub_title" value="">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_LINK')}</label>
+								<div class="controls">
+									<input type="text" name="ad_link" value="" style="width:400px" required><span class="form-required"> *</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_IMAGE')}</label>
+								<div class="controls">
+									<div id="uploader" style="width:200px;overflow:hidden" required>
+									    <div id="fileList" class="uploader-list">
+									    </div>
+									    <div id="cfilePicker">选择图片</div>
+									</div>
+								</div>
+							</div>
+						</fieldset>
+		          </div>
+
+		        </div>
+		    </div>
+		    <div class="form-actions">
+		     	<button class="btn btn-primary js-ajax-submit" type="submit">{:L('SAVE')}</button>
+		      	<a class="btn" href="javascript:history.back(-1);">{:L('BACK')}</a>
+		    </div>
+		</form>
+	</div>
+<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/js/webuploader/webuploader.js"></script>
+<script type="text/javascript" src="__PUBLIC__/js/webuploader/getting-started.js"></script>
+<script type="text/javascript">
+// 添加全局站点信息
+var BASE_URL = '__PUBLIC__/js/webuploader/';
+var UPLOAD_SERVER='{:U("AdminEMallUpload/uploadSinglePic")}';
+var imgPath='{:sp_get_image_preview_url()}';
+var coverData='{$coverData}';
+$(function() {
+	$("#uploader").setUploader(null,{uploadImgType:'normal',thumb:{height:102}});
+	//如果存在封面数据，则解析加载
+	if(coverData!==''){
+		coverData=$.parseJSON(coverData);
+		$(':input[name="ad_title"]').val(coverData.ad_title);
+		$(':input[name="second_title"]').val(coverData.second_title);
+		$(':input[name="sub_title"]').val(coverData.sub_title);
+		$(':input[name="ad_link"]').val(coverData.ad_link);
+		$('#fileList').append('<div id="WU_FILE_0" class="file-item thumbnail upload-state-done"><img class="img-responsive" src="'+imgPath+coverData.ad_image+'"></div><input type="hidden" name="UpFilePathInfo" value="'+coverData.ad_image+'"></div>');
+	}
+});
+</script>
+</body>
+</html>

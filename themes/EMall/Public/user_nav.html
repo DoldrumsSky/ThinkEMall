@@ -1,0 +1,94 @@
+<nav class="navWrap">
+
+	<div class="stNavWrap">
+
+   	 	<div class="container">
+			<div class="welcomeLang">欢迎访问ThinkEMall官网! <a href="">请登录</a><a href="">免费注册</a></div>
+			<div class="topRMenu">
+          <ul>
+              <li>
+                <a href="{:U('user/order/index')}" class="zy-menuItem">我的订单</a>
+              </li>
+              <li>
+                <a href="{:U('user/center/myFavorGoods')}"><b class="fa fa-star"></b>我的收藏</a>
+              </li>
+              <li>
+                <a href="{:U('User/Order/viewAllOfCartGoods')}"><b class="fa fa-shopping-cart"></b>购物车</a>
+              </li>
+              <li>
+                <a href=""><b class="fa fa-mobile-phone"></b>手机版</a>
+              </li>
+              <li>
+                <a href="">客户服务</a>
+              </li>
+              <li>
+                <a href="">站点导航</a>
+              </li>
+          </ul>
+      </div>
+   	  </div>
+   </div>
+</nav>
+<div class="ucNav">
+<div class="container">
+    <div class="logo">
+      <a href="{:U('EMall/index/index')}" class="fore1"></a>
+      <a href="{:U('EMall/index/index')}" class="fore3">返回商城首页</a>
+    </div>
+    <div class="navitems">
+      <ul>
+        <li>
+          <a target="_self" href="{:U('User/center/index')}">用户首页</a>
+        </li>
+        <li class="drop">
+              <span class="FlatDropMenu">
+                <a href="javascript:;">我的购物</a>
+                <b></b>
+                <ul>
+                  <li><a href="{:U('user/order/index')}">我的订单</a></li>
+                  <li><a href="{:U('user/center/doDeposit')}">我要充值</a></li>
+                  <li><a href="{:U('user/center/myPoints')}">我的积分</a></li>
+                  <li><a href="{:U('user/center/myFavorGoods')}">我的收藏</a></li>
+                </ul>
+              </span>
+                 
+        </li>
+        <li class="drop">
+              <span class="FlatDropMenu">
+                <a href="javascript:;">账户设置</a>
+                <b></b>
+                <ul>
+                  <li><a href="{:U('user/profile/edit')}">修改资料</a></li>
+                  <li><a href="{:U('user/profile/avatar')}">编辑头像</a></li>
+                  <li><a href="{:U('user/profile/addressOption')}">收货地址</a></li>
+                  <li><a href="{:U('user/profile/password')}">账号安全</a></li>
+                </ul>                
+              </span>
+                 
+        </li>
+
+        <li>
+          <a id="messageNum" href="{:U('User/center/viewMessage',array('message_type'=>1))}" target="_self">消息<i>{$messageData.messageNum}</i></a>
+        </li>
+      </ul>
+    </div>
+    <div class="nav-r">
+      <div id="search-2014">
+          <ul id="shelper" class="hide"></ul>
+          <div class="form">
+            <input type="text" onkeydown="javascript:if(event.keyCode==13) search('key');" autocomplete="off" id="key" accesskey="s" class="text">
+            <button onclick="search('key');return false;" class="button cw-icon" type="button"><i></i>搜索</button>
+          </div>
+          </div>
+          <div id="settleup-2014">
+          <div class="cw-icon">
+            <i class="ci-left"></i>
+            <i class="ci-right">&gt;</i><i class="ci-count" id="shopping-amount">0</i>
+            <a target="_blank" href="{:U('User/Order/viewAllOfCartGoods')}">我的购物车</a>
+          </div>
+          <div class="dropdown-layer"><div class="spacer"></div><div id="settleup-content"><span class="loading"></span></div></div>
+      </div>
+    </div>
+    <div class="clr"></div>
+  </div>
+</div>

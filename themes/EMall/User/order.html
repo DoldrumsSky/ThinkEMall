@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+</head>
+<body class="bg-white" id="top">
+  <tc_include file="Public:user_nav" />
+
+  <div class="wrapper tc-main">
+    <div class="cartTab">
+      <ul>
+        <li role="tabItem"><a class="cur" href="javascript:getOrderDataByAjax('{:U('User/Order/index',array('diff'=>0,'returnType'=>ajax))}','order')">全部订单<em id="totalGoodsNum"><empty name="orderData['all_order_num']">0<else />{$orderData.all_order_num}</empty></em><span class="spLine"></span></a></li>
+        <li role="tabItem"><a href="javascript:getOrderDataByAjax('{:U('User/Order/index',array('diff'=>0,'status'=>0,'returnType'=>ajax))}','order');">待付款订单<em id="lowStockGoodsNum">
+        <empty name="orderData['nopay_order_num']">0<else />{$orderData.nopay_order_num}</empty></em><span class="spLine"></span></a></li>
+        <li role="tabItem" id="accountsTab"><a href="javascript:getOrderDataByAjax('{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>1,'returnType'=>'ajax'))}','orderGoods');">待出库商品<em><empty name="orderData['orderGoodsStatus'][1]">0<else />{$orderData['orderGoodsStatus'][1]}</empty></em><span class="spLine"></span></a></li>
+        <li role="tabItem" id="accountsTab"><a href="javascript:getOrderDataByAjax('{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>3,'returnType'=>'ajax'))}','orderGoods');">待收货商品<em><empty name="orderData['orderGoodsStatus'][3]">0<else />{$orderData['orderGoodsStatus'][3]}</empty></em><span class="spLine"></span></a></li>
+        <li role="tabItem" id="accountsTab"><a href="javascript:getOrderDataByAjax('{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>4,'returnType'=>'ajax'))}','orderGoods');">待评价商品<em><empty name="orderData['orderGoodsStatus'][4]">0<else />{$orderData['orderGoodsStatus'][4]}</empty></em><span class="spLine"></span></a></li>
+        <li role="tabItem" id="accountsTab"><a href="javascript:getOrderDataByAjax('{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>6,'returnType'=>'ajax'))}','orderGoods');">退货商品<em><empty name="orderData['orderGoodsStatus']['refund']">0<else />{$orderData['orderGoodsStatus']['refund']}</empty></em><span class="spLine"></span></a></li>
+        <li role="searcher" style="float:right"><div class="borderSearcher"><form id="searchOrder" action="{:U('User/Order/index')}" method="post"><input type="text" name="keywords" placeholder="请填写订单号"><button type="submit" class="searchBtn">搜索订单</a></form></div></li>
+      </ul>
+      <div class="activeLine"></div>
+    </div>
+    <table class="table marginBottomNone listHead">
+      <thead>
+        <tr>
+          <td width="11%" align="center">订单状态</td>
+          <td width="64%">
+              <span class="FlatDropMenu"><a href="{:U('User/Order/index',array('diff'=>0))}">近三个月订单</a><b></b>
+                  <ul>
+                      <li><a href="{:U('User/Order/index',array('diff'=>4))}">今年内订单</a></li>
+                      <li><a href="{:U('User/Order/index',array('diff'=>1))}">2016年订单</a></li>
+                      <li><a href="{:U('User/Order/index',array('diff'=>2))}">2015年订单</a></li>
+                      <li><a href="{:U('User/Order/index',array('diff'=>3))}">2014年订单</a></li>
+                      <li><a href="{:U('User/Order/index',array('diff'=>-3))}">2014年以前订单</a></li>
+                  </ul>
+              </span>
+              <span>订单详情</span>
+          </td>
+          <td>金额</td>
+          <td width="10%" align="center">操作</td>
+        </tr>
+      </thead>
+    </table>
+    <div  id="orderList">
+    <script type="text/javascript">  var orderGoodsData={};var order_status={};var order_extral={};</script>
+    <php>if($orderData){</php>
+        <volist name="orderData.order" id="vo">
+              <div role="orderItem" class="itemWrap border-gray" data-time="{$vo.order_time}" data-oid=
+              <php>
+                if($queryType=='orderGoods'){
+                  echo '"'.$vo['order_id'].'"';
+                  $total_price=$vo['buy_num']*$vo['goods_price']+$vo['logistics_price'];
+                }else{
+                  echo '"'.$vo['order_gid'].'"';
+                  $total_price=$vo['total_price'];
+                }
+              </php> data-status="{$vo.status}" data-price="{$total_price}">
+                  <div class="orderTitle">
+                  <php>
+                  $paymentTxt=!empty($vo['status'])?'已支付':'未支付';
+                  switch($vo['status']){
+                    case 0:
+                    $statuTxt='待付款';
+                    break;
+                    case 1:
+                    $statuTxt='待出库';
+                    break;
+                    case 2:
+                    $statuTxt='已配货';
+                    break;
+                    case 3:
+                    $statuTxt='待收货';
+                    break;
+                    case 4:
+                    $statuTxt='已收货';
+                    break;
+                    case 5:
+                    $statuTxt='已评价';
+                    case 6:
+                    $statuTxt='退货';
+                    break;
+                  }
+                  </php>
+                    <span class="orderStatu-obligation">{$paymentTxt}</span>
+                    <span>{$vo.order_time}<i class="sep">|</i>{$vo.consignee}<i class="sep">|</i>订单号：<a href="">{$vo.order_serial}</a><i class="sep"></i></span>                    
+                  </div>
+                  <div class="orderContent">
+
+                  </div>
+              </div>
+              <empty name="queryType">
+              <script type="text/javascript">
+              orderGoodsData['{$vo.order_gid}']='{$vo.goods_data}';
+              order_status['{$vo.order_gid}']='{$vo.status}';
+              </script>
+              <else />
+              <script type="text/javascript">
+              orderGoodsData['{$vo.order_id}']='{$vo.goods_data}';
+              order_status['{$vo.order_id}']='{$vo.status}';
+              order_extral['{$vo.order_id}']={goods_id:'{$vo.goods_id}',goods_price:'{$vo.goods_price}',shopBuyNum:'{$vo.buy_num}',logistics_wayid:'{$vo.logistics_wayid}',logistics_price:'{$vo.logistics_price}',status:'{$vo.status}'};
+              </script>              
+              </empty>
+          </volist>
+          <div style="float:right"><ul  class="pagination">{$orderData['page']}</ul></div>
+          <php>}else{echo '<div style="height:50px;padding:100px 30px;font-size:20px;text-align:center;color:#ff3300;">没有查询到任何相关订单数据!</div>';}</php>
+      </div>
+    </div>
+    </div>
+</div>
+
+
+    <tc_include file="Public:footer" />
+	</div>
+
+	<!-- /container -->
+
+	<tc_include file="Public:scripts" />
+  <script type="text/javascript">
+  function getStatusText(status){
+    var statuTxt;
+    switch(parseInt(status)){
+      case 0:
+      statuTxt='待付款';
+      break;
+      case 1:
+      statuTxt='待出库';
+      break;
+      case 2:
+      statuTxt='已配货';
+      break;
+      case 3:
+      statuTxt='待收货';
+      break;
+      case 4:
+      statuTxt='已收货';
+      break;
+      case 5:
+      statuTxt='已评价';
+      case 6:
+      statuTxt='已追评';
+      break;
+
+    }
+    return statuTxt;
+  }
+
+
+  //type为'orderGoods'时查询的是单件商品的订单数据，否则查询的是订单汇总概览数据
+  function getOrderDataByAjax(URL,type){
+      $('#orderList').setLoadingState({
+        container:'body',
+        loadingTxt:'正在努力加载订单数据，请稍候...'
+      })
+      $.get(URL,{},function(data){
+          if(data.status==1){
+              //清空当前的内容
+              var orderContainer=$('#orderList');
+              orderContainer.empty();
+              //重新构造显示的订单数据
+              orderGoodsData={};
+              var ExtralData={};
+              $.each(data.data.order,function(index,Item){
+                  //var paymentTxt=Item.payment!==''?Item.payment:'未支付';
+                  var statuTxt=getStatusText(Item.status);
+                  var totalPrice=type=='orderGoods'?parseFloat(Item.goods_price)*parseInt(Item.buy_num)+parseFloat(Item.logistics_price):Item.total_price;
+                  var data_oid=type=='orderGoods'?Item.order_id:Item.order_gid;
+
+                  //生成订单容器代码
+                  orderWrapHTML='<div role="orderItem" class="itemWrap border-gray" data-time="'+Item.order_time
+                  +'" data-oid="'+data_oid+'"'
+                  +'data-status="'+Item.status+'" data-price="'+totalPrice+'"><div class="orderTitle">'
+                  +'<span class="orderStatu-obligation">'+statuTxt+'</span>'
+                  +'<span>'+Item.order_time+'<i class="sep">|</i>'+Item.consignee+'<i class="sep">|</i>订单号：<a href="">'+Item.order_serial+'</a><i class="sep"></i></span></div><div class="orderContent"></div></div>';
+                  
+                  orderContainer.append(orderWrapHTML);
+                  if(!type || type=='order'){
+                    orderGoodsData[Item.order_gid]=Item.goods_data;
+                    order_status[Item.order_gid]=Item.status;
+                    //orderId[Item.order_gid]=Item.order_gid;
+                    ExtralData=null;
+                  //查询单件商品时以order_id作为唯一索引
+                  }else if(type=='orderGoods'){
+                    orderGoodsData[Item.order_id]=Item.goods_data;
+                    order_status[Item.order_id]=Item.status;
+                    //orderId[Item.order_id]=Item.order_id;
+                    ExtralData[Item.order_id]={goods_id:Item.goods_id,goods_price:Item.goods_price,shopBuyNum:Item.buy_num,logistics_wayid:Item.logistics_wayid,logistics_price:Item.logistics_price};
+                  }
+
+              })
+
+              //改写分页链接使其使用ajax请求数据
+              if(data.data.page){
+                var page= $('<div style="float:right;"><ul class="pagination">'+data.data.page+'</ul></div>').appendTo(orderContainer); 
+                $.each(page.find('a'),function(){
+                    var newLink='javascript:getOrderDataByAjax("'+$(this).attr('href')+'");';
+                    $(this).attr('href',newLink);
+                })
+              }
+              //console.log(orderGoodsData);
+              //解析添加订单内容数据
+              parseOrderGoodsData(orderGoodsData,order_status,ExtralData,type);
+
+              console.log(data);
+          }else{
+            if(data.error=='没有查询到任何相关的订单数据！'){
+              $('#orderList').html('<div style="height:50px;padding:100px 30px;font-size:20px;text-align:center;color:#ff3300;">没有查询到任何相关订单数据!</div>');
+            }else{
+              alert(data.error);
+            }
+          }
+          $('#orderList').setLoadingState('destroy');
+      }).error(function(){
+          alert('网络错误，无法链接到服务器！');
+          $('#orderList').setLoadingState('destroy');
+      })
+  }
+
+  //解析订单商品数据到订单内容容器中,ExtralData是查看订单中其它具体商品数据（非快照数据）
+  //由于查询模式分为两种，一种是订单组查询（order表），一种是订单详细商品查询（order_relationships），所以解析也分两种
+  //在order_relationships表中，商品价格，运费等数据是直接存入字段而非json数据中的，所以这些会做为附加数据存入ExtralData中进行解析
+  //而type的两个参数,order，orderGoods分别对应这两种查询数据的解析
+  function parseOrderGoodsData(goodsData,status,ExtralData,type){
+    if(!goodsData){
+      return false;
+    }
+
+    $.each(goodsData,function(index,data){
+      var result=$.parseJSON(data);
+      var orderGoodsHTML='';
+      var orderItem=$('[role="orderItem"][data-oid="'+index+'"]');
+
+      //订单操作按钮代码生成，查询单件商品状态时不需要生成这段代码
+        var orderStatus=type=='orderGoods'?ExtralData[index].status:order_status[index];
+        var actionBtn='';
+      if(type!=='orderGoods'){
+        actionBtn=parseInt(orderStatus)>0?'<a href="{:U(\'User/Order/orderView\')}'+'&id='+index+'" target="_blank" class="orderBtn bg-red">订单详情</a>':'<a href="{:U(\'User/Payment/index\')}'+'&order_gid='+index+'" target="_blank" class="orderBtn bg-red">立即支付</a>';
+      }
+        var totalPriceHTML='<span class="totalPrice">订单金额：<em>¥</em><em>'+Number(orderItem.attr('data-price')).toFixed(2)+'</em></span>'+actionBtn;
+      
+      var specTotalPriceHTML='';
+      var orderGoodsNum=0;
+      //console.log(result);
+      $.each(result,function(gid,Item){
+        orderGoodsNum++;
+        //按长度要求截取标题字符
+        var sliceLength=Item.goods_title.length<32?Item.goods_title.length:32;
+        var goods_title=Item.goods_title.substr(0,sliceLength);
+        goods_title+=Item.goods_title.length>32?'...':'';
+        //无库存标签
+        var outOfStockTxt=Item.goods_stock<=0?'<em class="outOfStock">已售罄</em>':'';
+        //不支持配送标签
+        var noLogiSupport=!Item.logiSupport?'<em class="noLogiSupport">不支持配送</em>':'';
+        var goods_id=type=='orderGoods'?ExtralData[index].goods_id:Item.goods_id;
+        var goods_price=type=='orderGoods'?ExtralData[index].goods_price:Item.price;
+        var logistics_price=type=='orderGoods'?ExtralData[index].logistics_price:Item.logistics_price;
+        var shopBuyNum=type=='orderGoods'?ExtralData[index].shopBuyNum:Item.shopBuyNum;
+        var logistics_wayid=type=='orderGoods'?ExtralData[index].logistics_wayid:Item.logistics;
+        //生成html
+        orderGoodsHTML+='<li><div class="itemImg fixImgPadding" data-gid="'+gid+'">'
+                          +outOfStockTxt+noLogiSupport+'<a href=""><img src="'+Item.goods_img+'" width="80" class="cartGoodsImg" alt=""></a></div>'
+                          +'<div class="listInfo"><p><a href="{:U(\'EMall/GoodsDetails/index\')}'+'&id='+goods_id+'" target="_blank">'+goods_title+'</a></p>'
+                          +'<p>'+Item.sku_style+' '+Item.sku_spec+'</p>'
+                          +'<p><em>¥</em> <em>'+Number(goods_price).toFixed(2)+'</em> X '+shopBuyNum
+                          +'&nbsp;&nbsp;&nbsp;&nbsp;运费：<em>¥</em> <em>'+Number(logistics_price).toFixed(2)+'</em>&nbsp;&nbsp;&nbsp;&nbsp;配送方式：<em>'+changeToLogistaticsStr(logistics_wayid)+'</em></p></div></li>';
+      })
+
+      //订单中只有一件商品时，订单金额和支付、订单详情按钮都显示在订单内容容器中
+      if(orderGoodsNum==1){
+        specTotalPriceHTML='<li>'+totalPriceHTML+'</li>';     
+      }else{
+        orderItem.find('.orderTitle').append(totalPriceHTML);   
+      }
+
+      orderItem.find('.orderContent').append('<ul>'+orderGoodsHTML+specTotalPriceHTML+'</ul>');
+    })
+      
+      //console.log(goodsData);
+  }
+
+$(function(){
+    $('.cartTab').setTabMenu({
+    tabChangeStyle:1,
+    hasTabContent:false
+  })
+
+
+  parseOrderGoodsData(orderGoodsData,order_status,order_extral,'{$queryType}');
+})
+  </script>
+</body>
+</html>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkCMF">
+<tc_include file="Public:uc_head" />
+</head>
+<body class="bg-white" id="top">
+  <tc_include file="Public:user_nav" />
+
+  <div class="wrapper tc-main">
+  <h1 style="font-weight:normal;font-size:31px;display:inline;margin-right:10px;">售后详情</h1><span>请谨防钓鱼链接和诈骗电话</span>
+      <div class="orderViewTitle">
+          <h4>订单号：</h4><em class="orderSerial">{$afterSaleData.order_serial}</em><em id="orderGoodsNum"></em><a href="{:U('User/Order/orderView')}&id={$afterSaleData.order_id}">返回订单详情</a>
+      </div>
+      <div class="orderProcess">
+          <div class="processTitle">
+              <em>申请售后</em>
+              <em>联系反馈处理</em>
+              <em>返修换货、技术支持</em>
+              <em>接收返修、换货</em>
+              <em>完成售后服务</em>
+          </div>
+          <div class="processBar">
+            <div style="width:100%;position:absolute;top:-6px;left:0">
+              <span class="processPoint"><em class="down"></em></span>
+              <span class="processPoint"><em></em></span>
+              <span class="processPoint"><em></em></span>
+              <span class="processPoint"><em></em></span>
+              <span class="processPoint"><em></em></span>
+            </div>
+              <div class="process"></div>
+          </div>
+          <div class="processTimerTxt">
+              <em id="applyTime">{$afterSaleData.apply_time}</em>
+              <em id="confirmTime">等待售后处理意见</em>
+              <em id="refundGoodsTime">等待技术支持/提交换修运单</em>
+              <em id="receivedGoodsTime">等待接收返修、换货</em>
+              <em id="refundPriceTime">等待确认完成售后</em>
+          </div>
+      </div>
+      <div class="refundDetail" data-id="{$afterSaleData.as_id}">
+
+      </div>
+</div>
+
+    <tc_include file="Public:footer" />
+	</div>
+  <tc_include file="User:afterSaleModal" />
+	<!-- /container -->
+
+	<tc_include file="Public:scripts" />
+  <script type="text/javascript">
+  //售后申请ID
+  var as_id='{$afterSaleData.as_id}';
+  //默认的标题栏代码
+  var orderStatuCode='<em class="orderStatu-normal">售后申请中</em>请等待商家售后联系处理';
+  //查看运单信息的链接 
+  var waybillDetailURL='http://api.logistics.com/';
+  //修改售后申请信息的链接 
+  var postEditAfterSaleURL="{:U('User/Order/postEditAfterSale')}";
+  //提交返修换货运单的链接 
+  var postWayBillNoURL="{:U('User/Order/postAfterSaleWayBillNo')}";
+  //支付售后服务费用链接
+  var doAfterSalePayURL="{:U('User/Order/doAfterSalePay')}"+"&as_id="+as_id;
+  //确认完成售后服务
+  var confirmFinishedAfterSaleURL="{:U('User/Order/confirmFinishedAfterSale')}";
+  //售后商品的信息
+  var goodsData='{$afterSaleData.goods_data}';
+  //售后商品的gid
+  var goods_id="{$afterSaleData.goods_id}"+"-"+"{$afterSaleData.sku_idx}";
+  //订单ID
+  var order_id='{$afterSaleData.order_id}';
+
+  //售后申请状态
+  var afterSaleStatus="{$afterSaleData.status}";
+  //申请详情
+  var apply_detail='{$afterSaleData.apply_detail}';
+  //联系电话
+  var telNum='{$afterSaleData.telnum}';
+  //联系人
+  var contact='{$afterSaleData.contact}';
+  //售后处理回复时间
+  var reply_time='{$afterSaleData.reply_time}';
+  //售后服务方式
+  var service_type='{$afterSaleData.service_type}';
+  //售后服务价格
+  var service_price='{$afterSaleData.service_price}';
+  //售后服务费用支付状态
+  var finished_payment='{$afterSaleData.finished_payment}';
+  //售后处理详情说明
+  var reply_detail='{$afterSaleData.reply_detail}';
+  //技术支持完成时间
+  var tech_support_time='{$afterSaleData.tech_support_time}';
+  //用户换修运单号
+  var waybill_no='{$afterSaleData.waybill_no}';
+  //用户提交换修运单号的时间
+  var post_waybill_time='{$afterSaleData.post_waybill_time}';
+  //寄回换修商品运单号
+  var return_waybill_no='{$afterSaleData.return_waybill_no}';
+  //寄回完成换修商品的时间
+  var return_waybill_time='{$afterSaleData.return_waybill_time}';
+  //返修进度
+  var repaireStepNum="{$afterSaleData.repaire_step}";
+  //换货进度
+  var exchangeStepNum="{$afterSaleData.exchange_step}";
+  //是否需要寄回换修商品
+  var returnGoods="{$afterSaleData.return_goods}";
+  //换修商品检测信息
+  var checkGoodsInfo='{$afterSaleData.check_info}';
+  //确认完成售后服务的时间
+  var finish_time='{$afterSaleData.finish_time}';
+
+  //提交返修换货商品的运单（postType为0时表示提交，为1时表示修改）
+  function postAfterSaleWayBillNo(postType){
+    var postWayBill_No=$('#refundWayBillNo').val();
+    if(postType==0 && postWayBill_No==''){
+      alert('请在左边标题栏上填写返修换货商品的运单号！');
+      return false;
+    //修改时需要添加文本框
+    }else if(postType==1){
+       $('.refundDetail dl:eq(0) dt').append(' <input type="text" id="refundWayBillNo" placeholder="请填写换修商品的运单号">');
+       $('#postWayBillBtn').attr('href','javascript:postAfterSaleWayBillNo(0)').text('提交换修运单');
+       return false;
+    }
+    //如果运单一样，则直接退出编辑状态
+    if(waybill_no==postWayBill_No || postWayBill_No==''){
+       $('#waybill_no').remove();
+       $('#postWayBillBtn').attr('href','javascript:postAfterSaleWayBillNo(1)').text('修改换修运单');
+      return false;
+    }
+
+    $('body').setLoadingState({container:'body',loadingTxt:'正在提交退货运单数据，请稍候'});
+    $.post(postWayBillNoURL,{
+        as_id:as_id,
+        waybill_no:postWayBill_No
+      },function(data){
+        if(data.status==1){
+            afterSaleStatus=2;
+            waybill_no=postWayBill_No;
+            if(data.data){
+              post_waybill_time=data.data;
+            }
+            updateRefundProcess();
+        }else{
+          alert(data.error);
+        }
+        $('body').setLoadingState('destroy');
+    }).error(function(){
+        alert('链接服务器出错，无法提交数据,请稍候尝试！');
+        $('body').setLoadingState('destroy');
+    })
+  }
+
+  //用户确认完成售后
+  function confirmFinishedAfterSale(as_id){
+    messagesBox({
+      title:'确认完成售后服务',
+      content:'正在执行确认完成售后服务的操作，请务必确认已经收到需要寄回的换修商品，您确认已经完成售后服务了吗？',
+      callFunc:function(){
+        $('body').setLoadingState({container:'body',loadingTxt:'正在确认完成本次售后服务，请稍候...'})
+        $.post(confirmFinishedAfterSaleURL,{as_id:as_id,gid:goods_id},function(data){
+          if(data.status==1){
+            var applyInfoWrap=$('.refundDetail[data-id="'+as_id+'"]');
+            //移除确认收货按钮
+            applyInfoWrap.find('dt [role="confirmFinishedBtn"]').remove();
+            //改变售后处理状态
+            applyInfoWrap.find('dt .orderStatu-normal').text('售后服务已完成');  
+            afterSaleStatus=4;
+            finish_time=data.data;
+            updateRefundProcess();          
+          }else{
+            alert(data.error);
+          }
+          $('body').setLoadingState('destroy');
+        }).error(function(data){
+          console.log(data);
+          alert('无法提交确认完成售后服务的请求，请稍候尝试！');
+          $('body').setLoadingState('destroy');
+        })
+      }
+    })
+  }
+
+  //转换服务类型到文本
+  function getServiceTxt(){
+    var serviceTxt;
+    switch (service_type){
+      case '1':
+      serviceTxt='技术支持';
+      break;
+      case '2':
+      serviceTxt='返修';
+      break;
+      case '3':
+      serviceTxt='换货';
+      default:
+      serviceTxt='技术支持';
+      break;
+    }
+    return serviceTxt;
+  }
+
+  //更新退货进度并处理对应按钮及元素属性
+  function updateRefundProcess(){
+        //整体售后进度文本
+        var processTag='';
+        //进度信息文本
+        var processInfo='';
+        //确认完成售后按钮
+        var finishedAfterSaleBtn='';
+
+        if(afterSaleStatus==-1){
+          $('.processBar .process').css('width','20%');
+            $('#confirmTime').text('商家拒绝退货');
+        }else if(afterSaleStatus==0){
+            $('.processBar .process').css('width','20%');
+        //商家同意退货后改变退货进度
+        }else if(afterSaleStatus==1){
+            $('.processBar .process').css('width','40%');
+            $('.processBar .processPoint:eq(1) em').addClass('down');
+            $('#confirmTime').text(reply_time);
+            //改变售后状态标识,返修换货时显示运单提交表单
+            var postWayBillHtml=service_type>1?'<input type="text" id="refundWayBillNo" placeholder="请填写修换运单号">请点击提交换修运单按钮输入返修换货的运单号':'请等待技术工程人员联系';
+
+            $('.refundDetail  dl:eq(0)').attr('data-statu','agreeApply').find('dt').html('<em class="orderStatu-normal">已联系反馈</em>'+postWayBillHtml);
+            if(service_type>1){
+              //为提交返修换货运单按钮添加事件
+              $('#postWayBillBtn').attr('href','javascript:postAfterSaleWayBillNo(0)');
+            }
+        //提交换修运单后改变退货进度
+        }else if(afterSaleStatus==2){
+            $('.processBar .process').css('width','60%');
+            $('.processBar .processPoint:gt(0):lt(2) em').addClass('down');
+            $('#confirmTime').text(reply_time);
+            //改变售后状态标识
+            $('.refundDetail dl:eq(0)').attr('data-statu','waitReceiveRefundGoods').find('dt').html('<em class="orderStatu-normal">等待接收换修商品</em>换修运单号：'+waybill_no+' &nbsp;您可以点击修改换修运单按钮修改运单号');
+            //技术支持状态文本暂时无用，完成技术支持后状态码直接更新到3
+            if(service_type<2){
+              $('#refundGoodsTime').text(tech_support_time+' 完成技术支持');
+            }else{
+              $('#refundGoodsTime').text(post_waybill_time);
+            }
+
+        //换修商品后的进度
+        }else if(afterSaleStatus==3){
+            var processNum=0;
+            //返修流程步骤数
+            var repaireStep=4;
+            //换货流程步骤数
+            var exchangeStep=4;
+            //换修进度文本
+            var stepText='';
+
+            //寄回换修商品运单号及文本，当运单号为空时表示用户可直接取回
+            var waybill_no_info='换修运单号：'+waybill_no;
+
+            //确认接收换修商品后的进度
+            //返修状态进度
+            if(service_type==2){
+              processNum=70+repaireStepNum/repaireStep*10;
+              if(returnGoods==1){
+                switch(repaireStepNum){
+                  case '1':
+                  stepText='等待检测返修商品('+repaireStepNum+'/'+repaireStep+')';
+                  processTag='等待检测返修商品';
+                  processInfo=waybill_no_info+'<em>请等待检测换修，如需要付费请先支付换修费用</em>';
+                  break;
+                  case '2':
+                  stepText='等待支付返修费用('+repaireStepNum+'/'+repaireStep+')';
+                  processTag='等待支付返修费用';
+                  processInfo=waybill_no_info+'<em>请先售后详情信息中的支付按钮，支付售后服务费用！</em>';
+                  break;
+                  case '3':
+                  stepText='等待完成商品修理('+repaireStepNum+'/'+repaireStep+')';
+                  processTag='商品正在维修中';
+                  processInfo='<em>请耐心等待维修完成</em>';
+                  break;
+                  default:
+                  stepText=return_waybill_time+' 完成返修('+repaireStepNum+'/'+repaireStep+')';
+                  processTag='换修商品已寄回';
+                  waybill_no_info=returnGoods==0?'维修已完成，您现在可以到售后网点取回商品':'返修商品寄回运单号：'+return_waybill_no;
+                  processInfo=waybill_no_info+'<em>请在收到返修商品后点击确认完成售后服务按钮</em>';
+                  finishedAfterSaleBtn='<a href="javascript:confirmFinishedAfterSale('+as_id+')" class="orderBtn bg-red" role="confirmFinishedBtn" style="right:2px">确认完成售后</a>';
+                  break;
+                }
+                $('#refundGoodsTime').text(post_waybill_time+' 提交换修运单');
+              }
+            //换货状态进度
+            }else if(service_type==3){
+              processNum=70+exchangeStepNum/exchangeStep*10;
+              if(returnGoods==1){
+                switch(exchangeStepNum){
+                  case '1':
+                  stepText='等待检测换货商品('+exchangeStepNum+'/'+exchangeStep+')';
+                  processTag='等待检测换货商品';
+                  processInfo=waybill_no_info+'<em>请等待检测换修，如需要付费请先支付换修费用</em>';
+                  break;
+                  case '2':
+                  stepText='等待支付换货费用('+exchangeStepNum+'/'+exchangeStep+')';
+                  processTag='等待支付换货费用';
+                  processInfo=waybill_no_info+'<em>请先售后详情信息中的支付按钮，支付售后服务费用！</em>';
+                  break;
+                  case '3':
+                  stepText='等待寄回换货商品('+exchangeStepNum+'/'+exchangeStep+')';
+                  processTag='已完成换货商品检测';
+                  processInfo=waybill_no_info+'<em>已完成换货商品检测，请耐心等待官方寄回换货商品</em>';
+                  break;
+                  default:
+                  stepText=return_waybill_time+' 完成换货('+exchangeStepNum+'/'+exchangeStep+')';
+                  processTag='换修商品已寄回';
+                  waybill_no_info=returnGoods==0?'换货处理已完成，您现在可以到售后网点取回商品':'返修商品寄回运单号：'+return_waybill_no;
+                  processInfo=waybill_no_info+'<em>请在收到换货商品后点击确认完成售后服务按钮</em>';
+                  finishedAfterSaleBtn='<a href="javascript:confirmFinishedAfterSale('+as_id+')" class="orderBtn bg-red" role="confirmFinishedBtn" style="right:2px">确认完成售后</a>';
+                  break;
+                }
+                $('#refundGoodsTime').text(post_waybill_time+' 提交换修运单');
+              }else{
+                  stepText='等待寄回换货商品('+exchangeStepNum+'/'+exchangeStep+')';
+                  processTag='已完成换货商品检测';
+                  processInfo=waybill_no_info+'<em>已完成换货商品检测，请耐心等待官方寄回换货商品</em>';                
+              }
+            //技术支持售后直接跳到最后的确认状态
+            }else{
+              processNum=80;
+              processTag='完成售后技术支持';
+              $('#refundGoodsTime').text(tech_support_time+' 完成技术支持');
+              stepText="无需返修换货";
+              finishedAfterSaleBtn='<a href="javascript:confirmFinishedAfterSale('+as_id+')" class="orderBtn bg-red" role="confirmFinishedBtn" style="right:2px">确认完成售后</a>';
+            }
+
+            $('.processBar .process').css('width',processNum+'%');
+            $('.processBar .processPoint:gt(0):lt(3) em').addClass('down');
+            $('#confirmTime').text(reply_time);
+            $('#receivedGoodsTime').text(stepText);
+            //改变退货状态标识
+            $('.refundDetail dl:eq(0)').attr('data-statu','waitReceiveRefundGoods').find('dt').html('<em class="orderStatu-normal">'+processTag+'</em>'+processInfo+finishedAfterSaleBtn);
+        //确认完成售后服务的状态更新
+        }else if(afterSaleStatus==4){
+            $('.processBar .process').css('width','100%');
+            $('.processBar .processPoint:gt(0):lt(4) em').addClass('down');
+            $('#confirmTime').text(reply_time);
+            //改变退货状态标识
+            if(service_type>1){
+              $('#refundGoodsTime').text(post_waybill_time);
+              waybill_no_info=returnGoods==0?'售后处理已完成 &nbsp;':'换修商品寄回运单号：'+return_waybill_no+' &nbsp;';
+              $('#receivedGoodsTime').text(return_waybill_time+' 完成换修');
+            }else{
+              waybill_no_info='';
+              $('#refundGoodsTime').text(tech_support_time+' 完成技术支持');
+              $('#receivedGoodsTime').text('无需换修');
+            }
+            $('.refundDetail dl:eq(0)').attr('data-statu','waitReceiveRefundGoods').find('dt').html('<em class="orderStatu-normal bg-green">售后服务已完成</em>'+waybill_no_info+'感谢您对本商城的支持，如还有疑问请联系客服');
+            $('#refundPriceTime').text(finish_time);
+        }
+
+        //显示售后处理信息
+        if(afterSaleStatus>0){
+          if($('dl[role="disposeDetail"]').length==0){
+            //支付售后服务费用按钮代码
+            var servicePaymentBtn=service_price>0 && finished_payment==0?'<a href="'+doAfterSalePayURL+'" class="orderBtn bg-red staticPosition marginLeft-20">支付服务费</a>':'<em class="marginLeft-20">已完成支付</em>';
+            //换修商品检测信息
+            var checkGoodsInfoHtml=checkGoodsInfo!==''?'<p>换修商品检测：<em>'+checkGoodsInfo+'</em></p>':'';
+              //当进入退货流程后显示退货说明
+              $('.refundDetail').append('<dl class="disposeDetail" role="disposeDetail">'
+                +'<dt><em class="orderStatu-normal">已接收售后申请</em>请按以下详情说明处理您的商品售后，如有疑问请致电售后客服</dt>'
+                +'<dd><p>售后服务方式：<em>'+getServiceTxt()+'</em></p>'
+                +'<p>售后服务价格：<em class="currency">¥</em> <em>'+Number(service_price).toFixed(2)+servicePaymentBtn+'</em></p>'
+                +'<p>售后处理说明：<em>'+reply_detail+'</em><p>'
+                +checkGoodsInfoHtml
+                +'</dd></dl>');
+          }
+        }
+        //提交退货运单号后，更新提交按钮为修改运单号
+        if(afterSaleStatus>1 && afterSaleStatus<3){   
+            $('#postWayBillBtn').attr('href','javascript:postAfterSaleWayBillNo(1)').text('修改换修运单');
+        }
+
+  }
+
+  $(function(){
+    GoodsData=$.parseJSON(goodsData);
+    //按长度要求截取标题字符
+        var sliceLength=GoodsData.goods_title.length<32?GoodsData.goods_title.length:32;
+        var goods_title=GoodsData.goods_title.substr(0,sliceLength);
+        goods_title+=GoodsData.goods_title.length>32?'...':'';
+
+        //生成html
+        var orderGoodsHTML='<dd data-gid="'+goods_id+'"><div class="itemImg fixImgPadding">'
+                          +'<a href=""><img src="'+GoodsData.goods_img+'" width="80" class="cartGoodsImg" alt=""></a></div>'
+                          +'<div class="listInfo"><p><a href="{:U(\'EMall/GoodsDetails/index\')}'+'&id='+GoodsData.goods_id+'" target="_blank">'+goods_title+'</a></p>'
+                          +'<p>'+GoodsData.sku_style+' '+GoodsData.sku_spec+'</p>'
+                          +'<p><em>¥</em> <em>'+Number(GoodsData.price).toFixed(2)+'</em> X '+GoodsData.shopBuyNum
+                          +'&nbsp;&nbsp;&nbsp;&nbsp;运费：<em>¥</em> <em>'+Number(GoodsData.logistics_price).toFixed(2)+'</em>&nbsp;&nbsp;&nbsp;&nbsp;配送方式：<em>'+GoodsData.logistics+'</em></p></div>'
+                          +'<div role="refundContact" class="refundContact"></div>'
+                          +'<div role="refundDespt" class="refundDespt"></div>'
+                          +'<div class="actionBtn" style="float:right"><p><a href="javascript:void(0);" class="orderBtn bg-red staticPosition" role="button" id="postWayBillBtn">提交修换运单</a></p><p><a href="javascript:void(0);" class="orderBtn bg-blue staticPosition" role="editRefundBtn">修改申请信息</a></p></div></dd>';  
+
+        $('.refundDetail').append('<dl data-statu="apply"><dt>'+orderStatuCode+'</dt>'+orderGoodsHTML+'</dl>');        
+    
+    var waybill_no='';
+
+    //判断售后状态
+  
+        //更新退货进度
+        updateRefundProcess();
+
+        $('.refundContact').html('<p>联系人：'+contact+'</p><p>联系电话：'+telNum+'</p>');
+        //截取退货详情文本
+        var sliceLength=apply_detail.length<60?apply_detail.length:60;
+        var detail=apply_detail.substr(0,sliceLength);
+        detail+=apply_detail.length>32?'...':'';
+        $('.refundDespt').html('<p><span class="color-orange">申请详情：</span>'+apply_detail+'</p>');
+ 
+        //将退货信息填写进编辑模态框
+        $('#afterSaleModal').find('#input_contact').val(contact);
+        $('#afterSaleModal').find('#input_telNum').val(telNum);
+
+  //申请退货
+  $.fn.applyAfterSale=function(as_id){
+    $(this).on('click',function(){
+        $('#afterSaleModal').on('show.bs.modal',function(){
+          var $this=$(this);
+          var afterSaleGoodsHTML='';
+
+              var goodsItem = $('dd[data-gid="'+goods_id+'"]');
+              var imgSrc=goodsItem.find('.itemImg img').attr('src');
+              var goods_title=goodsItem.find('.listInfo a:first').text();
+
+              var selGoodsInfo='<div class="itemImg fixImgPadding refundGoods"><a href=""><img src="'+imgSrc+'" width="60" class="cartGoodsImg" alt=""></a><div>'+goods_title+'</div></div> ';
+              var afterSaleDetailHTML='<div class="form-group"><div class="input-group col-sm-10 col-xs-10 center"><label for="inputDetailInfo">申请售后详情说明</label>'
+                    +'<textarea class="form-control" data-gid="'+goods_id+'" placeholder="请输入申请售后商品件数及原因" maxlength="100" required>'+detail+'</textarea></div></div>';
+              afterSaleGoodsHTML+=selGoodsInfo+afterSaleDetailHTML;
+              
+
+          //将两个关键数据保存到属性中，然后插入商品详情及退货详情说明文本域
+          $this.find('#afterSaleContent').attr({'data-id':order_id}).empty().append(afterSaleGoodsHTML);
+        }).modal();      
+    })
+
+  }
+
+    //绑定提交售后申请事件
+    $('#postAfterSaleBtn').on('click',function(){
+        var afterSaleModal=$('#afterSaleModal');
+        var afterSaleContent=afterSaleModal.find('#afterSaleContent');
+        var contact=afterSaleModal.find('input[name="contact"]').val();
+        var telNum=afterSaleModal.find('input[name="telNum"]').val();
+        var afterSaleDespt=afterSaleContent.find('textarea').val();
+        alertMsg='请先填写完整的退货申请信息，包括联系人、电话、申请售后详情说明！';
+
+        if(contact=='' || telNum==''){
+            alert(alertMsg);
+            return false;
+        }
+
+        if(afterSaleDespt==''){
+          alert(alertMsg);
+            return false;
+        }
+
+        var modalContent=afterSaleModal.find('.modal-content');
+        modalContent.setLoadingState({loadingTxt:'正在提交售后申请，请稍候...'});
+
+        $.post(postEditAfterSaleURL,{as_id:as_id,contact:contact,telNum:telNum,detail:afterSaleDespt},function(data){
+            if(data.status==1){
+              //console.log(data.data);
+                afterSaleModal.modal('hide');
+                //更新显示的退货信息
+                $('.refundContact').html('<p>联系人：'+contact+'</p><p>联系电话：'+telNum+'</p>');
+                //截取退货详情文本
+                var sliceLength=afterSaleDespt.length<60?afterSaleDespt.length:60;
+                var detail=afterSaleDespt.substr(0,sliceLength);
+                detail+=detail.length>32?'...':'';
+                $('.refundDespt').html('<p><span class="color-orange">申请详情：</span>'+detail+'</p>');
+                apply_detail=afterSaleDespt;              
+                
+            }else{
+                alert(data.error);
+            }
+            modalContent.setLoadingState('destroy');
+        }).error(function(){
+            alert('链接服务器出错，无法提交数据,请稍候尝试！');
+            modalContent.setLoadingState('destroy');
+        })
+    })
+
+  //绑定编辑退货信息事件
+  if(afterSaleStatus>=0 && afterSaleStatus<4){
+    $('[role="editRefundBtn"]').applyAfterSale(as_id);
+  }
+  })
+  </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+.webuploader-container {
+	position: relative;
+width:130px;
+    float:left;
+}
+.webuploader-element-invisible {
+	position: absolute !important;
+	clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+    clip: rect(1px,1px,1px,1px);
+}
+.webuploader-pick {
+    width:100px;
+	position: relative;
+	display: block;
+	cursor: pointer;
+	background: #00b7ee;
+	padding: 10px 15px;
+	color: #fff;
+	text-align: center;
+	border-radius: 3px;
+	overflow: hidden;
+    clear:both;
+}
+.webuploader-pick-hover {
+	background: #00a2d4;
+}
+
+.webuploader-pick-disable {
+	opacity: 0.6;
+	pointer-events:none;
+}
+
+.file-item {
+    float: left;
+    position: relative;
+    margin: 0 20px 20px 0;
+    padding: 4px;
+}
+
+.file-item .error {
+
+    background: red;
+    color: white;
+    text-align: center;
+    height: 20px;
+    font-size: 12px;
+}
+
+.file-item .successIco{
+position: absolute;
+float:right;
+top:0;
+right:0;
+left:2;
+color:green;
+opacity: 0.8;
+}
+
+#fileList{
+    overflow: auto;
+}
+
+.info {
+    width:102px;
+    height: 20px;
+    line-height: 20px;
+    text-indent: 5px;
+    background: rgba( 0, 0, 0, 0.5 );
+    color: #FFF;
+    opacity: 0.8;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 12px;
+    z-index: 10;
+    text-align: center;
+    clear:both;
+}
+
+
+#container {
+    color: #838383;
+    font-size: 12px;
+}
+
+#doUpload{
+    display: inline-block;
+    float:left;
+    width: 100px;
+    position: relative;
+    display: block;
+    cursor: pointer;
+    background: #FF7f00;
+    padding: 10px 15px;
+    color: #fff;
+    text-align: center;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-left:30px;
+    display:none;
+}
+
+#doUpload:hover{
+    background: #ff6600;
+}
+
+
+#filepicker{
+    width:130px;
+
+}
+
+div.file-panel {
+    position: absolute;
+    height: 30px;
+    filter: progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#80000000', endColorstr='#80000000')\0;
+    background: rgba( 0, 0, 0, 0.5 );
+    width: 100%;
+    top:0;
+    left: 0;
+    display: none;
+    overflow: hidden;
+    z-index: 300;
+    transition: height 0.4s;
+    -moz-transition: height 0.4s; /* Firefox 4 */
+    -webkit-transition: height 0.4s; /* Safari 和 Chrome */
+    -o-transition: height 0.4s; /* Opera */
+}
+
+div.file-panel span {
+    width: 24px;
+    height: 24px;
+    display: inline;
+    float: right;
+    text-indent: -9999px;
+    overflow: hidden;
+    background: url(../../images/icons.png) no-repeat;
+    margin: 5px 1px 1px;
+    cursor: pointer;
+}
+
+div.file-panel span.cancel {
+    background-position: -48px -24px;
+}
+
+div.file-panel span.rotateLeft:hover {
+    background-position: 0 0;
+}
+
+div.file-panel span.rotateRight {
+    background-position: -24px -24px;
+}
+
+div.file-panel span.rotateRight:hover {
+    background-position: -24px 0;
+}
+
+div.file-panel span.rotateLeft {
+    background-position: 0 -24px;
+}
+
+div.file-panel span.cancel:hover {
+    background-position: -48px 0;
+}
+

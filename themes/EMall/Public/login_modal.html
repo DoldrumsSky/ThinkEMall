@@ -1,0 +1,51 @@
+<!--用户相关表单模态框 -->
+  <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title" id="loginModalLabel">用户登录</h4>
+            </div>
+            <div class="modal-body">
+          <!--登录表单-->
+          <form class="form-horizontal" id="loginForm" action=""  method="post">
+              <div class="form-group">
+                <div class="input-group col-sm-10 col-xs-10 center">
+                    <div class="input-group-addon">
+                      <i class="icon iconfont icon-user"></i>
+                    </div>
+                    <input class="form-control" type="user" id="input_username" name="username"  placeholder="请输入手机号/邮箱/用户名" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="input-group col-sm-10 col-xs-10 center">
+                    <div class="input-group-addon"><i class="icon iconfont icon-mima-copy-copy"></i></div>
+                    <input class="form-control" type="password" id="input_password" name="password" placeholder="请输入登录密码" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="input-group col-sm-10 col-xs-10 center">
+                    <div class="input-group-addon"><i class="icon iconfont icon-jianpan"></i></div>
+                    <input class="form-control" type="text" id="input_verify" name="verify" placeholder="请输入下方的验证码" required>
+                </div>
+                <div class="input-group col-sm-10 col-xs-5 marginTop-8 center">
+                  {:sp_verifycode_img('length=4&font_size=14&width=120&height=34&use_noise=1&use_curve=0')}
+                  <span class="paddingLR-8" id="logRefreshVerifyImg"><a href="javascript:void()">看不清楚</a></span>
+                </div>
+              </div>
+              <div class="form-group">
+                <div class="input-group col-sm-10 col-xs-10 center">
+                    <a role="button" class="btn btn-orange btn-block center" id="loginBtn" href="javascript:void(0)">开始登录</a>
+                </div>
+              </div>
+            <div class="form-group">
+              <ul class="inline col-sm-10 col-xs-10 center">
+                <li><a href="{:leuu('user/register/index')}" id="userReg">现在注册</a></li>
+                <li><a href="{:U('user/login/forgot_password')}">忘记密码</a></li>
+              </ul>
+            </div>
+          </form>
+        </div>
+        </div>
+        </div>
+</div>

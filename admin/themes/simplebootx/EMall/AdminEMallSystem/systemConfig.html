@@ -1,0 +1,110 @@
+<admintpl file="header" />
+<style type="text/css">
+.tab-content input[type="text"]{
+	width:360px;
+}
+.tab-content #SYSTEM input[type="text"]{
+	width:200px;
+}
+.tab-content #SYSTEM label{
+	padding-top:8px;
+}
+.tab-content #SYSTEM input[type="radio"]{
+	margin-right:5px;
+}
+</style>
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="form-horizontal js-ajax-form form-inline" action="{:U('AdminEMallSystem/saveEMallConfig')}" method="post">
+			<div class="tabbable">
+				<ul class="nav nav-tabs" role="tabMenu" data-target="systemConfig">
+					<volist name="configData" id="vo">
+						<li class="tabMenu" id="{$vo.config_name}">{$vo.config_name_cn}</li>
+					</volist>
+				</ul>
+		        <div class="tab-content" id="systemConfig">
+				<foreach name="configData" item="vo">
+		        	<div class="tab-pane" id="{$vo.config_name}">		        	
+						<fieldset>
+							<volist name="vo['config_option']" id="options">
+							<php>$options_name=$Think.$key</php>
+								<if condition="$options['type'] eq 'text'">
+									<div class="control-group">
+										<label class="control-label">{:L($options_name)}</label>
+										<div class="controls">
+											<input type="text" name="post[{$vo.config_id}][{$options_name}][value]" value="{$options.value}">
+											<input type="hidden" name="post[{$vo.config_id}][{$options_name}][type]" value="{$options.type}">
+										</div>
+									</div>
+								<elseif condition="$options['type'] eq 'select'" />
+									<div class="control-group">
+										<label class="control-label">{:L($options_name)}</label>
+										<div class="controls">
+											<select name="post[{$vo.config_id}][{$options_name}][value]">
+												<foreach name="options['select_option']" item="optionList">
+													<option value="{$optionList.value}">{$optionList.name}</option>
+												</foreach>
+											</select>
+											<input type="hidden" name="post[{$vo.config_id}][{$options_name}][type]" value="{$options.type}">
+										</div>
+									</div>
+								<elseif condition="$options['type'] eq 'textarea'" />
+									<div class="control-group">
+										<label class="control-label">{:L($options_name)}</label>
+										<div class="controls">
+											<textarea name="post[{$vo.config_id}][{$options_name}][value]" style="width:360px;height:100px">{$options.value}</textarea>
+											<input type="hidden" name="post[{$vo.config_id}][{$options_name}][type]" value="{$options.type}">
+										</div>
+									</div>
+								<elseif condition="$options['type'] eq 'radio'" />
+								<php>
+									if($options['value']==0){
+										$imgValidate='checked';
+										$mobValidate='';
+									}else{
+										$imgValidate='';
+										$mobValidate='checked';
+									}
+								</php>
+									<div class="control-group">
+										<label class="control-label">{:L($options_name)}</label>
+										<div class="controls">
+											<label><input type="radio" name="post[{$vo.config_id}][{$options_name}][value]" value="0" {$imgValidate}>图片验证码</label>
+											<label><input type="radio" name="post[{$vo.config_id}][{$options_name}][value]" value="1" {$mobValidate}>短信验证码</label>
+											<input type="hidden" name="post[{$vo.config_id}][{$options_name}][type]" value="{$options.type}">
+										</div>
+									</div>
+								</if>
+							</volist>
+						</fieldset>
+		        	</div>
+				</foreach>
+		        </div>
+		    </div>
+		    <p style="margin-left:100px;color:#dd2727"><em>注：微信支付配置暂时无效</em></p>
+		    <div class="form-actions">
+		     	<button class="btn btn-primary js-ajax-submit" type="submit">{:L('SAVE')}</button>
+		      	<a class="btn" href="{:U('AdminEMallSystem/messageView')}">{:L('BACK')}</a>
+		    </div>
+		</form>
+	</div>
+<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+<script type="text/javascript">
+$(function(){
+	$('[role="tabMenu"] li').on('click',function(){
+		var target=$('#'+$(this).closest('[role="tabMenu"]').attr('data-target'));
+		var tabMenu=$(this).closest('[role="tabMenu"]');
+		if(!$(this).hasClass('active')){
+			tabMenu.find('.active').removeClass('active');
+			$(this).addClass('active');
+			tabIdx=$(this).index();
+			target.find('.active').removeClass('active');
+			target.find('.tab-pane:eq('+tabIdx+')').addClass('active');
+		}
+	})
+	$('[role="tabMenu"] li:first').trigger('click');
+})
+</script>
+</body>
+</html>

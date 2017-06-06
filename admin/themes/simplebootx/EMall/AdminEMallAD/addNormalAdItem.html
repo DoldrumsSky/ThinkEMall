@@ -1,0 +1,127 @@
+<admintpl file="header" />
+<link rel="stylesheet" type="text/css" href="__PUBLIC__/js/webuploader/webuploader.css">
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="form-horizontal js-ajax-form" action="{:U('AdminEMallAD/postNormalAD',array('id'=>$id,'oldGoodsId'=>$goods_id))}" method="post">
+			<div class="tabbable">
+		        <div class="tab-content">
+		          <div class="tab-pane active" id="A">
+						<fieldset>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_TITLE')}</label>
+								<div class="controls">
+									<input type="text" name="ad_title" value="" required><span class="form-required"> *</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SECOND_TITLE')}</label>
+								<div class="controls">
+									<input type="text" name="second_title" value="">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SUB_TITLE')}</label>
+								<div class="controls">
+									<input type="text" name="sub_title" value="">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_LINK')}</label>
+								<div class="controls">
+									<input type="text" name="ad_link" value="" style="width:400px" required><span class="form-required"> *</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_IMAGE')}</label>
+								<div class="controls">
+									<div id="uploader" style="width:200px;overflow:hidden">
+									    <div id="fileList" class="uploader-list">
+									    </div>
+									    <div id="cfilePicker">选择图片</div>
+									</div>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('AD_DURATION')}</label>
+								<div class="controls">
+								<input type="text" name="start_time" class="js-datetime" value="{$formget.start_time|default=''}" style="width: 120px;" autocomplete="off">-
+								<input type="text" class="js-datetime" name="end_time" value="{$formget.end_time|default=''}" style="width: 120px;" autocomplete="off">
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('STATUS')}</label>
+								<div class="controls">
+									<select name="ad_status">
+										<option value="1">投放</option>
+										<option value="0">禁用</option>
+									</select>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SORT')}</label>
+								<div class="controls">
+									<input type="text" name="listorder" value="0" required><span class="form-required"> *</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('BIND_GOODS')}</label>
+								<div class="controls">
+									<input type="text" name="goods_id" value="" placeholder="请输入绑定商品的ID"> <a role="button" class="btn btn-blue" href="javascript:;" id="bindGoodsBtn">绑定商品</a>
+								</div>
+							</div>
+						</fieldset>
+		          </div>
+
+		        </div>
+		    </div>
+		    <div class="form-actions">
+		     	<button class="btn btn-primary js-ajax-submit" type="submit">{:L('ADD')}</button>
+		      	<a class="btn" href="{:U('AdminEMallAD/manageNormalAD',array('id'=>$id,'ad_name'=>$ad_name))}">{:L('BACK')}</a>
+		    </div>
+		</form>
+	</div>
+<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+<script type="text/javascript" src="__PUBLIC__/js/webuploader/webuploader.js"></script>
+<script type="text/javascript" src="__PUBLIC__/js/webuploader/getting-started.js"></script>
+<script type="text/javascript">
+// 添加全局站点信息
+var BASE_URL = '__PUBLIC__/js/webuploader/';
+var UPLOAD_SERVER='{:U("AdminEMallUpload/uploadSinglePic")}';
+var bindGoodsURL="{:U('AdminEMallAD/bindGoods')}";
+
+$(function() {
+	$("#uploader").setUploader(null,{uploadImgType:'normal',thumb:{width:0.4,height:0.4}});
+
+	$('#bindGoodsBtn').on('click',function(){
+		var goods_id=$(':input[name="goods_id"]').val();
+		if(goods_id==''){
+			alert('请先填写商品ID！');
+			return false;
+		}
+
+		$.post(bindGoodsURL,{goods_id:goods_id},function(data){
+			if(data.status==1){
+				//绑定广告中非即时显示的数据
+				$(':input[name="ad_title"]').val(data.data.goods_title);
+				$(':input[name="ad_link"]').val(encodeURIComponent(("{:U('GoodsDetails/index')}&id="+goods_id+"&cid="+data.data.term_id).substring(1)));
+				//取第一张商品图片，也就是主图
+				var imageData=$.parseJSON('{"goods_img":'+data.data.goods_img+'}');
+				var thumbWrap=$('#WU_FILE_0');
+				if(thumbWrap.length==0){
+					$('#fileList').after('<div id="WU_FILE_0" class="file-item thumbnail upload-state-done"><img class="img-responsive" src="'+imageData.goods_img[0].m_thumb+'"></div><input type="hidden" name="UpFilePathInfo" value="'+imageData.goods_img[0].m_thumb+'">');
+				}else{
+					thumbWrap.find('img').attr('src',imageData.goods_img[0].m_thumb);
+					thumbWrap.find(':input[name="UpFilePathInfo"]').val(imageData.goods_img[0].m_thumb);
+				}
+			}else{
+				alert(data.error);
+			}
+		}).error(function(){
+			alert('无法链接服务器获取绑定的商品数据，请稍候尝试！')
+		})
+	})
+});
+</script>
+</body>
+</html>

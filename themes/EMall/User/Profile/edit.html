@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>{$site_name}</title>
+<meta name="keywords" content="{$site_seo_keywords}" />
+<meta name="description" content="{$site_seo_description}">
+<meta name="author" content="ThinkEMall">
+<tc_include file="Public:uc_head" />
+</head>
+<body class="body-white" id="top">
+  <tc_include file="Public:user_nav" />
+  <div class="wrapper tc-main" style="overflow:hidden">
+      <tc_include file="Public:user_left_nav"/>
+      <div class="centerContent">
+      <div class="cWrap">
+        <ul class="ucTab">
+          <li class="cur"><a href="#">用户基本信息</a></li>
+          <li><a href="{:U('user/profile/avatar')}">编辑头像</a></li>
+          <li><a href="{:U('user/profile/password')}">修改密码</a></li>
+        </ul>
+
+     		<form class="form-horizontal js-ajax-form" action="{:U('profile/edit_post')}" method="post">
+
+     			<div class="form-group">
+     				<label class="control-label col-sm-3" for="input-user_nicename">昵称</label>
+     				<div class="controls col-sm-8">
+     					<input type="text" class="form-control" id="input-user_nicename" placeholder="昵称" name="user_nicename" value="{$user_nicename}">
+     				</div>
+     			</div>
+     			<div class="form-group">
+     				<label class="control-label col-sm-3" for="input-sex">性别</label>
+     				<div class="controls col-sm-4">
+     					<php>
+       				$sexs=array("0"=>"保密","1"=>"男","2"=>"女");
+       				</php>
+     					<select id="input-sex" name="sex" class="form-control">
+     						<foreach name="sexs" item="vo">
+     						<php>$sexselected=$key==$sex?"selected":"";</php>
+     							<option value="{$key}" {$sexselected}>{$vo}</option>
+     						</foreach>
+     					</select>
+     				</div>
+     			</div>
+                <div class="form-group">
+                    <label class="control-label col-sm-3" for="input-mobile">手机号</label>
+                    <div class="controls col-sm-6">
+                        <input class="form-control" type="text" id="input-mobile" placeholder="请输入手机号" name="mobile" value="{$mobile}">
+                    </div>
+                </div>
+     			<div class="form-group">
+     				<label class="control-label col-sm-3" for="input-birthday">生日</label>
+     				<div class="controls col-sm-6">
+     					<input class="js-date form-control" type="text" id="input-birthday" placeholder="2013-01-04" name="birthday" value="{$birthday}">
+     				</div>
+     			</div>
+     			<div class="form-group">
+     				<label class="control-label col-sm-3" for="input-user_url">个人网址</label>
+     				<div class="controls col-sm-8">
+     					<input type="text" class="form-control" id="input-user_url" placeholder="http://thinkcmf.com" name="user_url" value="{$user_url}">
+     				</div>
+     			</div>
+     			<div class="form-group">
+     				<label class="control-label col-sm-3" for="input-signature">个性签名</label>
+     				<div class="controls col-sm-8">
+     					<textarea id="input-signature" class="form-control" placeholder="个性签名" name="signature">{$signature}</textarea>
+     				</div>
+     			</div>
+     			<div class="form-group" style="margin-left:110px">
+     				<div class="controls col-sm-4">
+     					<button type="submit" class="btn btn-blue form-control js-ajax-submit">保存</button>
+     				</div>
+     			</div>
+     		</form>
+
+    </div>
+</div>
+</div>
+
+    <tc_include file="Public:footer" />
+
+
+	<!-- /container -->
+
+	<tc_include file="Public:scripts" />
+</body>
+</html>

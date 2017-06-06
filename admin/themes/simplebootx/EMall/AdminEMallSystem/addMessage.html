@@ -1,0 +1,68 @@
+<admintpl file="header" />
+</head>
+<body>
+	<div class="wrap js-check-wrap">
+		<form class="form-horizontal js-ajax-form" action="{:U('AdminEMallSystem/addPostMessage')}" method="post">
+			<div class="tabbable">
+		        <div class="tab-content">
+		          <div class="tab-pane active" id="A">
+						<fieldset>
+							<div class="control-group">
+								<label class="control-label">{:L('MESSAGE_CATEGORY')}</label>
+								<div class="controls">
+									<select name="message_type">
+										<option value="1">{:L('SYSTEM_MESSAGE')}</option>
+										<option value="2">{:L('VIP_MESSAGE')}</option>
+									</select>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('MESSAGE_TITLE')}</label>
+								<div class="controls">
+									<input type="text" name="message_title" value="" required="true"><span class="form-required"> *</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('MESSAGE_STATUS')}</label>
+								<div class="controls">
+									<select name="message_status">
+										<option value="1">正常状态</option>
+										<option value="0">禁止阅读</option>
+									</select>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('SET_TOP')}</label>
+								<div class="controls">
+									<select name="set_top" id="bindProperty">
+									<option value="0">不置顶</option>
+									<option value="1">置顶</option>
+									</select>
+								</div>
+							</div>	
+							<div class="control-group">
+								<label class="control-label">{:L('MESSAGE_CONTENT')}</label>
+								<div class="controls">
+									<textarea name="message_content" rows="5" cols="157" style="width:400px" required="true"></textarea><span class="form-required"> *</span>
+								</div>
+							</div>
+							<div class="control-group">
+								<label class="control-label">{:L('NEED_SCORE')}</label>
+								<div class="controls">
+									<input type="text" name="need_score" value="0">
+								</div>
+							</div>
+						</fieldset>
+		          </div>
+		        </div>
+		    </div>
+		    <div class="form-actions">
+		     	<button class="btn btn-primary js-ajax-submit" type="submit">{:L('ADD')}</button>
+		      	<a class="btn" href="{:U('AdminEMallSystem/messageView')}">{:L('BACK')}</a>
+		    </div>
+		</form>
+	</div>
+<script type="text/javascript" src="__PUBLIC__/js/common.js"></script>
+
+</body>
+</html>

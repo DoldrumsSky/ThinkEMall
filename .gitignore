@@ -1,0 +1,9 @@
+.buildpath
+.DS_Store
+.project
+.settings
+/application/Common/Conf/config.php
+/data/
+!/data/index.html
+!/data/runtime/index.html
+.idea
