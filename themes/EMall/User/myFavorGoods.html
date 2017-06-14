@@ -186,16 +186,19 @@
           <li class="emptyData">您还没有收藏任何商品，赶紧去逛逛吧！</li>
         </if>
         <volist name="favorGoods['favorData']" key="key" id="vo">
-        <php>$goods_img=json_decode($favorGoods['content'][$vo]['goods_img'],true);</php>
-          <li data-gid="{$key}">
-              <a href="javascript:cancelFavorGoods({$key});" class="cancelFavor" title="取消收藏"></a>
-            <empty name="favorGoods['content'][$vo]['goods_id']">
-              <a href="javascript:jumpGoodsURL({$key})" class="goodsImg"><img src="__TMPL__Public/assets/images/expiredPic.jpg" width="100%"></a><div class="selState"><i></i></div>
-                <a href="javascript:jumpGoodsURL({$key})"><div class="goodsTitle">收藏商品已失效，请移除！</div></a>
+        <php>
+          $goods_img=json_decode($favorGoods['content'][$vo]['goods_img'],true);
+          $goods_id=$favorGoods['content'][$vo]['goods_id'];
+        </php>
+          <li data-gid="{$goods_id}">
+              <a href="javascript:cancelFavorGoods({$goods_id});" class="cancelFavor" title="取消收藏"></a>
+            <empty name="goods_id">
+              <a href="javascript:jumpGoodsURL({$goods_id})" class="goodsImg"><img src="__TMPL__Public/assets/images/expiredPic.jpg" width="100%"></a><div class="selState"><i></i></div>
+                <a href="javascript:jumpGoodsURL({$goods_id})"><div class="goodsTitle">收藏商品已失效，请移除！</div></a>
             <else />
               <div class="favorRelation"><a href="">找相似</a><a href="">找搭配</a></div>
-                <a href="javascript:jumpGoodsURL({$key})" class="goodsImg"><img src="{$goods_img[0].m_thumb}" width="100%"></a><div class="selState"><i></i></div>
-                <a href="javascript:jumpGoodsURL({$key})"><div class="goodsTitle">{$favorGoods['content'][$vo].goods_title}</div>
+                <a href="javascript:jumpGoodsURL({$goods_id})" class="goodsImg"><img src="{$goods_img[0].m_thumb}" width="100%"></a><div class="selState"><i></i></div>
+                <a href="javascript:jumpGoodsURL({$goods_id})"><div class="goodsTitle">{$favorGoods['content'][$vo].goods_title}</div>
                 <div class="price">¥{$favorGoods['content'][$vo].goods_price}</div></a>    
             </empty>
           </li>

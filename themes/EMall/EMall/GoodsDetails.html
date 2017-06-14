@@ -508,11 +508,17 @@ $(function(){
 			//添加顶部菜单
 			if(scrollTop>offsetTop){
 				if(!fixedTopMenu){
+					var goodsParamTab='';
+					//判断是否有详细参数存在，有则加入对应Tab
+					if(smeta!=='' && smeta!=='null'){
+						goodsParamTab='<li role="scrollTabItem"><a href="javascript:void(0)">商品参数</a></li>';
+					}
 					fixedTopMenu=$('<div class="fixedTopMenu"><div class="wrapper">'
 						+'<div class="fixedToplogo"></div>'
 						+'<div class="fixedTopCart"><a href="javascript:shopCart.addToCart(\''+GV.addToCartURL+'\');"><i class="icon iconfont"></i>加入购物车</a></div>'
 						+'<div class="descFixedTopMenu"><ul class="titleTab" role="scrollTabMenu">'
 						+'<li class="curSel" role="scrollTabItem"><a href="javascript:void(0)">商品详情</a></li>'
+						+goodsParamTab
 						+'<li role="scrollTabItem"><a href="javascript:void(0)">累计评价<em>{$goods.appraise_num}</em></a></li>'
 						+'</ul></div></div></div>').appendTo($('body'));
 					//为浮动菜单绑定tab菜单事件

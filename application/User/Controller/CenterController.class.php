@@ -238,11 +238,17 @@ class CenterController extends MemberbaseController {
 	    	$ids=I('post.ids');
 	    	if(!empty($id)){
 	    		$userSession=session('user');
+                //$this->ajaxReturn(array('status'=>0,'data'=>$userSession));
 	    		//移除收藏商品的id（检查移除的商品id是否存在）
 	    		if(!empty($userSession['favor_goods'][$id]) || !empty($userSession['newFavorGoods'][$id])){
-		    		unset($userSession['favor_goods'][$id],$userSession['newFavorGoods'][$id]);
+                    if($userSession['favor_goods'][$id]){
+                        unset($userSession['favor_goods'][$id]);
+                    }else{
+		    		    unset($userSession['newFavorGoods'][$id]);
+                    }
 		    		//记录取消收藏的商品id
 		    		$userSession['cancelFavorGoods'][$id]=$id;
+                    $userSession['favorGoodsNum']=$userSession['favorGoodsNum']-1;
 		    		session('user',$userSession);
 		    		$this->ajaxReturn(array('status'=>1,'data'=>$userSession['favor_goods']));
 	    		}
@@ -251,14 +257,21 @@ class CenterController extends MemberbaseController {
 	    	if(!empty($ids)){
 	    		$ids=explode(',',$ids);
 	    		$userSession=session('user');
+                $i=0;
 	    		foreach ($ids as $key => $gid) {
+                    $i++;
 					//移除收藏商品的id（检查移除的商品id是否存在）
-					if(!empty($userSession['favor_goods'][$id]) || !empty($userSession['newFavorGoods'][$id])){
-			    		unset($userSession['favor_goods'][$gid],$userSession['newFavorGoods'][$gid]);
+					if(!empty($userSession['favor_goods'][$gid]) || !empty($userSession['newFavorGoods'][$gid])){
+                        if($userSession['favor_goods'][$gid]){
+                            unset($userSession['favor_goods'][$gid]);
+                        }else{
+                            unset($userSession['newFavorGoods'][$gid]);
+                        }
 			    		//记录取消收藏的商品id
 			    		$userSession['cancelFavorGoods'][$gid]=$gid;
 		    		}
 	    		}
+                $userSession['favorGoodsNum']=$userSession['favorGoodsNum']-$i;
 	    		session('user',$userSession);
 	    		$this->ajaxReturn(array('status'=>1,'data'=>$userSession['favor_goods']));
 	    	}

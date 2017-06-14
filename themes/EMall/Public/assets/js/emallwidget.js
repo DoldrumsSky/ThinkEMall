@@ -3303,6 +3303,7 @@ $.fn.getFavorGoods=function(){
 function cancelFavorGoods(id){
 	$.post(cancelFavorGoodsURL,{id:id},function(data){
 		if(data.status==1){
+			//console.log(data);
 			favorData=data.data;
 			$('#favorGoods .favorList ul li[data-gid="'+id+'"]').animate({'opacity':0},200).animate({'width':0},200).queue(function(next){
 				$(this).remove();
@@ -3321,9 +3322,16 @@ function cancelFavorGoods(id){
 					}
 				})
 			}
+			//刷新当前的收藏商品数
+			$('.favorTitleBar em').queue(function(next){
+				var favorGoodsNum=parseInt($(this).text());
+				$(this).text(favorGoodsNum-1);
+				$(this).next();
+			})
 		}else{
 			var errorInfo=data.info?data.info:'';
 			alert(errorInfo+'取消收藏商品失败！');
+			//console.log(data);
 		}
 	}).error(function(){
 		alert('链接服务器出错，无法取消收藏商品，请稍候尝试！');
@@ -3346,7 +3354,8 @@ function multiCancelFavorGoods(){
 	$.post(cancelFavorGoodsURL,{ids:ids},function(data){
 		if(data.status==1){
 			favorData=data.data;
-			$.each(ids.split(','),function(index,gid){
+			idsArray=ids.split(',');
+			$.each(idsArray,function(index,gid){
 				$('#favorGoods .favorList ul li[data-gid="'+gid+'"]').animate({'opacity':0},200).animate({'width':0},200).queue(function(next){
 					$(this).remove();
 					var favorListWrap=$('#favorGoods .favorList ul');
@@ -3357,6 +3366,12 @@ function multiCancelFavorGoods(){
 				});				
 			})
 
+			//刷新当前的收藏商品数
+			$('.favorTitleBar em').queue(function(next){
+				var favorGoodsNum=parseInt($(this).text());
+				$(this).text(favorGoodsNum-idsArray);
+				$(this).next();
+			})
 
 		}else{
 			var errorInfo=data.info?data.info:'';
