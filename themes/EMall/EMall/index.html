@@ -106,7 +106,7 @@ $(function(){
 				if(!fixedTopMenu){
 					fixedTopMenu=$('<div class="fixedTopMenu"><div class="container">'
 						+'<div class="fixedToplogo"></div>'
-						+'<div class="fixedTopSearchBar"><input type="text" name="keywords" class="searchTxt"><button type="submit" class"btn btn-red">搜索商品</button></div>'
+						+'<form action="{:U(\'EMall/SearchEMall/index\')}" method="post"><div class="fixedTopSearchBar"><input type="text" name="keywords" class="searchTxt"><button type="submit" class"btn btn-red">搜索商品</button></form></div>'
 						+'</div><div class="fixedTopBarBg"></div></div>').appendTo($('body'));
 					fixedTopMenu.css('top','-50px').animate({'top':0},150);
 				}else{

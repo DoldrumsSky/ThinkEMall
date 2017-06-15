@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>{$name} {$seo_title} {$site_name}</title>
+	<meta name="keywords" content="{$seo_keywords}" />
+	<meta name="description" content="{$seo_description}">
+    <tc_include file="Public:head-list" />
+</head>
+<body>
+<tc_include file="Public:sub_nav" />
+<div class="container tc-main">
+    <div class="crumbs-nav" id="crumbs-nav">
+    搜索<i style="color:#dd2727;margin:0 5px;">{$keywords}</i>的结果：
+    	<php>
+    		//初始显示最大筛选栏数量，大于此值的筛选项会在加载后隐藏
+    		$maxShowFilterNum=1;
+    		$n=0;
+    		$navid=I('get.navid',0,'intval');
+    		$fid=$_GET['fid'];
+    		$fidGroup=empty($fid)?'':','.$fid;
+
+			$bfid=$_GET['bfid'];
+			$pfid=$_GET['pfid'];
+			$sort=$_GET['sort'];
+
+			$curPage=$_GET['p'];
+			if(empty($curPage)){
+				$curPage=1;
+			}
+
+			$prePage=$curPage-1;
+			$nextPage=$curPage+1;
+    	</php>
+    </div>
+     <div class="selTitle">商品筛选结果：共<em>{$lists.count}</em>个商品</div>
+     <div class="sl-wrap" id="selByBrand">
+	      <div class="sl-key">
+	      	<span>品牌：</span>
+	      </div>
+	      <div class="sl-value">
+	        <ul class="sl-b-letter J_brandLetter">
+	          <li class="curr" data-initial="0">所有品牌</li>
+	          <li data-initial="a" style="display: ">A</li><li data-initial="b" style="display: ">B</li><li data-initial="c" style="display: ">C</li><li data-initial="d" style="display: ">D</li><li data-initial="e" style="display: ">E</li><li data-initial="f" style="display: ">F</li><li data-initial="g" style="display: ">G</li><li data-initial="h" style="display: ">H</li><li data-initial="i" style="display: ">I</li><li data-initial="j" style="display: ">J</li><li data-initial="k" style="display: ">K</li><li data-initial="l" style="display: ">L</li><li data-initial="m" style="display: ">M</li><li data-initial="n" style="display: ">N</li><li data-initial="o" style="display: ">O</li><li data-initial="p" style="display: ">P</li><li data-initial="q" style="display: ">Q</li><li data-initial="r" style="display: ">R</li><li data-initial="s" style="display: ">S</li><li data-initial="t" style="display: ">T</li><li data-initial="u" style="display: ">U</li><li data-initial="v" style="display: ">V</li><li data-initial="w" style="display: ">W</li><li data-initial="x" style="display: ">X</li><li data-initial="y" style="display: ">Y</li><li data-initial="z" style="display: ">Z</li><li data-initial="other" style="display: none;">其它</li>
+	        </ul>
+	        <div class="clr"></div>
+	        <div class="sl-v-logos">
+	          <ul class="J_valueList v-fixed" id="brandsArea"></ul>
+	        </div>
+	        <div class="sl-b-selected J_brandSelected" style="display: none;">
+	          <span class="sl-b-key">已选条件：</span>
+	          <ul class="sl-v-list brand-selected"></ul>
+	        </div>
+	        <div class="sl-btns">
+	          <a class="btn btn-primary J_btnsConfirm disabled" href="javascript:;">确定</a>
+	          <a class="btn btn-default J_btnsCancel" href="javascript:;"> 取消</a>
+	        </div>
+	      </div>
+	      <div class="sl-ext">
+	        <a class="sl-e-multiple J_extMultiple" href="javascript:;" onclick="SearchController.BrandsMultiSelect();"> 多选<i></i></a>
+	        <a class="sl-e-more J_extMore" href="javascript:;" style="visibility: visible;" onclick="SearchController.getBrandsAll();">更多<i></i></a>
+	      </div>
+    </div>
+    <php>if(count($termFilterData)>0){</php>
+	<div class="sl-wrap" id="selByTerm">
+	      <div class="sl-key">
+	        <span>类目：</span>
+	      </div>
+	      <div class="sl-value">
+	        	<ul class="sl-v-list">
+				<foreach name="termFilterData" item="termFilterOption">
+	            	<li 
+	            	<if condition="$term_id eq $termFilterOption['term_id']">
+	            	class="cur" 
+	            	data-name="{$termFilterOption.name}"
+	            	</if>
+	            	>
+	                	<a href="{:U('EMall/SearchEMall/index')}&term_id={$termFilterOption.term_id}&keywords={$keywords}&fid={$fid}&tid={$tid}&bfid={$bfid}&pfid={$priceFilterOption}&navid={$navid}" rel="nofollow"><i></i>{$termFilterOption.name}</a>
+	            	</li>
+	            </foreach>
+	        	</ul>
+	      </div>
+	</div>
+	<php>}</php>
+	<div class="sl-wrap" id="selByPrice" style="display:none;">
+	      <div class="sl-key">
+	        <span>价格：</span>
+	      </div>
+	      <div class="sl-value">
+	        	<ul class="sl-v-list">
+				<foreach name="priceFilterData" item="priceFilterOption">
+	            	<li data-price="{$priceFilterOption}">
+	                	<a href="{:U('EMall/SearchEMall/index')}&term_id={$term_id}&keywords={$keywords}&fid={$fid}&tid={$tid}&bfid={$bfid}&pfid={$priceFilterOption}&navid={$navid}" rel="nofollow"><i></i>{$priceFilterOption}</a>
+	            	</li>
+	            </foreach>
+	        	</ul>
+	          <div class="sl-price">
+	            <input class="input-txt" id="priceMin" title="最低价" maxlength="6" onkeyup="this.value=this.value.replace(/[^0-9]/g,'');">
+	            - 
+	            <input class="input-txt" id="priceMax" title="最高价" maxlength="8" onkeyup="this.value=this.value.replace(/[^0-9]/g,'');">
+	            <a class="btn btn-default" id="priceBtn">确定</a>
+	          </div>
+
+	      </div>
+	</div>
+	<!--<script>var selFilterInfo={};</script>-->
+	<!--筛选项-->
+	<volist name="filterData" id="vo">
+		<php>$n++;</php>
+			<div role="filterOption" data-tid="{$vo.id}" class="sl-wrap" 
+	            <if condition="($n gt $maxShowFilterNum) or($tid[$vo['id']] eq $vo['id'])">
+	            style='display:none'
+		            <if condition="($n-$maxShowFilterNum) lt 3">
+		            	<php>$moreOptionTxt.=empty($moreOptionTxt)?$vo['name']:'、'.$vo['name'];</php>
+		            </if>
+	            <else />
+	            style="display:block"
+	            </if>>
+		      <div class="sl-key"><span>{$vo.name}：</span></div>
+		      <div class="sl-value">	
+		          	<ul class="sl-v-list">
+		          	<volist name="vo['items']" id="option" >
+			            <li data-fid="{$option.id}" data-tid="{$vo.id}"><a href="{:U('EMall/SearchEMall/index')}&term_id={$term_id}&keywords={$keywords}&fid={$option.id}{$fidGroup}&tid={$vo.id}{$tidGroup}&bfid={$bfid}&pfid={$pfid}&navid={$navid}" rel="nofollow">{$option.name}<i></i></a></li>
+		           	</volist>
+		           </ul>
+		           <if condition="$vo.multiselect eq 1">
+						<div class="sl-btns"><a class="btn btn-primary J_btnsConfirm disabled" href="javascript:;">确定</a><a class="btn btn-default J_btnsCancel" href="javascript:;"> 取消</a></div>
+		           </if>
+		      </div>
+		      <div class="sl-ext">
+				<if condition="$vo.multiselect eq 1">
+		        <a class="sl-e-multiple J_extMultiple" href="javascript:;"> 多选<i></i></a>
+		        </if>
+		      	<a class="sl-e-more J_extMore" href="javascript:;" style="visibility: visible;">更多<i></i></a>
+		      </div>
+		    </div>
+    </volist>
+    <!--商品列表-->
+    <div class="row" id="listWrap">
+    	<div class="col-left border-gray paddingLR-8">
+    		<h4>商品精选</h4>
+    		<ul class="adContent" id="recomandGoods" data-num="10">
+    			<li data-role="normalAdItem" style="display:none">
+					<img data-role="ad_image" src="" width="100%">
+					<div class="p-name">
+						<a data-action="ad_link" target="_blank" href="" title="">
+							<em data-role="ad_title"></em>
+						</a>
+					</div>
+					<div class="ad-price">
+						<strong class="price"><span class="J-p-3758563" data-role="goods_price"></span></strong> 
+					</div>
+					<div class="appraiseInfo">
+						<strong>已有<a data-role="appraise_num" class="comment" target="_blank" href=""></a>人评价</strong>
+					</div>
+				</li>
+    		</ul>
+    	</div>
+		<div class="span9 col-right">
+		<div class="filter" id="J_filter">
+		    <div class="f-line top">
+		      	<div class="f-sort">
+		            <a href="{:U('EMall/SearchEMall/index')}&term_id={$term_id}&keywords={$keywords}&fid={$fid}&tid={$vo.id}{$tidGroup}&bfid={$bfid}&pfid={$pfid}&navid={$navid}&sort=total"<php>if(empty($sort) || $sort=='total'){echo ' class="curr"';}</php>>销量<i></i></a>
+		            <a href="{:U('EMall/SearchEMall/index')}&term_id={$term_id}&keywords={$keywords}&fid={$fid}&tid={$vo.id}{$tidGroup}&bfid={$bfid}&pfid={$pfid}&navid={$navid}&sort=dredisprice"<php>if($sort=='dredisprice'){echo ' class="curr"';}</php>>价格<i></i></a>
+		            <a href="{:U('EMall/SearchEMall/index')}&term_id={$term_id}&keywords={$keywords}&fid={$fid}&tid={$vo.id}{$tidGroup}&bfid={$bfid}&pfid={$pfid}&navid={$navid}&sort=appraisecount"<php>if($sort=='appraisecount'){echo ' class="curr"';}</php>>评论数<i></i></a>
+		        	<a href="{:U('EMall/SearchEMall/index')}&term_id={$term_id}&keywords={$keywords}&fid={$fid}&tid={$vo.id}{$tidGroup}&bfid={$bfid}&pfid={$pfid}&navid={$navid}&amp;sort=winsdate"<php>if($sort=='winsdate'){echo ' class="curr"';}</php>>上架时间<i></i></a>
+		        </div>
+
+		       	<div class="f-pager" id="J_topPage">
+		           <span class="fp-text">
+		               <b>{$curPage}</b><em>/</em><i>{$lists.total_pages}</i>
+		           </span>
+		            <if condition="$curPage gt 1">
+		            	<a class="fp-prev" href="{:U('EMall/SearchEMall/index')}&term_id={$term_id}&keywords={$keywords}&fid={$fid}&tid={$vo.id}{$tidGroup}&bfid={$bfid}&pfid={$pfid}&navid={$navid}&sort={$sort}&p={$prePage}"> &lt; </a>
+		            <else />
+		            	<a class="fp-prev disabled" href="javascript:;"> &lt; </a>
+		            </if>
+		            <if condition="$curPage lt $lists['total_pages']">
+		            	<a class="fp-next" href="{:U('EMall/SearchEMall/index')}&term_id={$term_id}&keywords={$keywords}&fid={$fid}&tid={$vo.id}{$tidGroup}&bfid={$bfid}&pfid={$pfid}&navid={$navid}&sort={$sort}&p={$nextPage}"> &gt; </a>
+		            <else />
+		            	<a class="fp-next disabled" href="javascript:;"> &gt; </a>
+		            </if>
+		            
+		        </div>
+		       <span class="clr"></span>
+		    </div>
+    	</div>
+ 
+			<div style="margin:0 auto;clear:both;">
+
+				<volist name="lists['goods']" id="vo">
+				<php>
+					$smeta=json_decode($vo['goods_img'], true);
+					$SKU_Img=json_decode($vo['goods_sku'],true);
+				</php>
+				<div class="listWrap">
+				<div class="goodsList">
+					<a href="{:U('GoodsDetails/index',array('id'=>$vo['goods_id'],'cid'=>$vo['term_id']))}"><img src="{$smeta[0]['m_thumb']}" width="100%" class="listMainImg" data-test="" alt="{$vo.post_title}" /></a>
+					<div class="sliderWrap" <php>if(empty($vo['goods_sku']) || empty($SKU_Img['SKU_Style'][0]['SKU_ThumbImg'])){echo 'style="height:32px"';}</php>>
+						<div id="goods_sku" class="sku">
+							<ul>
+								<foreach name="SKU_Img[SKU_Style]" item="SKU">
+									<if condition="$SKU[SKU_ThumbImg] neq ''">
+									<li><div><img width="28px" height="28px" src="{$SKU[SKU_ThumbImg]}" class="" alt="" data-skuimg="{$SKU[SKU_Img]}" /></div></li>
+									</if>
+								</foreach>
+							</ul>						
+						</div>
+					</div>
+					<div class="p-price">
+              			<strong class="J_price">
+              			<em>¥</em><i>
+              			<if condition="$vo.goods_discount gt 0">
+              				{$vo.goods_discount}
+              				<else />
+              				{$vo.goods_price}
+              			</if>
+              			</i></strong>
+              			<strong class="J_price js_ys" style="display:none"><em>¥</em><i>258.00</i></strong>
+                    </div>
+					<div class="goodsTitle"><a href="{:leuu('GoodsDetails/index',array('id'=>$vo['goods_id'],'cid'=>$vo['term_id']))}">{$vo.goods_title}</a></div>
+					<div class="appraiseInfo">
+						<strong>已有<a class="comment" target="_blank" href="{:leuu('GoodsDetails/index',array('id'=>$vo['goods_id'],'cid'=>$vo['term_id']))}#comment">{$vo.appraise_num}</a>人评价</strong>
+					</div>
+				</div>
+				</div>
+				</volist>
+				<div style="clear:both"></div>
+			</div>
+			<div class="pagination" style=" clear:both">{$lists['page']}</div>
+		</div>		
+    </div>
+ </div>    
+    
+    <tc_include file="Public:footer" />
+</div>
+    
+<!-- JavaScript -->
+<tc_include file="Public:scripts" />
+<script type="text/javascript">
+var ShopCartData;
+//品牌筛选数据
+var brandFilterData='{$brandFilterData}';
+//当前选择的搜索类目ID
+var term_id='{$term_id}';
+//品牌筛选项参数
+var bfid='{$bfid}';
+//价格筛选项参数
+var pfid='{$pfid}';
+//其它筛选项参数
+var fid="{$fid}";
+//是否完成了所有筛选项的初始化
+var hasInit=false;
+//当前多选状态下选择的筛选项数量
+var filterSelNum=0;
+//当前使用的多选筛选栏
+var curMultiSelFilter=null;
+//列表页链接
+var goodsListURL="{:U('EMall/SearchEMall/index',array('keywords'=>$keywords))}";
+//图片文件根路径
+var imgPath="{:sp_get_image_preview_url()}";
+
+
+//初始化筛选项UI(初次加载页面时isStart为true，
+//点击加载更多选项时isStart为false，也可以传入自定义的筛选项选择器selector初始化绑定)
+//singleBind为true时不会生成筛选项导航
+function initFilter(isStart,selector,singleBind){
+	//var tid="{$tid}";
+	//筛选项导航文本的分隔符
+	var filterTitleSeperator='/';
+	//最大展开显示的筛选栏数量（大于此数值的筛选栏默认加载时都会隐藏）
+	var maxShowFilterNum='{$maxShowFilterNum}';
+	var startSelector=selector?selector:isStart?':lt('+maxShowFilterNum+')':':gt('+parseInt(maxShowFilterNum-1)+')';
+	//操作按钮初始化
+	if(!hasInit){
+		$.each($('[role="filterOption"]'+startSelector),function(){
+			var $this=$(this);
+			var listul=$this.find('.sl-v-list');
+			var lastli=listul.find('li:last');
+			var selMoreBtn=$this.find('.J_extMore');
+			var multiSelBtn=$this.find('.J_extMultiple');
+			//判断是否需要扩展收缩按钮并插入
+			//(34为样式固定的height属性高度，所以超过34px表示有多于一行的数据选项)
+			if(lastli.position().top<34){
+				selMoreBtn.remove();		
+			}else{
+				//绑定更多的单击事件
+				selMoreBtn.on('click',function(){				
+					if(listul.hasClass('expand')){
+						selMoreBtn.removeClass('opened').html('更多<i></i>');
+						listul.removeClass('expand');
+					}else{
+						selMoreBtn.addClass('opened').html('收起<i></i>');
+						listul.addClass('expand');
+					}				
+				})
+			}
+			//绑定多选事件
+			multiSelBtn.on('click',function(){
+				var msBtn=$(this);
+				var postFilterBtn=$this.find('.sl-btns');
+				var confirmBtn=postFilterBtn.find('.J_btnsConfirm');
+				var cancelBtn=postFilterBtn.find('.J_btnsCancel');
+				//移除多选
+				if($this.hasClass('multiple')){
+					$this.removeClass('multiple');
+					postFilterBtn.hide();
+					listul.find('li').unbind();
+					confirmBtn.unbind();
+					cancelBtn.unbind();		
+					//退出筛选项多选时，如果当前筛选项处于展开状态，则触收起更多筛选项事件
+					if(listul.hasClass('expand')){
+						selMoreBtn.trigger('click');
+					}	
+					curMultiSelFilter=null;
+				//展开多选
+				}else{
+					$this.addClass('multiple');
+					filterSelNum=0;
+					postFilterBtn.show();
+					//展开时绑定筛选项单击选择事件
+					listul.find('li').on('click',function(){
+						if($(this).hasClass('selected')){
+							$(this).removeClass('selected');
+							filterSelNum--;
+							if(filterSelNum==0){
+								confirmBtn.addClass('disabled');
+							}
+						}else{
+							$(this).addClass('selected');
+							filterSelNum++;
+							//激活提交筛选项按钮
+							if(confirmBtn.hasClass('disabled')){
+								confirmBtn.removeClass('disabled');
+							}
+						}
+						return false;
+					})
+					//如果有其它打开的多选筛选项则关闭那个打开的筛选项
+					if(curMultiSelFilter!==null){
+						curMultiSelFilter.trigger('click');
+					}
+					curMultiSelFilter=$(this);
+					//绑定筛选确认和取消按钮事件
+					confirmBtn.on('click',function(e){
+						e.stopPropagation();
+						var fidGroup='';
+						//遍历选中的筛选项并跳转到筛选结果页面
+						$.each(listul.find('li[class="selected"]'),function(){
+							var fid=$(this).attr('data-fid');
+							fidGroup+=fidGroup==''?fid:','+fid;
+
+						})
+						//如果当前已经包含选择的筛选项，则重新生成筛选项fid组
+						fidGroup+=fid==''?'':','+fid;
+						location.href=goodsListURL+'&term_id='+term_id+"&fid="+fidGroup+'&pfid='+pfid+'&bfid='+bfid;						
+					})
+					//取消按钮
+					cancelBtn.on('click',function(){
+						multiSelBtn.trigger('click');
+					})
+					//激活筛选项多选时，如果当前筛选项没有展开，则触发展开更多筛选项事件
+					if(!listul.hasClass('expand')){
+						selMoreBtn.trigger('click');
+					}	
+				}
+
+			})
+
+			listul.removeClass('expand');
+		});
+	}
+	//标识已经完成所有filter的初始化
+	if(isStart==false){
+		hasInit=true;
+	//第一次初始化时将使用的筛选项添加到面包屑导航中
+	}else{		
+		if(!singleBind){
+			//品牌和价格筛选导航生成
+			var brandFilterNav='';
+			if(bfid!==''){
+				var bid=bfid.split(',');
+				var selBrandTxt='';
+				var brandOptListHtml='';
+				var filterHref='';
+				var filterNavStyle='';
+
+				$.each(bid,function(index,id){
+					var brandFilter=$('#brandsArea li[data-bid="'+id+'"]');
+					selBrandTxt+=selBrandTxt==''?brandFilter.find('a').attr('title'):','+brandFilter.find('a').attr('title');
+					
+				})
+
+				//生成下拉菜单
+				$.each($('#brandsArea li'),function(){
+					var brand_id=$(this).attr('data-bid');
+					var letter=$(this).attr('data-initial');
+					var aTitle=$(this).find('a').attr('title');
+					brandOptListHtml+='<li data-bfid="'+brand_id+'" data-letter="'+letter+'">'
+					+'<a href="'+goodsListURL+'&term_id='+term_id+'&fid='+fid+'&bfid='+brand_id+'&pfid='+pfid+'" title="'+aTitle+'">'+$(this).text().replace(/\s/g,'')+'</a></li>';
+				})
+				brandOptListHtml='<div class="menuItemWrap"><ul>'+brandOptListHtml+'</ul></div>';
+				//生成清除对应筛选项的链接				
+				filterHref="javascript:;";
+
+				//处理超长的筛选文本
+				selFilterTxt=selBrandTxt.length>28?selBrandTxt.substring(0,28)+'...':selBrandTxt;
+
+				brandFilterNav='<div class="crumbs-nav-item brand filterNav '+filterNavStyle+'">'
+									+'<a href="'+filterHref+'" class="menu-drop filterTxt" title="品牌:'+selBrandTxt+'"><span>品牌:</span>'+selFilterTxt+'<i class="menu-drop-arrow"></i></a>'
+									+brandOptListHtml
+									+'</div>';
+			}
+
+			//价格筛选项导航生成
+			var priceFilterNav='';
+			if(pfid!==''){
+				var priceOptListHtml='';
+				var filterHref='';
+				var filterNavStyle='';
+
+				//生成下拉菜单
+				$.each($('#selByPrice .sl-v-list li'),function(){
+					var price_id=$(this).attr('data-price');
+					var aTitle=$(this).find('a').attr('title');
+					priceOptListHtml+='<li>'
+					+'<a href="'+goodsListURL+'&fid='+fid+'&bfid='+bfid+'&pfid='+price_id+'" title="'+aTitle+'">'+$(this).text().replace(/\s/g,'')+'</a></li>';
+				})
+				priceOptListHtml='<div class="menuItemWrap"><ul>'+priceOptListHtml+'</ul></div>';
+				//生成对应清除筛选项的链接				
+				filterHref="javascript:;";
+
+				priceFilterNav='<div class="crumbs-nav-item priceTxt filterNav '+filterNavStyle+'">'
+									+'<a href="'+filterHref+'" class="menu-drop filterTxt" title="价格:'+pfid+'"><span>价格:</span>'+pfid+'<i class="menu-drop-arrow"></i></a>'
+									+priceOptListHtml
+									+'</div>';
+			}
+
+			//选择类目后生成的类目筛选导航，这里不加载其它同级类目，点击类目筛选导航后直接删除类目筛选参数
+			var termFilterNav='';
+			if(term_id!=='' && term_id>0){
+				var filterHref=goodsListURL+'&fid='+fid+'&bfid='+bfid+'&pfid='+pfid;
+				var term_name=$('#selByTerm .cur').attr('data-name');
+				termFilterNav='<div class="crumbs-nav-item priceTxt filterNav filterDrop">'
+									+'<a href="'+filterHref+'" class="menu-drop filterTxt" title="类目:'+term_name+'"><span>搜索类目:</span>'+term_name+'<i class="menu-drop-arrow"></i></a></div>';
+
+			}
+
+			//其它筛选项导航生成
+			var filterNavHtml='';
+			if(fid!==''){
+				var filterOptTxt={};
+				var filterOptFid={};
+				var filterOptListHtml='';
+				var fidGroup=fid.split(',');
+
+				//将fid分组
+				$.each(fidGroup,function(index,Item){
+					var filterOpt=$('li[data-fid="'+Item+'"]');
+					var tid=filterOpt.attr('data-tid');
+					var tfid=filterOpt.attr('data-fid');
+					var curOptTxt=filterOpt.text();
+					//按组生成选择的筛选项文本
+					filterOptTxt[tid]=!filterOptTxt[tid]?curOptTxt:filterOptTxt[tid]+filterTitleSeperator+curOptTxt;
+					//按组生成选择的fid号
+					filterOptFid[tid]=!filterOptFid[tid]?tfid:filterOptFid[tid]+','+tfid;
+				})
+
+				var optLength=Object.keys(filterOptTxt).length;
+
+				//按筛选项所在的组进行整合使用的筛选文本并输出筛选导航
+				$.each(filterOptTxt,function(tid,Item){
+					var filterWrap=$('.sl-wrap[data-tid="'+tid+'"]');
+					var filterTitle=filterWrap.find('.sl-key').text();
+					var filterHref='';
+					//筛选项导航样式
+					var filterNavStyle='';
+					//添加下拉筛选项（使用的筛选类只有一种时添加下拉菜单）
+					if(optLength==1){
+						$.each(filterWrap.find('.sl-v-list li'),function(){
+							var filter_id=$(this).attr('data-fid');
+							filterOptListHtml+='<li data-fid="'+filter_id+'" data-tid="'+tid+'">'
+							+'<a href="'+goodsListURL+'&fid='+filter_id+'&pfid='+pfid+'&bfid='+bfid+'">'+$(this).text()+'</a></li>';
+						})
+						filterOptListHtml='<div class="menuItemWrap"><ul>'+filterOptListHtml+'</ul></div>';
+						//生成对应清除对应筛选项的链接				
+						filterHref="javascript:;";
+					}else if(optLength>1){
+						filterNavStyle='filterDrop';
+
+						var nfid='';
+						//console.log(filterOptFid[tid]);
+						var cfid=filterOptFid[tid].split(',');
+						//生成清除对应筛选项后的fid															
+						$.each(fidGroup,function(nidx,nid){						
+							var add=true;
+							$.each(cfid,function(cidx,cid){
+								if(cid==nid){
+									add=false;
+									return false;
+								}
+							})	
+							if(add){
+								nfid+=nfid==''?nid:','+nid;
+							}
+						})
+						//生成清除对应筛选项的链接				
+						filterHref=goodsListURL+"&fid="+nfid+'&pfid='+pfid+'&bfid='+bfid;					
+					}
+
+					//处理超长的筛选文本
+					selFilterTxt=Item.length>12?Item.substring(0,12)+'...':Item;
+					
+					//生成筛选项导航代码
+					filterNavHtml+='<div class="crumbs-nav-item filterNav '+filterNavStyle+'" data-tid="'+tid+'">'
+									+'<a href="'+filterHref+'" class="menu-drop filterTxt" title="'+filterTitle+Item+'"><span>'+filterTitle+'</span>'+selFilterTxt+'<i class="menu-drop-arrow"></i></a>'
+									+filterOptListHtml
+									+'</div>';
+				})
+				
+			}
+
+			var clearFilterURL='';
+			if(fid!=='' || pfid!=='' || bfid!==''){
+				clearFilterURL='<a href="'+goodsListURL+'">清空搜索筛选</a>';
+			}
+			//插入生成的筛选导航代码
+			$('#crumbs-nav').append(termFilterNav+brandFilterNav+priceFilterNav+filterNavHtml+clearFilterURL);
+
+			//删除已经勾选过筛选项所在的筛选栏
+			var filterNav=$('#crumbs-nav .filterNav');
+			if(filterNav.length>0){
+				$.each(filterNav,function(){
+					var ftid=$(this).attr('data-tid');
+					//console.log(ftid);
+					$('.sl-wrap[data-tid="'+ftid+'"]').remove();
+				})
+			}
+
+			//重新设定初始显示的筛选栏
+			var resetFilter=$('[role="filterOption"]:lt('+maxShowFilterNum+')');
+			//由于隐藏的筛选项未初始化，所以这里只有原来display为none的筛选项才会重新绑定
+			$.each(resetFilter,function(index){
+				if($(this).css('display')=='none'){
+					$(this).show();
+					initFilter(true,':eq('+index+')',true);
+				}
+			})
+
+			//判断是否需要添加更多筛选栏
+			var moreOptionTxt='{$moreOptionTxt}'+' 等';
+			var filterOption=$('[role="filterOption"]');
+			if(filterOption.length>parseInt(maxShowFilterNum)){
+				$('#listWrap').before('<div class="s-more" id="J_selectorMore"><span class="sm-wrap" data-more="'+moreOptionTxt+'">更多选项（'+moreOptionTxt+'）<i></i></span></div>');
+			}
+
+
+		}
+	}
+}
+
+$(function(){
+	//加载广告数据
+	getAdListData('8');	
+	//品牌筛选数据解析添加
+	if(brandFilterData!==''){
+		var brandData=$.parseJSON(brandFilterData);
+		var brandHTML='';
+		if(brandData.brandData){
+			$.each(brandData.brandData,function(index,Item){
+				var brand_logo=Item.brand_logo==''
+							?Item.brand_name
+							:'<img class="loading-style2" width="102" height="36" data-lazy-img="done" src="'+imgPath+Item.brand_logo+'">'+Item.brand_name
+
+				brandHTML+='<li data-bid="'+Item.brand_id+'" data-initial="'+Item.chartext.toLocaleLowerCase()+'">'
+		                +'<a href="'+goodsListURL+'&term_id='+term_id+'&fid='+fid+'&tid={$tid}&bfid='+Item.brand_id+'&pfid='+pfid+'" title="'+Item.brand_name+'" rel="nofollow"><i></i>'+brand_logo+'</a></li>'
+			})
+		}
+		$('#brandsArea').append(brandHTML);
+	}
+
+	initFilter(true);
+
+	$.each($('.sliderWrap'),function(){
+		$(this).setGoodsSlider();
+	});
+
+	$(".cat_menu").hover(function(){
+		$("#catItem").show();
+	},function(){
+		$("#catItem").hide();
+	});	
+
+	//其它筛选项展开与收缩
+	$('#J_selectorMore').on('click',function(){
+		var moreBtnTxt=$(this).find('span');
+		if(!moreBtnTxt.hasClass('opened')){
+			$('[role="filterOption"]').show();
+			moreBtnTxt.addClass('opened').html('收起筛选项<i></i>');
+
+			initFilter(false);
+		}else{
+			$('[role="filterOption"]:gt(0)').hide();
+			var moreTxt='更多选项（'+moreBtnTxt.attr('data-more')+'）';
+			moreBtnTxt.removeClass('opened').html(moreTxt+'<i></i>');
+		}
+		
+	});
+
+	//当前使用的字母筛选品牌项
+	var curSelInitail=$('#selByBrand .J_brandLetter li[data-initial="0"]');
+	var brands=$('#brandsArea li');
+	//绑定按字母选择品牌事件
+	$('#selByBrand .J_brandLetter li').hover(function(){
+		var $this=$(this);
+		//显示所有
+		if($(this).attr('data-initial')=='0' && !$(this).hasClass('curr')){
+			brands.show();
+			$(this).addClass('curr');
+			curSelInitail.removeClass('curr');
+			curSelInitail=$(this);	
+		}else if($(this).attr('data-initial')!=='0' && !$(this).hasClass('curr')){
+			brands.each(function(){
+				if($(this).attr('data-initial')!==$this.attr('data-initial')){
+					$(this).hide();
+				}else{
+					$(this).show();
+				}
+			})
+			$(this).addClass('curr');
+			curSelInitail.removeClass('curr');
+			curSelInitail=$(this);
+		}
+
+	})
+
+	//绑定品牌多选筛选项提交与取消(品牌筛选项展开与收缩代码在emallWidget.js中)
+	$('#selByBrand .J_btnsConfirm').on('click',function(){
+		var bfidGroup='';
+		//生成提交的品牌筛选bfid值
+		$.each(brands,function(){
+			if($(this).hasClass('selected')){
+				bfidGroup+=bfidGroup==''?$(this).attr('data-bid'):','+$(this).attr('data-bid');
+			}
+		})
+		location.href=goodsListURL+'&fid='+fid+'&pfid='+pfid+'&bfid='+bfidGroup;
+	})
+	//取消品牌筛选
+	$('#selByBrand .J_btnsCancel').on('click',function(){
+		SearchController.BrandsMultiSelect();
+		$(this).closest('.sl-btns').hide();
+			$('#selByBrand .J_brandLetter li:first').trigger('mouseenter');
+	})
+
+	//自定义价格筛选项参数提交事件
+	$('#priceBtn').on('click',function(){
+		var priceMin=$('#priceMin').val();
+		var priceMax=$('#priceMax').val();
+		if(priceMax!=='' && priceMin!==''){
+			var customFilterPrice=priceMin+'-'+priceMax;
+			location.href=goodsListURL+'&fid='+fid+'&pfid='+customFilterPrice+'&bfid='+bfid;
+		}else{
+			alert('请先输入自定义的价格区间！');
+		}
+	})
+
+	//绑定顶部购物车查看事件
+	$('#settleup-2014').cartOverview();
+
+});
+
+</script>
+</body>
+</html>

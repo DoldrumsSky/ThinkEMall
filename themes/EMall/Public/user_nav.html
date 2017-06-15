@@ -73,11 +73,12 @@
       </ul>
     </div>
     <div class="nav-r">
+    <form action="{:U('EMall/SearchEMall/index')}" method="post">
       <div id="search-2014">
           <ul id="shelper" class="hide"></ul>
           <div class="form">
-            <input type="text" onkeydown="javascript:if(event.keyCode==13) search('key');" autocomplete="off" id="key" accesskey="s" class="text">
-            <button onclick="search('key');return false;" class="button cw-icon" type="button"><i></i>搜索</button>
+            <input type="text" name="keywords" id="key" accesskey="s" class="text">
+            <button class="button cw-icon" type="submit"><i></i>搜索</button>
           </div>
           </div>
           <div id="settleup-2014">
@@ -88,6 +89,7 @@
           </div>
           <div class="dropdown-layer"><div class="spacer"></div><div id="settleup-content"><span class="loading"></span></div></div>
       </div>
+    </form>
     </div>
     <div class="clr"></div>
   </div>
