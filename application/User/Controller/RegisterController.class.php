@@ -78,7 +78,12 @@ class RegisterController extends HomebaseController {
 	        'create_time' => date("Y-m-d H:i:s"),
 	        'last_login_time' => date("Y-m-d H:i:s"),
 	        'user_status' => 1,
-	        "user_type"=>2,//会员
+	        'user_type'=>2,//会员
+	        'shopcart'=>'',
+            'favor_goods'=>'',
+            'score'=>0,
+            'balance'=>0,
+            'addr_enable'=>1
 	    );
 	    
 	    $result = $users_model->add($data);
@@ -169,7 +174,12 @@ class RegisterController extends HomebaseController {
 	                'create_time' => date("Y-m-d H:i:s"),
 	                'last_login_time' => date("Y-m-d H:i:s"),
 	                'user_status' => $need_email_active?2:1,
-	                "user_type"=>2,//会员
+	                'user_type'=>2,//会员
+			        'shopcart'=>'',
+		            'favor_goods'=>'',
+		            'score'=>0,
+		            'balance'=>0,
+		            'addr_enable'=>1
 	            );
 	            $rst = $users_model->add($data);
 	            if($rst){

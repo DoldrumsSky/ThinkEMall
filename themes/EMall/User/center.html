@@ -46,7 +46,7 @@
           </div>
         </div>
         <ul class="orderInfo floatRefixToL">
-          <li><a href="{:U('User/Order/index',array('diff'=>0,'status'=>0))}" class="infoIcon-1">待付款<em>{$orderData.nopay_order_num}</em></a></li>
+          <li><a href="{:U('User/Order/index',array('diff'=>0,'status'=>0))}" class="infoIcon-1">待付款<em> <empty name="orderData['nopay_order_num']">0<else />{$orderData.nopay_order_num}</empty></em></a></li>
           <li><a href="{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>1))}" class="infoIcon-2">待出库<em><empty name="orderData['orderGoodsStatus'][1]">0<else />{$orderData['orderGoodsStatus'][1]}</empty></em></a></li>
           <li><a href="{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>3))}" class="infoIcon-3">待收货<em><empty name="orderData['orderGoodsStatus'][3]">0<else />{$orderData['orderGoodsStatus'][3]}</empty></em></a></li>
           <li><a href="{:U('User/Order/queryOrderGoodsByStatus',array('diff'=>0,'status'=>4))}" class="infoIcon-4">待评价<em><empty name="orderData['orderGoodsStatus'][4]">0<else />{$orderData['orderGoodsStatus'][4]}</empty></em></a></li>

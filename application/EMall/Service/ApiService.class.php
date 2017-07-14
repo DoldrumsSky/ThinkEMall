@@ -1145,7 +1145,7 @@ class ApiService {
             return false;
         }
        $orderStatusCount=$orderModel->field('status,count(*) as count')->where(array('shopper_id'=>$userId))->group('status')->select();
-        if($orderModel!==false){
+        if($orderStatusCount!==false){
             foreach ($orderStatusCount as $key => $value) {
                 $returnCount[$value['status']]=$value['count'];
             }

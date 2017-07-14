@@ -6,16 +6,19 @@ use EMall\Service\ApiService;
 use EMall\Service\ChromePhp;
 
 /**
- * 致阳网站设计 电子商城前端订单管理控制器
+ * ThinkEMall电子商城前端订单管理控制器
  * ============================================================================
- * * 版权所有 2016-2020 致阳网站设计，并保留所有权利。
- * 代码设计：阳华
+ * 引用、修改及衍生本系统代码请保留以下信息
+ * 版权所有 2016-2020 作者：阳华 ThinkEMall，并保留所有权利。 * 
  * ----------------------------------------------------------------------------
- * 这不是一个自由软件！您只能在不用于商业目的或者经作者本人授权的前提下对程序代码进行修改和
- * 使用；不允许对程序代码以任何形式任何目的的再发布。
+ * 项目地址：https://github.com/DoldrumsSky/ThinkEMall
+ *           https://git.oschina.net/langweaver/thinkemall
+ * 联系方式：
+ * QQ:451343282  Email:451343282@qq.com
+ * 技术交流群:1950562
  * ============================================================================
  * $Author: YangHua $
- * $Id: OrderController.php 17217 2016-12-10 06:29:08Z YangHua $
+ * $Id: AdminOrderController.php 17217 2017-2-10 06:29:08Z YangHua $
 */
 
 class OrderController extends MemberbaseController {
@@ -215,14 +218,29 @@ class OrderController extends MemberbaseController {
 
 
         if($content['order']!==false){
+            //查询所有订单商品各个状态的数量
+            $orderGoodsStatus=ApiService::getOrderGoodsStatusCount($orderModel,$where['a.shopper_id']);
+
             $content['page']=$page->show('default');
             $content['total_pages']=$page->getTotalPages(); // 总页数
             $content['count']=$totalsize;
+            $content['orderGoodsStatus']=$orderGoodsStatus;
             //取订单数信息
+            $countWhere['shopper_id']=$where['a.shopper_id'];
+            $countWhere['status']=array('EGT',0);
+            //切换查询order
+            changeModelProperty($orderModel,'order');
+            $orderCount=$orderModel->where($countWhere)->field('sum(status=0) nopay,count(*) total')->select();
+            if($orderCount!==false){
+                $content['nopay_order_num']=$orderCount[0]['nopay'];
+                $content['all_order_num']=$orderCount[0]['total'];
+            }
+            unset($orderCount);
+            /*
             $userSession=$this->user;
             $content['all_order_num']=$userSession['all_order_num'];
             $content['nopay_order_num']=$userSession['nopay_order_num'];
-            unset($userSession);
+            unset($userSession);*/
             
             if($returnType=='ajax'){
                 $this->orderReturn(1,$content);

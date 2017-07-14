@@ -338,25 +338,25 @@ class ProfileController extends MemberbaseController {
 
     //添加收货地址表单内容长度验证
     public function validateAddressField($addressPost){
-        if(strlen($addressPost['tag'])>20 | empty($addressPost['tag']))
+        if(strlen($addressPost['tag'])>20 || empty($addressPost['tag']))
             return 'tag';
-        if(strlen($addressPost['consignee'])>30 | empty($addressPost['consignee']))
+        if(strlen($addressPost['consignee'])>30 || empty($addressPost['consignee']))
             return 'consignee';
-        if(strlen($addressPost['telNumber'])>20 | empty($addressPost['telNumber']))
+        if(strlen($addressPost['telNumber'])>20 || empty($addressPost['telNumber']))
             return 'telNumber';
-        if(strlen($addressPost['detailInfo'])>100 | empty($addressPost['detailInfo']))
+        if(strlen($addressPost['detailInfo'])>100 || empty($addressPost['detailInfo']))
             return 'detailInfo';
-        if(strlen($addressPost['province'])>20 | empty($addressPost['province']))
+        if(strlen($addressPost['province'])>20 || empty($addressPost['province']))
             return 'province';
-        if(strlen($addressPost['provinceCode'])>20 | empty($addressPost['provinceCode']))
+        if(strlen($addressPost['provinceCode'])>20 || empty($addressPost['provinceCode']))
             return 'provinceCode';
-        if(strlen($addressPost['city'])>20 | empty($addressPost['city']))
+        if(strlen($addressPost['city'])>20 || empty($addressPost['city']))
             return 'city';
-        if(strlen($addressPost['cityCode'])>20 | empty($addressPost['cityCode']))
+        if(strlen($addressPost['cityCode'])>20 || empty($addressPost['cityCode']))
             return 'cityCode';
-        if(strlen($addressPost['district'])>30 | empty($addressPost['district']))
+        if(strlen($addressPost['district'])>30 || empty($addressPost['district']))
             return 'district';
-        if(strlen($addressPost['districtCode'])>20 | empty($addressPost['districtCode']))
+        if(strlen($addressPost['districtCode'])>20 || empty($addressPost['districtCode']))
             return 'districtCode';
         if(strlen($addressPost['zipcode'])>20)
             return 'zipcode';
